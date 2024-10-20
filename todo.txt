@@ -1,0 +1,8 @@
+- Fix scrolling
+- properly type rule details in DB
+- link sharing friend addition
+- rule change via approval
+- green and ambient UI
+- loading screens
+- check app usage while the app is still open on intervals
+- logout issue

@@ -1,0 +1,68 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.zenvia">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+  <uses-permission android:name="android.permission.VIBRATE"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"/>
+
+  <queries>
+    <package android:name="com.facebook.katana"/>  <!-- Facebook -->
+    <package android:name="com.instagram.android"/>  <!-- Instagram -->
+    <package android:name="com.snapchat.android"/>  <!-- Snapchat -->
+    <package android:name="com.whatsapp"/>  <!-- WhatsApp -->
+    <package android:name="com.twitter.android"/>  <!-- Twitter -->
+    <package android:name="com.tencent.ig"/>  <!-- PUBG Mobile -->
+    <package android:name="com.robo.dev.arknights"/>  <!-- Arknights -->
+    <package android:name="com.google.android.youtube"/>  <!-- YouTube -->
+    <package android:name="com.netflix.mediaclient"/>  <!-- Netflix -->
+    <package android:name="com.hulu.plus"/>  <!-- Hulu -->
+    <package android:name="com.amazon.avod.thirdpartyclient"/>  <!-- Prime Video -->
+    <package android:name="com.disney.disneyplus"/>  <!-- Disney+ -->
+    <package android:name="com.tinder"/>  <!-- Tinder -->
+    <package android:name="com.okcupid.okcupid"/>  <!-- OkCupid -->
+    <package android:name="com.bumble.app"/>  <!-- Bumble -->
+    <package android:name="co.hinge.app"/>  <!-- Hinge -->
+    <package android:name="com.match.com"/>  <!-- Match.com -->
+    <intent>
+      <action android:name="android.intent.action.VIEW"/>
+      <category android:name="android.intent.category.BROWSABLE"/>
+      <data android:scheme="https"/>
+    </intent>
+  </queries>
+  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/AppTheme">
+    <meta-data android:name="expo.modules.updates.ENABLED" android:value="true"/>
+    <meta-data android:name="expo.modules.updates.EXPO_SDK_VERSION" android:value="51.0.0"/>
+    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
+    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
+    <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="https://exp.host/@anonymous/zenvia"/>
+    <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="com.zenvia"/>
+        <data android:scheme="exp+zenvia"/>
+      </intent-filter>
+    </activity>
+    <service
+        android:name=".services.AppUsageAccessibilityService"
+        android:exported="true"
+        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+      <intent-filter>
+        <action android:name="android.accessibilityservice.AccessibilityService" />
+      </intent-filter>
+
+      <meta-data
+          android:name="android.accessibilityservice"
+          android:resource="@xml/accessibility_service_config" />
+    </service>
+    <service android:name=".services.FloatingWindowService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+    <service android:name=".services.UsageTrackerService" />
+    <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>
+  </application>
+</manifest>

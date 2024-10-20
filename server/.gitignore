@@ -1,0 +1,82 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+*.sqlite3-journal
+*.db-journal
+media/
+staticfiles/
+static/
+
+# If your build process includes running collectstatic, you probably don't want collected static files in your Git repository
+# STATIC_ROOT should be set in your settings.py to a directory outside of your Git repository
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# If your build process includes running collectstatic, you probably don't want collected static files in your Git repository
+# MEDIA_ROOT should be set in your settings.py to a directory outside of your Git repository
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Django migrations
+*/migrations/*
+!*/migrations/__init__.py
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Environments
+.env
+*.env
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db

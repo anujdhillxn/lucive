@@ -7,14 +7,41 @@ User = get_user_model()
 
 class Rule(models.Model):
     app = models.CharField(max_length=100)
-    ruletype = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
-    rule_details = models.TextField()
     user = models.ForeignKey(User, related_name='rules', on_delete=models.CASCADE)
-    change_allowed = models.BooleanField(default=False)
+    daily_max_seconds = models.IntegerField(null=True, blank=True, default=None)
+    hourly_max_seconds = models.IntegerField(null=True, blank=True, default=None)
+    session_max_seconds = models.IntegerField(null=True, blank=True, default=None)
+    daily_reset = models.TimeField(default='00:00:00')
+    INTERVENTION_CHOICES = [
+        ('FULL', 'Full'),
+        ('PARTIAL', 'Partial'),
+    ]
+    intervention_type = models.CharField(max_length=7, choices=INTERVENTION_CHOICES, default='FULL')
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    last_modified_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('app', 'ruletype', 'user')
+        unique_together = ('app', 'user')
 
     def __str__(self):
-        return f"Rule: {self.ruletype} for App: {self.app}"
+        return f"Rule for App: {self.app}"
+    
+class RuleModificationRequest(models.Model):
+    app = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+    user = models.ForeignKey(User, related_name='rule_modification_requests', on_delete=models.CASCADE)
+    daily_max_seconds = models.IntegerField(null=True, blank=True, default=None)
+    hourly_max_seconds = models.IntegerField(null=True, blank=True, default=None)
+    session_max_seconds = models.IntegerField(null=True, blank=True, default=None)
+    daily_reset = models.TimeField(default='00:00:00')
+    INTERVENTION_CHOICES = [
+        ('FULL', 'Full'),
+        ('PARTIAL', 'Partial'),
+    ]
+    intervention_type = models.CharField(max_length=7, choices=INTERVENTION_CHOICES)
+    class Meta:
+        unique_together = ('app', 'user')
+
+    def __str__(self):
+        return f"Rule Modification Request for App: {self.app}"

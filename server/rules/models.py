@@ -7,6 +7,7 @@ User = get_user_model()
 
 class Rule(models.Model):
     app = models.CharField(max_length=100)
+    app_display_name = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     user = models.ForeignKey(User, related_name='rules', on_delete=models.CASCADE)
     daily_max_seconds = models.IntegerField(null=True, blank=True, default=None)

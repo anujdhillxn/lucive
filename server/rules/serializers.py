@@ -6,7 +6,6 @@ import json
 
 class RuleSerializer(serializers.ModelSerializer):
     isMyRule = serializers.SerializerMethodField()
-    isModification = serializers.SerializerMethodField()
 
     class Meta:
         model = Rule
@@ -15,20 +14,17 @@ class RuleSerializer(serializers.ModelSerializer):
     def get_isMyRule(self, instance):
         return instance.user == self.context['request'].user
 
-    def get_isModification(self, instance):
-        return False
-
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         res = {
             'app': ret['app'],
+            'appDisplayName': ret['app_display_name'],
             'isActive': ret['is_active'],
             'dailyReset': ret['daily_reset'],
             'interventionType': ret['intervention_type'],
             'createdAt': ret['created_at'],
             'lastModifiedAt': ret['last_modified_at'],
             'isMyRule': self.get_isMyRule(instance),
-            'isModification': self.get_isModification(instance)
         }
         if ret['daily_max_seconds']:
             res['dailyMaxSeconds'] = ret['daily_max_seconds']
@@ -40,7 +36,6 @@ class RuleSerializer(serializers.ModelSerializer):
 
 class RuleModificationRequestSerializer(serializers.ModelSerializer):
     isMyRule = serializers.SerializerMethodField()
-    isModification = serializers.SerializerMethodField()
 
     class Meta:
         model = RuleModificationRequest
@@ -48,9 +43,6 @@ class RuleModificationRequestSerializer(serializers.ModelSerializer):
 
     def get_isMyRule(self, instance):
         return instance.user == self.context['request'].user
-
-    def get_isModification(self, instance):
-        return True
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -60,7 +52,6 @@ class RuleModificationRequestSerializer(serializers.ModelSerializer):
             'dailyReset': ret['daily_reset'],
             'interventionType': ret['intervention_type'],
             'isMyRule': self.get_isMyRule(instance),
-            'isModification': self.get_isModification(instance)
         }
         if ret['daily_max_seconds']:
             res['dailyMaxSeconds'] = ret['daily_max_seconds']
@@ -92,7 +83,7 @@ class CreateRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rule
         fields = [
-            'app', 'is_active', 'daily_max_seconds', 'hourly_max_seconds',
+            'app', 'app_display_name', 'is_active', 'daily_max_seconds', 'hourly_max_seconds',
             'session_max_seconds', 'daily_reset', 'intervention_type'
         ]
 
@@ -108,6 +99,8 @@ class CreateRuleSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        if validated_data.get('app_display_name') is None or validated_data.get('app_display_name') == '':
+            validated_data['app_display_name'] = validated_data['app']
         user = self.context['request'].user
         rule = Rule.objects.create(user=user, **validated_data)
         return rule
@@ -178,7 +171,7 @@ class UpdateRuleSerializer(serializers.ModelSerializer):
         instance.is_active = validated_data['is_active']
         instance.daily_max_seconds = validated_data['daily_max_seconds']
         instance.hourly_max_seconds = validated_data['hourly_max_seconds']
-        instance.session_max_seconds = validated_data['session_max_seconds']
+        #instance.session_max_seconds = validated_data['session_max_seconds']
         instance.daily_reset = validated_data['daily_reset']
         instance.intervention_type = validated_data['intervention_type']
         instance.save()

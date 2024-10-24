@@ -22,18 +22,18 @@ class UserRulesView(APIView):
         rules = Rule.objects.filter(Q(user=user) | Q(user=duo_partner))
         modification_requests = RuleModificationRequest.objects.filter(Q(user=user) | Q(user=duo_partner))
         combined_list = []
-        apps = set()
-        for rule in rules:
-            serializer = RuleSerializer(rule, context={'request': request})
-            data = serializer.data
-            apps.add(data['app'])
-            combined_list.append(data)
+        mod_data = {}
 
         for mod_request in modification_requests:
             serializer = RuleModificationRequestSerializer(mod_request, context={'request': request})
             data = serializer.data
-            if data['app'] in apps:
-                combined_list.append(data)
+            mod_data[(mod_request.app, mod_request.user)] = data
+
+        for rule in rules:
+            serializer = RuleSerializer(rule, context={'request': request})
+            data = serializer.data
+            data['modificationData'] = mod_data.get((rule.app, rule.user), None)
+            combined_list.append(data)
 
         return Response(combined_list)
     
@@ -125,11 +125,10 @@ class DeleteRuleModificationRequestView(DestroyAPIView):
             return Response({"error": "App is required."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             duo = Duo.objects.get(Q(user1=user) | Q(user2=user), is_confirmed=True)
-            other_user = duo.user1 if duo.user2 == user else duo.user2
         except Duo.DoesNotExist:
             return Response({"error": "User is not part of a confirmed duo."}, status=status.HTTP_403_FORBIDDEN)
         try:
-            rule_mod_request = RuleModificationRequest.objects.get(app=app, user__in=[user, other_user])
+            rule_mod_request = RuleModificationRequest.objects.get(app=app, user=user)
         except RuleModificationRequest.DoesNotExist:
             return Response({"error": "Rule modification request not found or not owned by user."}, status=status.HTTP_404_NOT_FOUND)
         rule_mod_request.delete()

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApi } from '../hooks/useApi';
-import { AppActionsType, AppContextType, Duo, Permissions, Rule, RuleType, User } from '../types/state';
+import { AppActionsType, AppContextType, Duo, Permissions, Rule, User } from '../types/state';
 
 export const AppContext = React.createContext<AppContextType | undefined>(
     undefined
@@ -15,7 +15,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [user, setUser] = React.useState<User | null>(null);
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
     const [duoRequests, setDuoRequests] = React.useState<Duo[]>([]);
-    const [rules, setRules] = React.useState<Rule<RuleType>[]>([]);
+    const [rules, setRules] = React.useState<Rule[]>([]);
     const [loadingCount, setLoadingCount] = React.useState(0);
     const [permissions, setPermissions] = React.useState<Permissions>({});
     const { api, requestToken, setRequestToken } = useApi();
@@ -50,6 +50,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setLoadingCount((prev) => prev + 1);
         try {
             const rulesResp = await api.ruleApi.getRules();
+            console.log(rulesResp);
             setRules(rulesResp);
         }
         catch (e) {

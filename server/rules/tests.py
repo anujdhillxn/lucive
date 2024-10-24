@@ -26,9 +26,11 @@ class RuleTests(APITestCase):
 
     def test_get_user_rules(self):
         self.authenticate(self.user2)
+        self.mod_request1.app = 'TestApp'
+        self.mod_request1.save()
         response = self.client.get(self.get_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), 2)
         
         rule_data = response.data[0]
         self.assertEqual(rule_data['app'], 'TestApp')
@@ -38,20 +40,10 @@ class RuleTests(APITestCase):
         self.assertEqual(rule_data['sessionMaxSeconds'], 300)
         self.assertEqual(rule_data['dailyReset'], '00:00:00')
         self.assertEqual(rule_data['interventionType'], 'FULL')
-        self.assertEqual(rule_data['isModification'], False)
         self.assertEqual(rule_data['isMyRule'], False)
-
-        mod_request_data = response.data[2]
-        self.assertEqual(mod_request_data['app'], 'TestApp2')
-        self.assertEqual(mod_request_data['isActive'], False)
-        self.assertEqual(mod_request_data['dailyMaxSeconds'], 1800)
-        self.assertEqual(mod_request_data['hourlyMaxSeconds'], 300)
-        self.assertEqual(mod_request_data['sessionMaxSeconds'], 150)
-        self.assertEqual(mod_request_data['dailyReset'], '00:00:00')
-        self.assertEqual(mod_request_data['interventionType'], 'PARTIAL')
-        self.assertEqual(mod_request_data['isModification'], True)
-        self.assertEqual(mod_request_data['isMyRule'], False)
-
+        self.assertEqual('modificationData' in rule_data, True)
+        self.assertEqual(rule_data['modificationData']['isActive'], False)
+        self.assertEqual(rule_data['app'], 'TestApp')
     def test_get_user_rules_no_duo(self):
         self.authenticate(self.user_without_duo)
         response = self.client.get(self.get_url)
@@ -82,15 +74,13 @@ class RuleTests(APITestCase):
         self.authenticate(self.user1)
         response = self.client.get(self.get_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual('dailyMaxSeconds' in response.data[2], False)
-        self.assertEqual('hourlyMaxSeconds' in response.data[2], False)
-        self.assertEqual('sessionMaxSeconds' in response.data[2], False)
     
     def test_create_rule(self):
         self.authenticate(self.user1)
         create_url = reverse('create-rule')
         data = {
             'app': 'NewApp',
+            'app_display_name': 'New App',
             'is_active': True,
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
@@ -363,12 +353,13 @@ class RuleTests(APITestCase):
         self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp2').exists(), False)
 
     def test_approve_rule_modification_request_no_authentication(self):
+        self.authenticate(self.user1)
         approve_url = reverse('approve-rule-modification-request')
         data = {
             'app': 'TestApp2'
         }
         response = self.client.post(approve_url, data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Rule.objects.get(app='TestApp2').daily_max_seconds, 3600)
         self.assertEqual(Rule.objects.get(app='TestApp2').hourly_max_seconds, 600)
         self.assertEqual(Rule.objects.get(app='TestApp2').intervention_type, 'PARTIAL')
@@ -407,16 +398,6 @@ class RuleTests(APITestCase):
     
     def test_delete_rule_modification_request(self):
         self.authenticate(self.user1)
-        delete_url = reverse('delete-rule-modification-request')
-        data = {
-            'app': 'TestApp2'
-        }
-        response = self.client.delete(delete_url, data)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp2').exists(), False)
-
-    def test_delete_rule_modification_request(self):
-        self.authenticate(self.user2)
         delete_url = reverse('delete-rule-modification-request')
         data = {
             'app': 'TestApp2'

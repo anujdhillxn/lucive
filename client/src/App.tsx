@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AppContextProvider } from './state/AppContext';
 import { AppScreenStack } from './features/AppScreenStack';
 import { ApiProvider } from './api/ApiProvider';
-import { NativeStateHandler } from './state/NativeStateHandler';
+import { NativeContextProvider } from './state/NativeContext';
 
 export default function App() {
     return (
@@ -12,9 +12,9 @@ export default function App() {
             <NavigationContainer>
                 <ApiProvider>
                     <AppContextProvider>
-                        <NativeStateHandler>
+                        <NativeContextProvider>
                             <AppScreenStack />
-                        </NativeStateHandler>
+                        </NativeContextProvider>
                     </AppContextProvider>
                 </ApiProvider>
             </NavigationContainer>

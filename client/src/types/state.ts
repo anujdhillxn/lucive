@@ -12,30 +12,29 @@ export type Duo = {
     confirmedAt: Date | null;
 };
 
-export enum RuleType {
-    SCREENTIME = "SCREENTIME",
-}
-
-export type Rule<T extends RuleType> = {
+export type RuleModificationData = {
     app: string;
-    ruleType: T;
-    changeAllowed: boolean;
+    interventionType: string;
+    dailyReset: string;
+    dailyMaxSeconds?: number;
+    hourlyMaxSeconds?: number;
+    sessionMaxSeconds?: number;
+};
+
+export type Rule = {
+    app: string;
+    appDisplayName: string;
     isActive: boolean;
     isMyRule: boolean;
-    details: RuleDetailsMap[T];
+    interventionType: string;
+    dailyReset: string;
+    dailyMaxSeconds?: number;
+    hourlyMaxSeconds?: number;
+    sessionMaxSeconds?: number;
+    createdAt?: string;
+    lastModifiedAt?: string;
+    modificationData?: RuleModificationData;
 };
-
-export type ScreenTimeRuleDetails = {
-    dailyMaxSeconds: number;
-    hourlyMaxSeconds: number;
-    dailyStartsAt: string;
-};
-
-export type RuleDetailsMap = {
-    [RuleType.SCREENTIME]: ScreenTimeRuleDetails;
-    // Add more mappings as needed
-};
-
 export type Permissions = {
     hasUsageStatsPermission?: boolean;
     hasOverlayPermission?: boolean;
@@ -46,7 +45,7 @@ export type AppContextType = {
     user: User | null;
     myDuo: Duo | null;
     duoRequests: Duo[];
-    rules: Rule<RuleType>[];
+    rules: Rule[];
     permissions: Permissions;
 };
 
@@ -54,6 +53,6 @@ export type AppActionsType = {
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
     setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
     setDuoRequests: React.Dispatch<React.SetStateAction<Duo[]>>;
-    setRules: React.Dispatch<React.SetStateAction<Rule<RuleType>[]>>;
+    setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
     setPermissions: React.Dispatch<React.SetStateAction<Permissions>>;
 };

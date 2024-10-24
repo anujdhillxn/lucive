@@ -1,93 +1,108 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
-import { ScreentimeRuleCard } from './RuleCards/ScreentimeRuleCard';
+import { RuleCard } from './RuleCard';
 import { RootStackParamList } from '../../AppScreenStack';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
-import { Rule, RuleType } from '../../../types/state';
+import { Rule } from '../../../types/state';
 
-export const RuleCardComponents = {
-    [RuleType.SCREENTIME]: ScreentimeRuleCard,
+type RuleCardContainerProps = {
+    rule: Rule;
+}
+
+
+const RuleCardContainer: React.FC<RuleCardContainerProps> = (props: RuleCardContainerProps) => {
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.detailsSection}>
+                <RuleCard rule={props.rule} />
+            </View>
+            <View style={styles.buttonsSection}>
+                {props.rule.isMyRule ? <MyRuleActions rule={props.rule} /> : <PartnerRuleActions rule={props.rule} />}
+            </View>
+        </View>
+    );
 };
 
+type MyRuleActionsProps = {
+    rule: Rule;
+}
 
-const RuleCardContainer: React.FC<{ rule: Rule<RuleType> }> = ({ rule }) => {
+const MyRuleActions: React.FC<MyRuleActionsProps> = (props: MyRuleActionsProps) => {
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { api } = useApi();
     const { ruleApi } = api;
     const { setRules } = useActions();
+
     const navigateToRuleEditor = () => {
-        navigation.navigate('RuleEditor', rule);
+        navigation.navigate('RuleCreator', props.rule);
     };
 
-    const toggleEdit = () => {
-        ruleApi.allowChange(rule)
-            .then(() => {
-                ruleApi.getRules().then((rulesResp) => {
-                    setRules(rulesResp);
-                })
-                    .catch((err) => {
-                        console.log(err);
-                    })
-            })
-    };
-
-    const toggleActive = () => {
-        ruleApi.updateRule({ ...rule, isActive: !rule.isActive })
-            .then(() => {
-                ruleApi.getRules().then((rulesResp) => {
-                    setRules(rulesResp);
-                })
-                    .catch((err) => {
-                        console.log(err);
-                    })
-            })
-            .catch((err) => {
-                console.log(err);
+    const onDelete = () => {
+        ruleApi.deleteRule(props.rule.app).then(() => {
+            ruleApi.getRules().then((rules) => {
+                setRules(rules);
+            }).catch((e) => {
+                console.error(e);
             });
-    };
+        }).catch((e) => {
+            console.error(e);
+        });
+    }
 
-    const deleteRule = () => {
-        ruleApi.deleteRule(rule)
-            .then(() => {
-                ruleApi.getRules().then((rulesResp) => {
-                    setRules(rulesResp);
-                })
-                    .catch((err) => {
-                        console.log(err);
-                    })
-            })
-            .catch((err) => {
-                console.log(err);
+    const onCancelChange = () => {
+        ruleApi.deleteRuleModificationRequest(props.rule.app).then(() => {
+            ruleApi.getRules().then((rules) => {
+                setRules(rules);
+            }).catch((e) => {
+                console.error(e);
             });
-    };
+        }).catch((e) => {
+            console.error(e);
+        });
+    }
 
-    const RuleCardDetails = RuleCardComponents[rule.ruleType];
-    return (
-        <View style={styles.container}>
-            <View style={styles.detailsSection}>
-                <RuleCardDetails rule={rule} />
-            </View>
-            <View style={styles.buttonsSection}>
-                <Menu>
-                    <MenuTrigger disabled={!rule.changeAllowed && !rule.isMyRule}>
-                        <Icon name="more-vert" size={24} color={!rule.changeAllowed && !rule.isMyRule ? "#888" : "#000"} />
-                    </MenuTrigger>
-                    <MenuOptions>
-                        {!rule.isMyRule && <MenuOption onSelect={navigateToRuleEditor} text="Edit" />}
-                        {rule.isMyRule && <MenuOption onSelect={toggleEdit} text={`${rule.changeAllowed ? "Disable" : "Enable"} Edits by Partner`} />}
-                        {!rule.isMyRule && <MenuOption onSelect={toggleActive} text={`${rule.isActive ? "Disable" : "Enable"}`} />}
-                        {!rule.isMyRule && <MenuOption onSelect={deleteRule} text="Delete" />}
-                    </MenuOptions>
-                </Menu>
-            </View>
-        </View>
-    );
-};
+
+    return <Menu>
+        <MenuTrigger>
+            <Icon name="more-vert" size={24} />
+        </MenuTrigger>
+        <MenuOptions>
+            {!Boolean(props.rule.modificationData) && <MenuOption onSelect={navigateToRuleEditor} text="Edit" />}
+            {Boolean(props.rule.modificationData) && <MenuOption onSelect={onCancelChange} text="Cancel Change" />}
+            <MenuOption disabled={props.rule.isActive} onSelect={onDelete} text="Delete" />
+        </MenuOptions>
+    </Menu>
+}
+
+type PartnerRuleActionsProps = {
+    rule: Rule;
+}
+
+const PartnerRuleActions: React.FC<PartnerRuleActionsProps> = (props: PartnerRuleActionsProps) => {
+
+    const { api } = useApi();
+    const { ruleApi } = api;
+    const { setRules } = useActions();
+
+    const onApproveChange = () => {
+        ruleApi.approveRuleModificationRequest(props.rule.app).then(() => {
+            ruleApi.getRules().then((rules) => {
+                setRules(rules);
+            }).catch((e) => {
+                console.error(e);
+            });
+        }).catch((e) => {
+            console.error(e);
+        });
+    }
+    return Boolean(props.rule.modificationData) ? <Button title="Approve" onPress={onApproveChange} /> : null;
+}
 
 const styles = StyleSheet.create({
     container: {

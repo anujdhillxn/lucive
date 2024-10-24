@@ -1,105 +1,131 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, NativeModules, Image } from 'react-native';
+import { View, Text, StyleSheet, NativeModules, Image, Button } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { ScreenTimeRuleCreator } from './RuleCreators/ScreentimeRuleCreator';
+import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { RootStackParamList } from '../../AppScreenStack';
-import { RuleDetailsMap, RuleType } from '../../../types/state';
-const { InstalledApps } = NativeModules;
+import { Switch, TouchableOpacity } from 'react-native-gesture-handler';
+import CustomTimePicker from '../../../components/CustomTimePicker';
+import { Rule } from '../../../types/state';
+import { useNativeContext } from '../../../hooks/useNativeContext';
+import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
 
-export type AppInfo = {
-    displayName: string;
-    packageName: string;
-    icon: string;
-}
+// const AppItem: React.FC<AppInfo> = ({ displayName, packageName, icon }) => (
+//     <View style={styles.appItem}>
+//         <Image source={{ uri: icon }} style={styles.appIcon} />
+//         <View>
+//             <Text style={styles.appName}>{displayName}</Text>
+//             <Text style={styles.appPackage}>{packageName}</Text>
+//         </View>
+//     </View>
+// );
 
-export const RuleCreatorComponents = {
-    [RuleType.SCREENTIME]: ScreenTimeRuleCreator,
-};
+type RuleEditorRouteProp = RouteProp<RootStackParamList, 'RuleCreator'>;
 
-
-const ruleTypes = Object.keys(RuleType).map((key) => ({
-    label: key,
-    value: RuleType[key as keyof typeof RuleType],
-}));
-
-const AppItem: React.FC<AppInfo> = ({ displayName, packageName, icon }) => (
-    <View style={styles.appItem}>
-        <Image source={{ uri: icon }} style={styles.appIcon} />
-        <View>
-            <Text style={styles.appName}>{displayName}</Text>
-            <Text style={styles.appPackage}>{packageName}</Text>
-        </View>
-    </View>
-);
 
 export const RuleCreatorScreen: React.FC = () => {
-    const [selectedApp, setSelectedApp] = useState<string | null>(null);
-    const [selectedRuleType, setSelectedRuleType] = useState<RuleType | null>(null);
-    const RuleDetailsComponent = selectedApp && selectedRuleType ? RuleCreatorComponents[selectedRuleType] : null;
+    const route = useRoute<RuleEditorRouteProp>();
+    const rule = route.params;
     const { api } = useApi();
-    const { ruleApi } = api;
     const { setRules } = useActions();
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [installedApps, setInstalledApps] = useState<AppInfo[]>([]);
+    const save = rule ? api.ruleApi.updateRule : api.ruleApi.createRule;
 
-    const fetchInstalledApps = async () => {
-        try {
-            const apps = await InstalledApps.getInstalledApps();
-            setInstalledApps(apps);
-        } catch (error) {
-            console.error(error);
-        }
+    const [selectedApp, setSelectedApp] = useState<string>(rule?.app || '');
+    const [dailyMaxMinutes, setDailyMaxMinutes] = useState(rule?.dailyMaxSeconds ? Math.floor(rule.dailyMaxSeconds / 60) : 30);
+    const [hourlyMaxMinutes, setHourlyMaxMinutes] = useState(rule?.hourlyMaxSeconds ? Math.floor(rule.hourlyMaxSeconds / 60) : 5);
+    const [dailyReset, setDailyReset] = useState<Date>(rule?.dailyReset ? convertHHMMSSToDate(rule.dailyReset) : new Date());
+    const [isRuleActive, setIsRuleActive] = useState(rule?.isActive ?? true);
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+    const { installedApps } = useNativeContext();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const showDatePicker = () => {
+        setDatePickerVisibility(true);
     };
 
-    useEffect(() => {
-        fetchInstalledApps();
-    }
-        , []);
+    const hideDatePicker = () => {
+        setDatePickerVisibility(false);
+    };
 
-    const onSave = (ruleDetails: RuleDetailsMap[RuleType]) => {
-        ruleApi.createRule({ app: selectedApp!, ruleType: selectedRuleType!, details: ruleDetails })
-            .then(() => {
-                ruleApi.getRules().then((rulesResp) => {
-                    setRules(rulesResp);
-                    navigation.navigate('Home');
-                })
-                    .catch((err) => {
-                        console.log(err);
-                    })
-            })
-            .catch((err) => {
-                console.log('Error creating rule:', err);
-            })
-    }
+    const handleConfirm = (date: Date) => {
+        setDailyReset(date);
+        hideDatePicker();
+    };
 
+    const handleSave = () => {
+        const newRule: Rule = {
+            app: selectedApp,
+            appDisplayName: installedApps[selectedApp].displayName,
+            isActive: isRuleActive,
+            isMyRule: true,
+            dailyMaxSeconds: dailyMaxMinutes * 60,
+            hourlyMaxSeconds: hourlyMaxMinutes * 60,
+            interventionType: 'FULL',
+            createdAt: new Date().toISOString(),
+            lastModifiedAt: new Date().toISOString(),
+            dailyReset: dailyReset.toTimeString().split(' ')[0],
+        }
+        save(newRule).then(() => {
+            api.ruleApi.getRules().then((rules) => {
+                setRules(rules);
+                navigation.navigate('Home');
+
+            }).catch((e) => {
+                console.error(e);
+            });
+        }).catch((e) => {
+            console.error(e);
+        });
+    }
     return (
         <View style={styles.container}>
             <Text>Select App:</Text>
             <Picker
+                enabled={!Boolean(rule)}
                 selectedValue={selectedApp}
                 onValueChange={(itemValue) => setSelectedApp(itemValue)}
             >
-                <Picker.Item label="Select App" value={null} style={styles.placeholder} />
-                {installedApps.map((app) => (
-                    <Picker.Item key={app.packageName} label={app.displayName} value={app.packageName} />
+                <Picker.Item label="Select App" value={''} style={styles.placeholder} />
+                {Object.keys(installedApps).map((packageName) => (
+                    <Picker.Item key={packageName} label={installedApps[packageName].displayName} value={packageName} />
                 ))}
             </Picker>
+            <View style={styles.touchable}>
+                <View style={styles.switchContainer}>
+                    <Text style={styles.text}>Active</Text>
+                    <Switch
+                        value={isRuleActive}
+                        onValueChange={(value) => setIsRuleActive(value)}
+                        style={styles.switch}
+                    />
+                </View>
 
-            <Text>Select Rule Type:</Text>
-            <Picker
-                selectedValue={selectedRuleType}
-                onValueChange={(itemValue) => setSelectedRuleType(itemValue)}
-            >
-                <Picker.Item style={styles.placeholder} label="Select Rule Type" value={null} />
-                {ruleTypes.map((ruleType) => (
-                    <Picker.Item key={ruleType.value} label={ruleType.label} value={ruleType.value} />
-                ))}
-            </Picker>
-
-            {RuleDetailsComponent && <RuleDetailsComponent onSave={onSave} />}
+            </View>
+            <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
+                <Text style={styles.text}>Daily Limit Reset</Text>
+                <Text style={styles.textSmall}>{dailyReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+            </TouchableOpacity>
+            <CustomTimePicker onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
+                <View style={styles.touchable}>
+                    <Text style={styles.text}>Daily Max Screen Time</Text>
+                    <Text style={styles.textSmall}>{formatTime(dailyMaxMinutes * 60)}</Text>
+                </View>
+            </CustomTimePicker>
+            <CustomTimePicker hideHours onConfirm={(hh, mm) => setHourlyMaxMinutes(Number(hh) * 60 + Number(mm))}>
+                <View style={styles.touchable}>
+                    <Text style={styles.text}>Hourly Max Screen Time</Text>
+                    <Text style={styles.textSmall}>{formatTime(hourlyMaxMinutes * 60)}</Text>
+                </View>
+            </CustomTimePicker>
+            <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="time"
+                onConfirm={handleConfirm}
+                onCancel={hideDatePicker}
+            />
+            <Button title="Save" onPress={handleSave} />
         </View>
     );
 };
@@ -113,8 +139,7 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 18,
         color: '#333',
-        marginBottom: 20,
-        textAlign: 'center',
+        marginBottom: 10,
     },
     ruleDetailsContainer: {
         marginTop: 20,
@@ -167,4 +192,28 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#999',
     },
+    header: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    touchable: {
+        marginBottom: 20,
+        borderWidth: 1, // Add border width
+        borderColor: '#ccc', // Add light border color
+        padding: 10, // Add padding for better touch area
+        borderRadius: 5, // Optional: Add border radius for rounded corners
+    },
+    textSmall: {
+        fontSize: 14,
+        color: '#777',
+    },
+    switch: {
+        transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+    },
+    switchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    }
 });

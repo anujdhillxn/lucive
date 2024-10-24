@@ -7,10 +7,13 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import RuleCardContainer from './RuleCardContainer';
 import { RootStackParamList } from '../../AppScreenStack';
 import { HideableView } from '../../../components/HideableView';
+import { Rule } from '../../../types/state';
+import { useNativeContext } from '../../../hooks/useNativeContext';
 
 export const AllRulesView: React.FC = () => {
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
     const navigateToRuleCreator = () => {
         navigation.navigate('RuleCreator');
     };

@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button, NativeModules } from 'react-native';
-import { formatTime } from '../RuleCreators/ScreentimeRuleCreator';
-import { Rule, RuleType } from '../../../../types/state';
+import { Rule } from '../../../types/state';
+import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
 const { UsageTracker } = NativeModules;
 
-interface ScreentimeRuleCardProps {
-    rule: Rule<RuleType.SCREENTIME>;
+interface RuleCardProps {
+    rule: Rule;
 }
 
-export const ScreentimeRuleCard: React.FC<ScreentimeRuleCardProps> = ({ rule }) => {
+export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
 
     const [currentDailyUsage, setCurrentDailyUsage] = React.useState<string>("");
     const [currentHourlyUsage, setCurrentHourlyUsage] = React.useState<string>("");
@@ -39,10 +39,10 @@ export const ScreentimeRuleCard: React.FC<ScreentimeRuleCardProps> = ({ rule }) 
 
     return (
         <View style={styles.card}>
-            <Text style={[styles.title, { color: rule.isActive ? '#000' : '#888' }]}>{rule.app}</Text>
-            <Text style={styles.timeLimit}>Daily: {currentDailyUsage}/{formatTime(rule.details.dailyMaxSeconds)}</Text>
-            <Text style={styles.timeLimit}>Hourly: {currentHourlyUsage}/{formatTime(rule.details.hourlyMaxSeconds)}</Text>
-            <Text style={styles.timeLimit}>Resets at: {new Date(rule.details.dailyStartsAt).toLocaleTimeString()}</Text>
+            <Text style={[styles.title, { color: rule.isActive ? '#000' : '#888' }]}>{rule.appDisplayName}</Text>
+            {rule.hourlyMaxSeconds && <Text style={styles.timeLimit}>Hourly: {currentHourlyUsage}/{formatTime(rule.hourlyMaxSeconds)}</Text>}
+            {rule.dailyMaxSeconds && <><Text style={styles.timeLimit}>Daily: {currentDailyUsage}/{formatTime(rule.dailyMaxSeconds)}</Text>
+                <Text style={styles.timeLimit}>Resets at: {convertHHMMSSToDate(rule.dailyReset).toLocaleTimeString()}</Text></>}
         </View>
     );
 };

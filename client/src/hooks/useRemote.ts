@@ -27,7 +27,8 @@ const useRemote = (requestToken: string | null, baseUrl: string): Remote => {
                 const text = await response.text();
                 const data = text ? JSON.parse(text) : {};
                 return data;
-            } catch (err) {
+            } catch (err: any) {
+                console.log(err);
                 throw err;
             }
         },

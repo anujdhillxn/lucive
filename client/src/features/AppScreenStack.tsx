@@ -14,6 +14,7 @@ import { RuleCreatorScreen } from './AfterLogin/Rules/RuleCreatorScreen';
 import DuoScreen from './AfterLogin/Duo/DuoScreen';
 import LoginScreen from './BeforeLogin/LoginScreen';
 import { Rule } from '../types/state';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createStackNavigator();
 export type RootStackParamList = {
@@ -28,10 +29,10 @@ export type RootStackParamList = {
 
 export const AppScreenStack: React.FC = () => {
 
-    const { user } = useAppContext();
+    const { user, myDuo } = useAppContext();
 
-    return <View style={styles.container}>
-        {user ? <Stack.Navigator initialRouteName={"Home"}>
+    return <SafeAreaView style={styles.container}>
+        {user ? <Stack.Navigator initialRouteName={Boolean(myDuo) ? "Home" : "Duo"}>
             <Stack.Screen
                 name="Home"
                 component={HomeScreen}
@@ -57,13 +58,13 @@ export const AppScreenStack: React.FC = () => {
         </Stack.Navigator>}
 
         <StatusBar style="auto" />
-    </View>
+    </SafeAreaView>
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'black',
     },
     navigatorContainer: {
         flex: 1,

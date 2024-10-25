@@ -14,7 +14,6 @@ export const AppActions = React.createContext<AppActionsType | undefined>(
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = React.useState<User | null>(null);
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
-    const [duoRequests, setDuoRequests] = React.useState<Duo[]>([]);
     const [rules, setRules] = React.useState<Rule[]>([]);
     const [loadingCount, setLoadingCount] = React.useState(0);
     const [permissions, setPermissions] = React.useState<Permissions>({});
@@ -36,9 +35,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const fetchAndSetDuo = async () => {
         setLoadingCount((prev) => prev + 1);
         try {
-            const duoResp = await api.duoApi.getDuos();
-            setMyDuo(duoResp.myDuo.length ? duoResp.myDuo[0] : null);
-            setDuoRequests(duoResp.requestsReceived);
+            const duoResp = await api.duoApi.getDuo();
+            setMyDuo(duoResp);
         }
         catch (e) {
             console.log(e);
@@ -50,7 +48,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setLoadingCount((prev) => prev + 1);
         try {
             const rulesResp = await api.ruleApi.getRules();
-            console.log(rulesResp);
             setRules(rulesResp);
         }
         catch (e) {
@@ -79,8 +76,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, [myDuo])
 
-    return <AppContext.Provider value={{ user, myDuo, duoRequests, rules, permissions }}>
-        <AppActions.Provider value={{ setUser, setDuoRequests, setMyDuo, setRules, setPermissions }}>
+    return <AppContext.Provider value={{ user, myDuo, rules, permissions }}>
+        <AppActions.Provider value={{ setUser, setMyDuo, setRules, setPermissions }}>
             {children}
         </AppActions.Provider>
     </AppContext.Provider>

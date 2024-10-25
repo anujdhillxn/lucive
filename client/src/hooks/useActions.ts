@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AppActions } from "../state/AppContext";
+import { AppActions } from "../contexts/AppContext";
 import { AppActionsType } from "../types/state";
 
 export const useActions = (): AppActionsType => {

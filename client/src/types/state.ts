@@ -3,13 +3,13 @@ import React from "react";
 export type User = {
     username: string;
     email: string;
+    invitationToken: string;
 };
 
 export type Duo = {
     user1: string;
     user2: string;
-    isConfirmed: boolean;
-    confirmedAt: Date | null;
+    createdAt: string;
 };
 
 export type RuleModificationData = {
@@ -44,7 +44,6 @@ export type Permissions = {
 export type AppContextType = {
     user: User | null;
     myDuo: Duo | null;
-    duoRequests: Duo[];
     rules: Rule[];
     permissions: Permissions;
 };
@@ -52,7 +51,6 @@ export type AppContextType = {
 export type AppActionsType = {
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
     setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
-    setDuoRequests: React.Dispatch<React.SetStateAction<Duo[]>>;
     setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
     setPermissions: React.Dispatch<React.SetStateAction<Permissions>>;
 };

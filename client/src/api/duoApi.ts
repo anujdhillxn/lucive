@@ -1,23 +1,20 @@
-import { GetDuoResponse, Remote } from "../types/api";
+import { Remote } from "../types/api";
+import { Duo } from "../types/state";
 
 export const createDuoApi = (remote: Remote) => {
     const { get, post, put, del } = remote;
 
-    const getDuos = (): Promise<GetDuoResponse> => {
-        return get("duos/duo-list");
+    const getDuo = (): Promise<Duo> => {
+        return get("duos/get-duo");
     };
 
-    const createDuo = (username: string) => {
-        return post("duos/create-duo", { user2_username: username });
+    const createDuo = (invitationToken: string) => {
+        return post("duos/create-duo", { invitation_token: invitationToken });
     };
 
-    const confirmDuo = (username: string) => {
-        return put("duos/confirm-duo", { user1_username: username });
+    const deleteDuo = () => {
+        return del("duos/delete-duo");
     };
 
-    const deleteDuo = (username: string) => {
-        return del("duos/delete-duo", { with_user_name: username });
-    };
-
-    return { getDuos, createDuo, confirmDuo, deleteDuo };
+    return { getDuo, createDuo, deleteDuo };
 };

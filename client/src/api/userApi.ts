@@ -11,6 +11,10 @@ export const createUserApi = (remote: Remote) => {
         return post("users/login", credentials);
     };
 
+    const googleLogin = (token: string) => {
+        return post("users/auth/google", { access_token: token });
+    };
+
     const getUser = () => {
         return get("users/me/");
     };
@@ -18,5 +22,5 @@ export const createUserApi = (remote: Remote) => {
     const logout = () => {
         return post("users/logout");
     };
-    return { register, login, getUser, logout };
+    return { register, login, googleLogin, getUser, logout };
 };

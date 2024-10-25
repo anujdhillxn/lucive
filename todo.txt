@@ -1,8 +1,7 @@
-- Fix scrolling
-- link sharing friend addition
 - green and ambient UI
 - loading screens
 - check app usage while the app is still open on intervals
-- logout issue
 - validations on rule creator
 - show modification requested on rule card
+- on cancel change weird behaviour
+- use ApiResponse interface and type each Api properly

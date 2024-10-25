@@ -1,5 +1,5 @@
 import React from "react";
-import { NativeContext } from "../state/NativeContext";
+import { NativeContext } from "../contexts/NativeContext";
 export const useNativeContext = () => {
     const context = React.useContext(NativeContext);
     if (!context) {

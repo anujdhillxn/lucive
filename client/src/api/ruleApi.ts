@@ -8,7 +8,7 @@ export const createRuleApi = (remote: Remote) => {
         return get("rules/user-rules");
     };
 
-    const createRule = (rule: Rule) => {
+    const createRule = (rule: Rule): Promise<Rule> => {
         return post("rules/create-rule", {
             app: rule.app,
             app_display_name: rule.appDisplayName,
@@ -21,7 +21,7 @@ export const createRuleApi = (remote: Remote) => {
         });
     };
 
-    const updateRule = (rule: Rule) => {
+    const updateRule = (rule: Rule): Promise<Rule> => {
         return put("rules/update-rule", {
             app: rule.app,
             daily_max_seconds: rule.dailyMaxSeconds,
@@ -33,15 +33,15 @@ export const createRuleApi = (remote: Remote) => {
         });
     };
 
-    const approveRuleModificationRequest = (app: string) => {
+    const approveRuleModificationRequest = (app: string): Promise<Rule> => {
         return post(`rules/approve-rule-modification-request`, { app });
     };
 
-    const deleteRule = (app: string) => {
+    const deleteRule = (app: string): Promise<Rule> => {
         return del("rules/delete-rule", { app });
     };
 
-    const deleteRuleModificationRequest = (app: string) => {
+    const deleteRuleModificationRequest = (app: string): Promise<Rule> => {
         return del("rules/delete-rule-modification-request", {
             app,
         });

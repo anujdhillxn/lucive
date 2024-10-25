@@ -14,7 +14,7 @@ class RuleTests(APITestCase):
         self.user2 = User.objects.create_user(username='user2', password='password')
         self.user_without_duo = User.objects.create_user(username='user_without_duo', password='password')
         self.get_url = reverse('user-rules')
-        self.duo = Duo.objects.create(user1=self.user1, user2=self.user2, is_confirmed=True)
+        self.duo = Duo.objects.create(user1=self.user1, user2=self.user2)
         
         self.rule1 = Rule.objects.create(app='TestApp', is_active=False, user=self.user1, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='FULL')
         self.rule2 = Rule.objects.create(app='TestApp2', is_active=True, user=self.user2, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='PARTIAL')

@@ -13,7 +13,7 @@ class UserRulesView(APIView):
     def get(self, request):
         user = request.user
         confirmed_duo = Duo.objects.filter(
-            (Q(user1=user) | Q(user2=user)) & Q(is_confirmed=True)
+            (Q(user1=user) | Q(user2=user))
         ).first()
         if not confirmed_duo:
             return Response({'error': 'User is not part of a confirmed duo'}, status=status.HTTP_403_FORBIDDEN)
@@ -45,7 +45,7 @@ class CreateRuleView(APIView):
         serializer = CreateRuleSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             rule = serializer.save()
-            return Response(CreateRuleSerializer(rule).data, status=status.HTTP_201_CREATED)
+            return Response(RuleSerializer(rule, context={'request': request}).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class DeleteRuleView(DestroyAPIView):
@@ -71,17 +71,20 @@ class UpdateRuleView(APIView):
         except Rule.DoesNotExist:
             return Response({"error": "Rule not found or not owned by user."}, status=status.HTTP_404_NOT_FOUND)
         try:
-            duo = Duo.objects.get(Q(user1=user) | Q(user2=user), is_confirmed=True)
+            duo = Duo.objects.get(Q(user1=user) | Q(user2=user))
         except Duo.DoesNotExist:
             return Response({"error": "User is not part of a confirmed duo."}, status=status.HTTP_403_FORBIDDEN)
         update_serializer = UpdateRuleSerializer(instance=rule, data=request.data, context={'request': request})
         if update_serializer.is_valid():
             rule = update_serializer.save()
-            return Response({"status": "Rule updated."}, status=status.HTTP_200_OK)
+            return Response(RuleSerializer(rule, context={'request': request}).data, status=status.HTTP_200_OK)
         create_request_serializer = CreateRuleModificationRequestSerializer(data=request.data, context={'request': request})
         if create_request_serializer.is_valid():
             mod_request = create_request_serializer.save()
-            return Response({"status": "Rule updation request created. Waiting for approval from Duo."}, status=status.HTTP_201_CREATED)
+            mod_data = RuleModificationRequestSerializer(mod_request, context={'request': request}).data
+            resp = RuleSerializer(rule, context={'request': request}).data
+            resp['modificationData'] = mod_data
+            return Response(resp, status=status.HTTP_201_CREATED)
         return Response(update_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ApproveRuleModificationRequestView(APIView):
@@ -91,7 +94,7 @@ class ApproveRuleModificationRequestView(APIView):
         user = request.user
         app = request.data.get('app')
         try:
-            duo = Duo.objects.get(Q(user1=user) | Q(user2=user), is_confirmed=True)
+            duo = Duo.objects.get(Q(user1=user) | Q(user2=user))
             other_user = duo.user1 if duo.user2 == user else duo.user2
         except Duo.DoesNotExist:
             return Response({"error": "User is not part of a confirmed duo."}, status=status.HTTP_403_FORBIDDEN)
@@ -113,7 +116,7 @@ class ApproveRuleModificationRequestView(APIView):
         rule.intervention_type = rule_mod_request.intervention_type
         rule.save()
         rule_mod_request.delete()
-        return Response({"status": "Rule modification request approved."}, status=status.HTTP_200_OK)
+        return Response(RuleSerializer(rule, context={'request': request}).data , status=status.HTTP_200_OK)
     
 class DeleteRuleModificationRequestView(DestroyAPIView):
     permission_classes = [IsAuthenticated]
@@ -124,13 +127,17 @@ class DeleteRuleModificationRequestView(DestroyAPIView):
         if not app:
             return Response({"error": "App is required."}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            duo = Duo.objects.get(Q(user1=user) | Q(user2=user), is_confirmed=True)
+            duo = Duo.objects.get(Q(user1=user) | Q(user2=user))
         except Duo.DoesNotExist:
             return Response({"error": "User is not part of a confirmed duo."}, status=status.HTTP_403_FORBIDDEN)
         try:
             rule_mod_request = RuleModificationRequest.objects.get(app=app, user=user)
         except RuleModificationRequest.DoesNotExist:
             return Response({"error": "Rule modification request not found or not owned by user."}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            rule = Rule.objects.get(app=app, user=user)
+        except Rule.DoesNotExist:
+            return Response({"error": "Rule not found."}, status=status.HTTP_404_NOT_FOUND)
         rule_mod_request.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(RuleSerializer(rule, context={'request': request}).data, status=status.HTTP_204_NO_CONTENT)
     

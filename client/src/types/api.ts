@@ -10,6 +10,11 @@ export type Remote = {
     del: (endpoint: string, body?: any, headers?: HeadersInit) => Promise<any>;
 };
 
+export interface IApiResponse<T> {
+    data: T;
+    message: string;
+}
+
 export type ApiContextType = {
     api: IApi;
     requestToken: string | null;
@@ -45,9 +50,3 @@ export interface IUserResponse {
     username: string;
     email: string;
 }
-
-export type GetDuoResponse = {
-    myDuo: Duo[];
-    requestsSent: Duo[];
-    requestsReceived: Duo[];
-};

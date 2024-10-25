@@ -91,7 +91,7 @@ class CreateRuleSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         app = data.get('app')
         try:
-            duo = Duo.objects.get((models.Q(user1=user) | models.Q(user2=user)), is_confirmed=True)
+            duo = Duo.objects.get((models.Q(user1=user) | models.Q(user2=user)))
         except Duo.DoesNotExist:
             raise serializers.ValidationError("No confirmed duo found.")
         if Rule.objects.filter(user=user, app=app).exists():
@@ -192,7 +192,7 @@ class CreateRuleModificationRequestSerializer(serializers.ModelSerializer):
         if not app:
             raise serializers.ValidationError("App is required.")
         try:
-            duo = Duo.objects.get((models.Q(user1=user) | models.Q(user2=user)), is_confirmed=True)
+            duo = Duo.objects.get((models.Q(user1=user) | models.Q(user2=user)))
         except Duo.DoesNotExist:
             raise serializers.ValidationError("No confirmed duo found.")
         if RuleModificationRequest.objects.filter(user=user, app=app).exists():

@@ -6,11 +6,13 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { RootStackParamList } from '../../AppScreenStack';
-import { Switch, TouchableOpacity } from 'react-native-gesture-handler';
+import { ScrollView, Switch, TouchableOpacity } from 'react-native-gesture-handler';
 import CustomTimePicker from '../../../components/CustomTimePicker';
 import { Rule } from '../../../types/state';
 import { useNativeContext } from '../../../hooks/useNativeContext';
 import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
+import { useConfirm } from '../../../hooks/useConfirm';
+import { useNotification } from '../../../contexts/NotificationContext';
 
 // const AppItem: React.FC<AppInfo> = ({ displayName, packageName, icon }) => (
 //     <View style={styles.appItem}>
@@ -30,17 +32,16 @@ export const RuleCreatorScreen: React.FC = () => {
     const rule = route.params;
     const { api } = useApi();
     const { setRules } = useActions();
-    const save = rule ? api.ruleApi.updateRule : api.ruleApi.createRule;
-
     const [selectedApp, setSelectedApp] = useState<string>(rule?.app || '');
     const [dailyMaxMinutes, setDailyMaxMinutes] = useState(rule?.dailyMaxSeconds ? Math.floor(rule.dailyMaxSeconds / 60) : 30);
     const [hourlyMaxMinutes, setHourlyMaxMinutes] = useState(rule?.hourlyMaxSeconds ? Math.floor(rule.hourlyMaxSeconds / 60) : 5);
     const [dailyReset, setDailyReset] = useState<Date>(rule?.dailyReset ? convertHHMMSSToDate(rule.dailyReset) : new Date());
     const [isRuleActive, setIsRuleActive] = useState(rule?.isActive ?? true);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
     const { installedApps } = useNativeContext();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const { showNotification } = useNotification();
+
     const showDatePicker = () => {
         setDatePickerVisibility(true);
     };
@@ -67,20 +68,32 @@ export const RuleCreatorScreen: React.FC = () => {
             lastModifiedAt: new Date().toISOString(),
             dailyReset: dailyReset.toTimeString().split(' ')[0],
         }
-        save(newRule).then(() => {
-            api.ruleApi.getRules().then((rules) => {
-                setRules(rules);
+        if (rule) {
+            api.ruleApi.updateRule(newRule).then((updatedRule) => {
+                setRules((rules) => rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r));
+                showNotification('Rule updated successfully', 'success');
                 navigation.navigate('Home');
-
             }).catch((e) => {
                 console.error(e);
-            });
-        }).catch((e) => {
-            console.error(e);
-        });
+                showNotification('Failed to update rule', 'failure');
+            })
+        }
+        else {
+            api.ruleApi.createRule(newRule).then((createdRule) => {
+                setRules((rules) => [...rules, createdRule]);
+                showNotification('Rule created successfully', 'success');
+                navigation.navigate('Home');
+            }).catch((e) => {
+                console.error(e);
+                showNotification('Failed to create rule', 'failure');
+            })
+        }
     }
+
+    const { confirm } = useConfirm(handleSave, "Are you sure you want to save this rule?");
+
     return (
-        <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
             <Text>Select App:</Text>
             <Picker
                 enabled={!Boolean(rule)}
@@ -125,8 +138,8 @@ export const RuleCreatorScreen: React.FC = () => {
                 onConfirm={handleConfirm}
                 onCancel={hideDatePicker}
             />
-            <Button title="Save" onPress={handleSave} />
-        </View>
+            <Button title="Save" onPress={confirm} />
+        </ScrollView>
     );
 };
 

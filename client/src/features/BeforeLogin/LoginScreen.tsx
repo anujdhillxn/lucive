@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'rea
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useApi } from '../../hooks/useApi';
 import { RootStackParamList } from '../AppScreenStack';
+import { GoogleLoginButton } from './GoogleSignInButton';
 
 const LoginScreen: React.FC = () => {
     const [identifier, setIdentifer] = useState('');
@@ -33,6 +34,7 @@ const LoginScreen: React.FC = () => {
                 secureTextEntry
             />
             <Button title="Login" onPress={handleLogin} />
+            {/* <GoogleLoginButton /> */}
             <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
                 <Text style={styles.link}>Don't have an account? Sign up</Text>
             </TouchableOpacity>

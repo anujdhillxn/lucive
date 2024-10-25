@@ -4,6 +4,7 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import { Button } from 'react-native';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
+import { useConfirm } from '../../../hooks/useConfirm';
 const MyDuo: React.FC = () => {
     const myDuo = useAppContext().myDuo!;
     const user = useAppContext().user!;
@@ -12,7 +13,7 @@ const MyDuo: React.FC = () => {
     const { duoApi } = api;
     const partner = user.username === myDuo.user1 ? myDuo.user2 : myDuo.user1;
     const handleDeleteDuo = () => {
-        duoApi.deleteDuo(partner)
+        duoApi.deleteDuo()
             .then(() => {
                 setMyDuo(null);
                 setRules([]);
@@ -22,6 +23,7 @@ const MyDuo: React.FC = () => {
             });
     };
 
+    const { confirm } = useConfirm(handleDeleteDuo, "Are you sure you want to delete your Duo?");
 
     return (
         <View style={styles.container}>
@@ -29,10 +31,10 @@ const MyDuo: React.FC = () => {
                 {`You and `}
                 <Text style={{ fontWeight: 'bold' }}>{partner}</Text>
                 {` have been a Duo since `}
-                <Text style={{ fontStyle: 'italic' }}>{new Date(myDuo.confirmedAt!).toLocaleDateString()}</Text>
+                <Text style={{ fontStyle: 'italic' }}>{new Date(myDuo.createdAt!).toLocaleDateString()}</Text>
             </Text>
             <View style={styles.buttonContainer}>
-                <Button title="Delete Duo" onPress={handleDeleteDuo} color="#ff5c5c" /></View>
+                <Button title="Delete Duo" onPress={confirm} color="#ff5c5c" /></View>
         </View>
     );
 };

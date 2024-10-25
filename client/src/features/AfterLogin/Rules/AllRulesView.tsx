@@ -9,6 +9,7 @@ import { RootStackParamList } from '../../AppScreenStack';
 import { HideableView } from '../../../components/HideableView';
 import { Rule } from '../../../types/state';
 import { useNativeContext } from '../../../hooks/useNativeContext';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export const AllRulesView: React.FC = () => {
 
@@ -29,7 +30,7 @@ export const AllRulesView: React.FC = () => {
     });
 
     return (
-        <View>
+        <ScrollView showsVerticalScrollIndicator={false}>
             <TouchableOpacity style={styles.createButton} onPress={navigateToRuleCreator}>
                 <Text style={styles.createButtonText}>Create New Rule</Text>
                 <Icon name="add" size={20} color="#fff" />
@@ -43,7 +44,7 @@ export const AllRulesView: React.FC = () => {
                 Header={PartnerRulesHeaderRenderer}
                 Components={PartnerRuleComponents}
             />
-        </View>
+        </ScrollView>
     );
 };
 

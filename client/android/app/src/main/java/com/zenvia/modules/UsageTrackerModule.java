@@ -7,7 +7,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.zenvia.rules.ScreentimeRule;
+import com.zenvia.models.Rule;
 import com.zenvia.services.UsageTrackerService;
 import com.zenvia.utils.AppUtils;
 import com.facebook.react.bridge.Promise;
@@ -96,12 +96,12 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setRules(ReadableArray screentimeRules, Promise promise) {
-        final Map<String, ScreentimeRule> ruleMap = new HashMap<>();
+        final Map<String, Rule> ruleMap = new HashMap<>();
         for (int i = 0; i < screentimeRules.size(); i++) {
             final ReadableMap map = screentimeRules.getMap(i);
             try {
-                final ScreentimeRule screentimeRule = parseRule(map);
-                ruleMap.put(screentimeRule.getApp(), screentimeRule);
+                final Rule screentimeRule = parseRule(map);
+                ruleMap.put(screentimeRule.app(), screentimeRule);
             } catch (Exception e) {
                 promise.reject("Error", e.getMessage());
             }
@@ -110,16 +110,13 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
         promise.resolve("Rules set");
     }
 
-    private ScreentimeRule parseRule(ReadableMap map) {
+    private Rule parseRule(ReadableMap map) {
         final boolean isActive = map.getBoolean("isActive");
         final String app = map.getString("app");
-        final String ruleType = map.getString("ruleType");
-        assert (AppUtils.RuleType.SCREENTIME.toString().equals(ruleType));
-        final ReadableMap details = map.getMap("details");
-        assert details != null;
-        final int dailyMaxSeconds = details.getInt("dailyMaxSeconds");
-        final int hourlyMaxSeconds = details.getInt("hourlyMaxSeconds");
-        final Calendar dailyStartsAt = AppUtils.parseISO8601String(details.getString("dailyStartsAt"));
-        return new ScreentimeRule(isActive, app, dailyMaxSeconds, hourlyMaxSeconds, dailyStartsAt);
+        final int dailyMaxSeconds = map.getInt("dailyMaxSeconds");
+        final int hourlyMaxSeconds = map.getInt("hourlyMaxSeconds");
+        final String dailyStartsAt = map.getString("dailyReset");
+        Log.i(TAG, dailyStartsAt);
+        return new Rule(app, isActive, dailyMaxSeconds, hourlyMaxSeconds, dailyStartsAt);
     }
 }

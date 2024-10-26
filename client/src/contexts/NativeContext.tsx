@@ -1,7 +1,7 @@
-import { NativeModules, View } from "react-native";
+import { NativeModules } from "react-native";
 import { useAppContext } from "../hooks/useAppContext";
 import React from "react";
-import { AppInfo, NativeContextType } from "../types/native";
+import { AppInfo, NativeContextType, Permissions } from "../types/native";
 const { UsageTracker, InstalledApps } = NativeModules;
 type NativeStateHandlerProps = {
     children: React.ReactNode;
@@ -17,10 +17,10 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
     const { rules } = useAppContext();
 
     const setScreentimeRules = () => {
-        // UsageTracker.setRules(rules);
+        UsageTracker.setRules(rules);
     }
     const [installedApps, setInstalledApps] = React.useState<Record<string, AppInfo>>({});
-
+    const [permissions, setPermissions] = React.useState<Permissions>({});
     React.useEffect(() => {
         fetchInstalledApps();
     }
@@ -42,5 +42,5 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
         setScreentimeRules();
     }, [rules]);
 
-    return <NativeContext.Provider value={{ installedApps }}>{props.children}</NativeContext.Provider>;
+    return <NativeContext.Provider value={{ installedApps, permissions, setPermissions }}>{props.children}</NativeContext.Provider>;
 }

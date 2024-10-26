@@ -5,10 +5,11 @@ import { NoDuoFoundView } from './Duo/NoDuoFoundView';
 import { useAppContext } from '../../hooks/useAppContext';
 import { NativeModules } from 'react-native';
 import { PermissionsScreen } from './Permissions';
-const { PermissionModule } = NativeModules;
-const HomeScreen: React.FC = () => {
-    const { myDuo, permissions } = useAppContext();
+import { useNativeContext } from '../../hooks/useNativeContext';
 
+const HomeScreen: React.FC = () => {
+    const { myDuo } = useAppContext();
+    const { permissions } = useNativeContext();
     if (!permissions.hasUsageStatsPermission || !permissions.hasOverlayPermission) {
         return <PermissionsScreen />
     }

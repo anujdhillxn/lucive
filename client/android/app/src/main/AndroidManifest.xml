@@ -5,7 +5,7 @@
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"/>
-
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
   <queries>
     <package android:name="com.facebook.katana"/>  <!-- Facebook -->
     <package android:name="com.instagram.android"/>  <!-- Instagram -->
@@ -49,20 +49,16 @@
         <data android:scheme="exp+zenvia"/>
       </intent-filter>
     </activity>
+    <service android:name=".services.FloatingWindowService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="false"/>
     <service
-        android:name=".services.AppUsageAccessibilityService"
-        android:exported="true"
-        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+        android:name=".services.UsageTrackerService"
+        android:exported="false"
+        android:foregroundServiceType="dataSync"
+        android:permission="android.permission.FOREGROUND_SERVICE_DATA_SYNC">
       <intent-filter>
-        <action android:name="android.accessibilityservice.AccessibilityService" />
+        <action android:name="com.zenvia.services.UsageTrackerService" />
       </intent-filter>
-
-      <meta-data
-          android:name="android.accessibilityservice"
-          android:resource="@xml/accessibility_service_config" />
     </service>
-    <service android:name=".services.FloatingWindowService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
-    <service android:name=".services.UsageTrackerService" />
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>
   </application>
 </manifest>

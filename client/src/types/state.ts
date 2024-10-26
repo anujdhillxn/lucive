@@ -36,22 +36,15 @@ export type Rule = {
     lastModifiedAt?: string;
     modificationData?: RuleModificationData;
 };
-export type Permissions = {
-    hasUsageStatsPermission?: boolean;
-    hasOverlayPermission?: boolean;
-    hasAccessibilityPermission?: boolean;
-};
 
 export type AppContextType = {
     user: User | null;
     myDuo: Duo | null;
     rules: Rule[];
-    permissions: Permissions;
 };
 
 export type AppActionsType = {
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
     setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
     setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
-    setPermissions: React.Dispatch<React.SetStateAction<Permissions>>;
 };

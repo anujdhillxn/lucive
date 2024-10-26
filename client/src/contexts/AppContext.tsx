@@ -1,7 +1,7 @@
 import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApi } from '../hooks/useApi';
-import { AppActionsType, AppContextType, Duo, Permissions, Rule, User } from '../types/state';
+import { AppActionsType, AppContextType, Duo, Rule, User } from '../types/state';
 
 export const AppContext = React.createContext<AppContextType | undefined>(
     undefined
@@ -16,7 +16,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
     const [rules, setRules] = React.useState<Rule[]>([]);
     const [loadingCount, setLoadingCount] = React.useState(0);
-    const [permissions, setPermissions] = React.useState<Permissions>({});
     const { api, requestToken, setRequestToken } = useApi();
 
     const fetchAndSetUser = async () => {
@@ -76,8 +75,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, [myDuo])
 
-    return <AppContext.Provider value={{ user, myDuo, rules, permissions }}>
-        <AppActions.Provider value={{ setUser, setMyDuo, setRules, setPermissions }}>
+    return <AppContext.Provider value={{ user, myDuo, rules }}>
+        <AppActions.Provider value={{ setUser, setMyDuo, setRules }}>
             {children}
         </AppActions.Provider>
     </AppContext.Provider>

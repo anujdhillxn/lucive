@@ -1,6 +1,5 @@
 - green and ambient UI
 - loading screens
-- check app usage while the app is still open on intervals
 - validations on rule creator
 - use ApiResponse interface and type each Api properly
 - better permission UI

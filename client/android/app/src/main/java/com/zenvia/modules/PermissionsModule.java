@@ -37,25 +37,6 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
         return Settings.canDrawOverlays(getReactApplicationContext());
     }
 
-    private boolean hasAccessibilityPermission(Class<?> accessibilityService) {
-        ReactApplicationContext context = getReactApplicationContext();
-        String serviceId = context.getPackageName() + "/" + accessibilityService.getName();
-        String enabledServices = Settings.Secure.getString(
-                context.getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        );
-
-        if (!TextUtils.isEmpty(enabledServices)) {
-            String[] services = enabledServices.split(":");
-            for (String service : services) {
-                if (service.equalsIgnoreCase(serviceId)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     @ReactMethod
     public void requestUsageStatsPermission(Promise promise) {
         if (hasUsageStatsPermission()) {
@@ -82,18 +63,6 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void requestAccessibilityPermission(Promise promise) {
-        if (hasAccessibilityPermission(AppUsageAccessibilityService.class)) {
-            promise.resolve(true); // Permission already granted
-        } else {
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getReactApplicationContext().startActivity(intent);
-            promise.resolve(false); // Permission request initiated
-        }
-    }
-
-    @ReactMethod
     public void hasUsageStatsPermission(Promise promise) {
         promise.resolve(hasUsageStatsPermission());
     }
@@ -101,10 +70,5 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void hasOverlayPermission(Promise promise) {
         promise.resolve(hasOverlayPermission());
-    }
-
-    @ReactMethod
-    public void hasAccessibilityPermission(Promise promise) {
-        promise.resolve(hasAccessibilityPermission(AppUsageAccessibilityService.class));
     }
 }

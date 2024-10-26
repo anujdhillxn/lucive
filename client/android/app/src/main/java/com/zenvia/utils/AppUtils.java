@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 
+import com.zenvia.models.Event;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -35,19 +39,31 @@ public class AppUtils {
         "com.match.com" // Match.com
     };
 
-    public enum RuleType {
-        SCREENTIME
-    }
-
-    public static Calendar parseISO8601String(String isoDateString) {
-        SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+    public static Calendar parseTimeString(String timeString) {
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
         try {
-            calendar.setTime(isoFormat.parse(isoDateString));  // Parse the date string
+            // Parse the time string
+            calendar.setTime(timeFormat.parse(timeString));
+            // Set the calendar to today's date with the parsed time
+            Calendar today = Calendar.getInstance();
+            calendar.set(Calendar.YEAR, today.get(Calendar.YEAR));
+            calendar.set(Calendar.MONTH, today.get(Calendar.MONTH));
+            calendar.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
         } catch (ParseException e) {
             e.printStackTrace();  // Handle parse exception
         }
         return calendar;
+    }
+
+    public static long getLastDayStart() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        return calendar.getTimeInMillis();
     }
 
     public static String formatTime(int totalSeconds) {
@@ -76,5 +92,48 @@ public class AppUtils {
         }
 
         return formattedTime.length() > 0 ? formattedTime.toString() : "0 seconds";
+    }
+
+    public static Event getLastEventBeforeOrEqual(List<Event> events, long inputTimestamp) {
+        int beg = 0, end = events.size() - 1;
+        Event res = null;
+        while (beg <= end) {
+            int mid = (beg + end) / 2;
+            if (events.get(mid).getTimeStamp() <= inputTimestamp) {
+                res = events.get(mid);
+                beg = mid + 1;
+            }
+            else {
+                end = mid - 1;
+            }
+        }
+        return res;
+    }
+
+    public static Event getLastEventBefore(List<Event> events, long inputTimestamp) {
+        int beg = 0, end = events.size() - 1;
+        Event res = null;
+        while (beg <= end) {
+            int mid = (beg + end) / 2;
+            if (events.get(mid).getTimeStamp() < inputTimestamp) {
+                res = events.get(mid);
+                beg = mid + 1;
+            }
+            else {
+                end = mid - 1;
+            }
+        }
+        return res;
+    }
+
+    public static String convertMillisToDate(long millis) {
+        // Define the desired date format
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        // Create a Date object using the milliseconds
+        Date date = new Date(millis);
+
+        // Format the Date object into a readable string
+        return sdf.format(date);
     }
 }

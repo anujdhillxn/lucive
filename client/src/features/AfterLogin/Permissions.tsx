@@ -5,12 +5,12 @@ import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { NativeModules } from 'react-native';
 import { useAppContext } from '../../hooks/useAppContext';
 import { useActions } from '../../hooks/useActions';
+import { useNativeContext } from '../../hooks/useNativeContext';
 
 const { PermissionsModule } = NativeModules;
 
 export const PermissionsScreen: React.FC = () => {
-    const { permissions } = useAppContext();
-    const { setPermissions } = useActions();
+    const { permissions, setPermissions } = useNativeContext();
 
     useEffect(() => {
         checkPermissions();
@@ -21,8 +21,6 @@ export const PermissionsScreen: React.FC = () => {
         setPermissions((current) => { return { ...current, hasUsageStatsPermission } });
         const hasOverlayPermission = await PermissionsModule.hasOverlayPermission();
         setPermissions((current) => { return { ...current, hasOverlayPermission } });
-        const hasAccessibilityPermission = await PermissionsModule.hasAccessibilityPermission();
-        setPermissions((current) => { return { ...current, hasAccessibilityPermission } });
     };
 
     const handleRequestUsageStatsPermission = async () => {
@@ -33,11 +31,6 @@ export const PermissionsScreen: React.FC = () => {
     const handleRequestOverlayPermission = async () => {
         const hasOverlayPermission = await PermissionsModule.requestOverlayPermission();
         setPermissions((current) => { return { ...current, hasOverlayPermission } });
-    };
-
-    const handleRequestAccessibilityPermission = async () => {
-        const hasAccessibilityPermission = await PermissionsModule.requestAccessibilityPermission();
-        setPermissions((current) => { return { ...current, hasAccessibilityPermission } });
     };
 
     return (
@@ -57,14 +50,6 @@ export const PermissionsScreen: React.FC = () => {
             </Text>
             {permissions.hasOverlayPermission === false && (
                 <Button title="Grant Overlay Permissions" onPress={handleRequestOverlayPermission} />
-            )}
-            <Text style={styles.title}>
-                {permissions.hasAccessibilityPermission === false
-                    ? "Zenvia needs Accessibility Permissions to monitor your app usage. Please enable them to continue."
-                    : "Checking for accessibility permissions..."}
-            </Text>
-            {permissions.hasAccessibilityPermission === false && (
-                <Button title="Grant Accessibility Permissions" onPress={handleRequestAccessibilityPermission} />
             )}
         </View>
     );

@@ -139,5 +139,5 @@ class DeleteRuleModificationRequestView(DestroyAPIView):
         except Rule.DoesNotExist:
             return Response({"error": "Rule not found."}, status=status.HTTP_404_NOT_FOUND)
         rule_mod_request.delete()
-        return Response(RuleSerializer(rule, context={'request': request}).data, status=status.HTTP_204_NO_CONTENT)
+        return Response(RuleSerializer(rule, context={'request': request}).data, status=status.HTTP_200_OK)
     

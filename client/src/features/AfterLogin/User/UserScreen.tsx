@@ -5,23 +5,22 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useConfirm } from '../../../hooks/useConfirm';
+import { useNotification } from '../../../contexts/NotificationContext';
 const UserScreen: React.FC = () => {
     const { user } = useAppContext();
     const { setRequestToken, api } = useApi();
     const { setUser } = useActions();
+    const { showNotification } = useNotification();
     const handleLogout = () => {
-        try {
-            api.userApi.logout().then(() => {
-                setUser(null);
-                setRequestToken(null);
-                AsyncStorage.removeItem('userToken');
-            }).catch((err) => {
-                console.log('Error logging out:', err);
-            });
-        }
-        catch (e) {
-            console.log(e);
-        }
+        api.userApi.logout().then(() => {
+            setUser(null);
+            setRequestToken(null);
+            AsyncStorage.removeItem('userToken');
+            showNotification("Logged out successfully", "success");
+        }).catch((err) => {
+            console.log('Error logging out:', err);
+            showNotification("Failed to logout", "failure");
+        });
     };
 
     const { confirm } = useConfirm(handleLogout, "Are you sure you want to logout?");

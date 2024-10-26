@@ -22,13 +22,14 @@ const useRemote = (requestToken: string | null, baseUrl: string): Remote => {
                     headers,
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(
+                        `HTTP error! status: ${response.status} ${response.statusText}`
+                    );
                 }
                 const text = await response.text();
                 const data = text ? JSON.parse(text) : {};
                 return data;
             } catch (err: any) {
-                console.log(err);
                 throw err;
             }
         },

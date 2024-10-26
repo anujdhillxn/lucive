@@ -403,7 +403,7 @@ class RuleTests(APITestCase):
             'app': 'TestApp2'
         }
         response = self.client.delete(delete_url, data)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp2').exists(), False)
     
     def test_delete_rule_modification_request_no_authentication(self):

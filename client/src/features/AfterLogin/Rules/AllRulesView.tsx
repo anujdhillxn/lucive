@@ -28,7 +28,6 @@ export const AllRulesView: React.FC = () => {
     const PartnerRuleComponents = rules.filter(rule => !rule.isMyRule).map((rule) => {
         return () => <RuleCardContainer rule={rule} />;
     });
-
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
             <TouchableOpacity style={styles.createButton} onPress={navigateToRuleCreator}>

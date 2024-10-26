@@ -64,8 +64,6 @@ export const RuleCreatorScreen: React.FC = () => {
             dailyMaxSeconds: dailyMaxMinutes * 60,
             hourlyMaxSeconds: hourlyMaxMinutes * 60,
             interventionType: 'FULL',
-            createdAt: new Date().toISOString(),
-            lastModifiedAt: new Date().toISOString(),
             dailyReset: dailyReset.toTimeString().split(' ')[0],
         }
         if (rule) {

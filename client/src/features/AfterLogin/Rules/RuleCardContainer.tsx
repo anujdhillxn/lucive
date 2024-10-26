@@ -89,15 +89,13 @@ const PartnerRuleActions: React.FC<PartnerRuleActionsProps> = (props: PartnerRul
     const { api } = useApi();
     const { ruleApi } = api;
     const { setRules } = useActions();
-
+    const { showNotification } = useNotification();
     const onApproveChange = () => {
-        ruleApi.approveRuleModificationRequest(props.rule.app).then(() => {
-            ruleApi.getRules().then((rules) => {
-                setRules(rules);
-            }).catch((e) => {
-                console.error(e);
-            });
+        ruleApi.approveRuleModificationRequest(props.rule.app).then((updatedRule) => {
+            setRules((rules) => rules.map((r) => r.app === updatedRule.app && !r.isMyRule ? updatedRule : r));
+            showNotification("Change approved successfully", "success");
         }).catch((e) => {
+            showNotification("Failed to approve change", "failure");
             console.error(e);
         });
     }

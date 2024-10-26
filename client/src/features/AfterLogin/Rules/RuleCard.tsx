@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Button, NativeModules } from 'react-native';
 import { Rule } from '../../../types/state';
 import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
+import StrikeThroughText from '../../../components/StrikeThroughText';
 const { UsageTracker } = NativeModules;
 
 interface RuleCardProps {
@@ -36,15 +37,32 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
         fetchHourlyScreenTime();
         fetchDailyScreenTime();
     }, []);
-
-    return (
-        <View style={styles.card}>
-            <Text style={[styles.title, { color: rule.isActive ? '#000' : '#888' }]}>{rule.appDisplayName}</Text>
-            {rule.hourlyMaxSeconds && <Text style={styles.timeLimit}>Hourly: {currentHourlyUsage}/{formatTime(rule.hourlyMaxSeconds)}</Text>}
-            {rule.dailyMaxSeconds && <><Text style={styles.timeLimit}>Daily: {currentDailyUsage}/{formatTime(rule.dailyMaxSeconds)}</Text>
-                <Text style={styles.timeLimit}>Resets at: {convertHHMMSSToDate(rule.dailyReset).toLocaleTimeString()}</Text></>}
-        </View>
-    );
+    return <View style={styles.card}>
+        <Text style={styles.title}>
+            {rule.appDisplayName} (<StrikeThroughText new={rule.modificationData?.isActive ? "Active" : "Inactive"} old={rule.isActive ? "Active" : "Inactive"} changed={Boolean(rule.modificationData && rule.isActive !== rule.modificationData?.isActive)} />)
+        </Text>
+        {rule.hourlyMaxSeconds &&
+            <Text style={styles.timeLimit}>
+                <Text>
+                    Hourly: {currentHourlyUsage}/
+                </Text>
+                <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.hourlyMaxSeconds!) : ''} old={formatTime(rule.hourlyMaxSeconds)} changed={Boolean(rule.modificationData && rule.hourlyMaxSeconds !== rule.modificationData.hourlyMaxSeconds)} />
+            </Text>}
+        {rule.dailyMaxSeconds &&
+            <>
+                <Text style={styles.timeLimit}>
+                    <Text>
+                        Daily: {currentDailyUsage}/
+                    </Text>
+                    <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.dailyMaxSeconds!) : ''} old={formatTime(rule.dailyMaxSeconds)} changed={Boolean(rule.modificationData && rule.dailyMaxSeconds !== rule.modificationData.dailyMaxSeconds)} />
+                </Text>
+                <Text style={styles.timeLimit}>
+                    <Text>Resets at: </Text>
+                    <StrikeThroughText new={rule.modificationData ? convertHHMMSSToDate(rule.modificationData?.dailyReset!).toLocaleTimeString() : ''} old={convertHHMMSSToDate(rule.dailyReset).toLocaleTimeString()} changed={Boolean(rule.modificationData && rule.dailyReset !== rule.modificationData.dailyReset)} />
+                </Text>
+            </>
+        }
+    </View>
 };
 
 const styles = StyleSheet.create({

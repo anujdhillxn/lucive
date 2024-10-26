@@ -2,6 +2,5 @@
 - loading screens
 - check app usage while the app is still open on intervals
 - validations on rule creator
-- show modification requested on rule card
-- on cancel change weird behaviour
 - use ApiResponse interface and type each Api properly
+- better permission UI

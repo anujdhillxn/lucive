@@ -16,6 +16,7 @@ export type RuleModificationData = {
     app: string;
     interventionType: string;
     dailyReset: string;
+    isActive: boolean;
     dailyMaxSeconds?: number;
     hourlyMaxSeconds?: number;
     sessionMaxSeconds?: number;

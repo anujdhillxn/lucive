@@ -7,6 +7,7 @@ import { AnimatedSequence } from '../../../components/AnimatedComponentSequence'
 import { useAppContext } from '../../../hooks/useAppContext';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
+import { useNotification } from '../../../contexts/NotificationContext';
 
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
@@ -23,7 +24,7 @@ export const NoDuoFoundView: React.FC = () => {
     };
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
+    const { showNotification } = useNotification();
     const { api } = useApi();
 
     const handleOpenURL = (event: { url: string }) => {
@@ -31,19 +32,13 @@ export const NoDuoFoundView: React.FC = () => {
         const params = new URLSearchParams(url.split('?')[1]);
         const invitationToken = params.get('invitationToken');
         if (invitationToken) {
-            console.log('Invitation token', invitationToken);
-            api.duoApi.createDuo(invitationToken).then((duoResp) => {
-                api.duoApi.getDuo().then((duo) => {
-                    if (duo) {
-                        setMyDuo(duo);
-                        navigation.navigate('Home');
-                    }
-                }
-                ).catch((error) => {
-                    console.error('Error fetching duo', error);
-                });
+            api.duoApi.createDuo(invitationToken).then((duo) => {
+                setMyDuo(duo);
+                navigation.navigate('Duo');
+                showNotification('Duo created successfully', 'success');
             }).catch((error) => {
                 console.error('Error creating duo', error);
+                showNotification('Error creating duo', 'failure');
             });
         }
     };

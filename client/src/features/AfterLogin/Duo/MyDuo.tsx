@@ -5,6 +5,7 @@ import { Button } from 'react-native';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useConfirm } from '../../../hooks/useConfirm';
+import { useNotification } from '../../../contexts/NotificationContext';
 const MyDuo: React.FC = () => {
     const myDuo = useAppContext().myDuo!;
     const user = useAppContext().user!;
@@ -12,13 +13,17 @@ const MyDuo: React.FC = () => {
     const { api } = useApi();
     const { duoApi } = api;
     const partner = user.username === myDuo.user1 ? myDuo.user2 : myDuo.user1;
+    const { showNotification } = useNotification();
+
     const handleDeleteDuo = () => {
         duoApi.deleteDuo()
             .then(() => {
                 setMyDuo(null);
                 setRules([]);
+                showNotification('Duo deleted successfully', 'success');
             })
             .catch((err) => {
+                showNotification('Error deleting duo', 'failure');
                 console.log('Error deleting duo:', err);
             });
     };

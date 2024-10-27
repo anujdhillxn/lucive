@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegisterSerializer, UserSerializer, LoginSerializer
+from .serializers import ChangeUsernameSerializer, RegisterSerializer, UserSerializer, LoginSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
@@ -28,11 +28,10 @@ class GoogleOAuthRegisterView(APIView):
 
         # Verify the token with Google
         response = requests.get(
-            'https://www.googleapis.com/oauth2/v1/userinfo',
-            params={'access_token': access_token}
+            'https://oauth2.googleapis.com/tokeninfo',
+            params={'id_token': access_token}
         )
-
-        if response.status_code != 200:
+        if response.status_code  != 200:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
         user_info = response.json()
@@ -97,3 +96,13 @@ class LogoutView(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
+    
+class ChangeUsernameView(APIView):
+    def put(self, request):
+        user = request.user
+        serializer = ChangeUsernameSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.update(user, serializer.validated_data)
+            user.save()
+            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

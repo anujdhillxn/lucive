@@ -1,7 +1,7 @@
 import { ILoginArgs, IRegisterArgs, Remote } from "../types/api";
 
 export const createUserApi = (remote: Remote) => {
-    const { get, post } = remote;
+    const { get, post, put } = remote;
 
     const register = (userData: IRegisterArgs) => {
         return post("users/register", userData);
@@ -22,5 +22,10 @@ export const createUserApi = (remote: Remote) => {
     const logout = () => {
         return post("users/logout");
     };
-    return { register, login, googleLogin, getUser, logout };
+
+    const changeUsername = (newUsername: string) => {
+        return put("users/change-username", { new_username: newUsername });
+    };
+
+    return { register, login, googleLogin, getUser, logout, changeUsername };
 };

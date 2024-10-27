@@ -5,14 +5,14 @@ import { useApi } from '../../hooks/useApi';
 
 export const GoogleLoginButton = () => {
 
-    const { api } = useApi();
-
+    const { api, setRequestToken } = useApi();
     const signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
             const resp = await GoogleSignin.signIn();
-            await api.userApi.googleLogin(resp.data?.idToken || '');
-            Alert.alert("Success", "User signed in successfully!");
+            console.log(resp);
+            const signInResp = await api.userApi.googleLogin(resp.data?.idToken || '')
+            setRequestToken(signInResp.token);
         } catch (error) {
             console.error(error);
             Alert.alert("Error", "Sign-in failed");

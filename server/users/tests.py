@@ -295,4 +295,70 @@ class UserTests(APITestCase):
         self.assertIn('error', response.data)
         self.assertEqual(response.data['error'], 'Invalid token')
 
-    
+    def test_change_username(self):
+        """
+        Test changing the username.
+        """
+        # First, log in to get the token
+        login_data = {
+            'identifier': 'testuser',
+            'password': 'password123'
+        }
+        login_response = self.client.post(self.login_url, login_data)
+        token = login_response.data['token']
+
+        # Set the token in the authorization header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # Change the username
+        change_username_data = {
+            'new_username': 'newusername'
+        }
+        response = self.client.put(reverse('change-username'), change_username_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(User.objects.get(username='newusername').username, 'newusername')
+        self.assertEqual(response.data['username'], 'newusername')
+
+    def test_change_username_to_existing_username(self):
+        """
+        Test changing the username to an existing username.
+        """
+        # First, log in to get the token
+        login_data = {
+            'identifier': 'testuser',
+            'password': 'password123'
+        }
+        login_response = self.client.post(self.login_url, login_data)
+        token = login_response.data['token']
+
+        # Set the token in the authorization header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # Change the username to an existing username
+        change_username_data = {
+            'new_username': 'testuser'
+        }
+        response = self.client.put(reverse('change-username'), change_username_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_change_username_to_invalid_username(self):
+        """
+        Test changing the username to an invalid username.
+        """
+        # First, log in to get the token
+        login_data = {
+            'identifier': 'testuser',
+            'password': 'password123'
+        }
+        login_response = self.client.post(self.login_url, login_data)
+        token = login_response.data['token']
+
+        # Set the token in the authorization header
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # Change the username to an invalid username
+        change_username_data = {
+            'new_username': 'invalid username'
+        }
+        response = self.client.put(reverse('change-username'), change_username_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

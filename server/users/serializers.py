@@ -45,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
         return {
             'username': ret['username'],
             'email': ret['email'],
-            'invitationToken': ret['invitation_token']
+            'invitationToken': ret['invitation_token'],
         }
 
 class LoginSerializer(serializers.Serializer):
@@ -78,3 +78,18 @@ class LoginSerializer(serializers.Serializer):
                 raise serializers.ValidationError("Invalid credentials")
         else:
             raise serializers.ValidationError("Both identifier and password are required")
+
+class ChangeUsernameSerializer(serializers.Serializer):
+    new_username = serializers.CharField(max_length=150)
+
+    def validate_new_username(self, value):
+        if not re.match(r'^[\w.]+$', value):
+            raise serializers.ValidationError("Username should be alphanumeric with underscores and dots.")
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data['new_username']
+        instance.save()
+        return instance

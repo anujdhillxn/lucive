@@ -12,9 +12,9 @@ export const AppActions = React.createContext<AppActionsType | undefined>(
 );
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = React.useState<User | null | undefined>(undefined);
-    const [myDuo, setMyDuo] = React.useState<Duo | null | undefined>(undefined);
-    const [rules, setRules] = React.useState<Rule[] | undefined>(undefined);
+    const [user, setUser] = React.useState<User | null>(null);
+    const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
+    const [rules, setRules] = React.useState<Rule[]>([]);
     const [loadingCount, setLoadingCount] = React.useState(0);
     const { api, requestToken, setRequestToken } = useApi();
 
@@ -60,12 +60,12 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     React.useEffect(() => {
         if (requestToken) {
-            fetchAndSetUser();
-            fetchAndSetDuo();
-            fetchAndSetRules();
             AsyncStorage
                 .setItem('userToken', requestToken);
         }
+        fetchAndSetUser();
+        fetchAndSetDuo();
+        fetchAndSetRules();
     }, [requestToken]);
 
     return <AppContext.Provider value={{ user, myDuo, rules }}>

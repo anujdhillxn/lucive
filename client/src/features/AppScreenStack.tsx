@@ -31,12 +31,7 @@ export type RootStackParamList = {
 
 export const AppScreenStack: React.FC = () => {
 
-    const { user, myDuo, rules } = useAppContext();
-    const { permissions } = useNativeContext();
-    console.log(user === undefined, myDuo === undefined, rules === undefined, permissions.hasOverlayPermission === undefined, permissions.hasUsageStatsPermission === undefined);
-    if (user === undefined || myDuo === undefined || rules === undefined || permissions.hasOverlayPermission === undefined || permissions.hasUsageStatsPermission === undefined) {
-        return <LoadingScreen />
-    }
+    const { user, myDuo } = useAppContext();
     return <SafeAreaView style={styles.container}>
         {user ? <Stack.Navigator initialRouteName={Boolean(myDuo) ? "Home" : "Duo"}>
             <Stack.Screen
@@ -45,9 +40,9 @@ export const AppScreenStack: React.FC = () => {
                 options={({ navigation }) => ({
                     headerRight: () => (
                         <View style={{ flexDirection: 'row' }}>
-                            <TouchableOpacity onPress={() => navigation.navigate('Duo')}>
+                            {myDuo && <TouchableOpacity onPress={() => navigation.navigate('Duo')}>
                                 <Icon5 name="user-friends" size={30} color="#000" style={{ marginRight: 10 }} />
-                            </TouchableOpacity>
+                            </TouchableOpacity>}
                             <TouchableOpacity onPress={() => navigation.navigate('User')}>
                                 <Icon name="user" size={30} color="#000" style={{ marginRight: 10 }} />
                             </TouchableOpacity>

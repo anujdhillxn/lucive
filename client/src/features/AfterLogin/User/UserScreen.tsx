@@ -1,50 +1,104 @@
-import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '../../../types/state';
 import { useAppContext } from '../../../hooks/useAppContext';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
-import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
+
 const UserScreen: React.FC = () => {
     const { user } = useAppContext();
     const { setRequestToken, api } = useApi();
     const { setUser } = useActions();
     const { showNotification } = useNotification();
+    const [isChangingUsername, setIsChangingUsername] = useState(false);
+    const [newUsername, setNewUsername] = useState('');
+
     const handleLogout = () => {
         api.userApi.logout().then(() => {
             setUser(null);
             setRequestToken(null);
             AsyncStorage.removeItem('userToken');
             showNotification("Logged out successfully", "success");
-        }).catch((err) => {
+        }).catch((err: any) => {
             console.log('Error logging out:', err);
             showNotification("Failed to logout", "failure");
         });
     };
 
-    const { confirm } = useConfirm(handleLogout, "Are you sure you want to logout?");
+    const handleChangeUsername = () => {
+        api.userApi.changeUsername(newUsername).then((user: User) => {
+            showNotification("Username changed successfully", "success");
+            setUser(user);
+            setIsChangingUsername(false);
+        }).catch((err: any) => {
+            console.log('Error changing username:', err);
+            showNotification("Failed to change username", "failure");
+        });
+    };
 
     return user ? (
         <View style={styles.container}>
-            <Text style={styles.title}>{`Hi ${user.username}`}</Text>
-            <Button title="Logout" onPress={confirm} />
+            <View style={styles.header}>
+                <Text style={styles.title}>{`Hi ${user.username}`}</Text>
+                <Button title="Logout" onPress={handleLogout} />
+            </View>
+            <TouchableOpacity onPress={() => setIsChangingUsername(!isChangingUsername)}>
+                <Text style={styles.changeUsernameText}>Change Username</Text>
+            </TouchableOpacity>
+            {isChangingUsername && (
+                <View style={styles.changeUsernameContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="New Username"
+                        value={newUsername}
+                        onChangeText={setNewUsername}
+                    />
+                    <Button title="Change" onPress={handleChangeUsername} />
+                </View>
+            )}
         </View>
-    ) : <View style={styles.container}>
-        <Text style={styles.title}>User not found</Text>
-    </View>;
+    ) : (
+        <View style={styles.container}>
+            <Text style={styles.title}>User not found</Text>
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: 'flex-start',
+        alignItems: 'stretch',
         backgroundColor: '#f5f5f5',
+        padding: 16,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
     },
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
+    },
+    changeUsernameText: {
+        color: 'blue',
+        marginTop: 16,
+    },
+    changeUsernameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+    },
+    input: {
+        flex: 1,
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        paddingHorizontal: 8,
+        marginRight: 8,
     },
 });
 

@@ -19,8 +19,7 @@ export const AllRulesView: React.FC = () => {
         navigation.navigate('RuleCreator');
     };
 
-    const appContext = useAppContext();
-    const rules = appContext.rules!;
+    const { rules } = useAppContext();
     const MyRuleComponents = rules.filter(rule => rule.isMyRule).map((rule) => {
         return () => <RuleCardContainer rule={rule} />;
     });

@@ -1,6 +1,4 @@
 - green and ambient UI
 - validations on account creation backend/frontend both
-- google sign in
-- username change
+- loading screen is bad
 - use ApiResponse interface and type each Api properly
-- better permission UI

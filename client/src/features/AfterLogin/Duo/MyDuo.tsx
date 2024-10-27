@@ -9,7 +9,7 @@ import { useNotification } from '../../../contexts/NotificationContext';
 const MyDuo: React.FC = () => {
     const myDuo = useAppContext().myDuo!;
     const user = useAppContext().user!;
-    const { setMyDuo, setRules } = useActions();
+    const { setMyDuo, setRules, setUser } = useActions();
     const { api } = useApi();
     const { duoApi } = api;
     const partner = user.username === myDuo.user1 ? myDuo.user2 : myDuo.user1;
@@ -17,9 +17,10 @@ const MyDuo: React.FC = () => {
 
     const handleDeleteDuo = () => {
         duoApi.deleteDuo()
-            .then(() => {
+            .then((resp) => {
                 setMyDuo(null);
                 setRules([]);
+                setUser({ ...user, invitationToken: resp })
                 showNotification('Duo deleted successfully', 'success');
             })
             .catch((err) => {

@@ -84,7 +84,7 @@ class DuoViewTests(APITestCase):
         token_2_before = self.user2.invitation_token
         Duo.objects.create(user1=self.user1, user2=self.user2)
         response = self.client.delete(self.delete_duo_url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Duo.objects.count(), 0)
         self.user1.refresh_from_db()
         self.user2.refresh_from_db()

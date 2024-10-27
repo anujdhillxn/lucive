@@ -2,7 +2,7 @@ import { NativeModules } from "react-native";
 import { useAppContext } from "../hooks/useAppContext";
 import React from "react";
 import { AppInfo, NativeContextType, Permissions } from "../types/native";
-const { UsageTracker, InstalledApps } = NativeModules;
+const { UsageTracker, InstalledApps, PermissionsModule } = NativeModules;
 type NativeStateHandlerProps = {
     children: React.ReactNode;
 };
@@ -15,16 +15,18 @@ export const NativeContext = React.createContext<NativeContextType | undefined>(
 export const NativeContextProvider = (props: NativeStateHandlerProps) => {
 
     const { rules } = useAppContext();
-
-    const setScreentimeRules = () => {
-        UsageTracker.setRules(rules);
+    const { requestUsageStatsPermission, requestOverlayPermission } = PermissionsModule;
+    const setRules = () => {
+        if (rules !== undefined) {
+            UsageTracker.setRules(rules?.filter(rule => rule.isMyRule));
+        }
     }
     const [installedApps, setInstalledApps] = React.useState<Record<string, AppInfo>>({});
     const [permissions, setPermissions] = React.useState<Permissions>({});
     React.useEffect(() => {
         fetchInstalledApps();
-    }
-        , []);
+        checkPermissions();
+    }, []);
     const fetchInstalledApps = async () => {
         try {
             const apps = await InstalledApps.getInstalledApps();
@@ -38,9 +40,18 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
         }
     };
 
+    const checkPermissions = () => {
+        PermissionsModule.hasUsageStatsPermission().then((hasUsageStatsPermission: boolean) => {
+            setPermissions((current) => { return { ...current, hasUsageStatsPermission } });
+        });
+        PermissionsModule.hasOverlayPermission().then((hasOverlayPermission: boolean) => {
+            setPermissions((current) => { return { ...current, hasOverlayPermission } });
+        });
+    };
+
     React.useEffect(() => {
-        setScreentimeRules();
+        setRules();
     }, [rules]);
 
-    return <NativeContext.Provider value={{ installedApps, permissions, setPermissions }}>{props.children}</NativeContext.Provider>;
+    return <NativeContext.Provider value={{ installedApps, permissions, requestUsageStatsPermission, requestOverlayPermission, checkPermissions }}>{props.children}</NativeContext.Provider>;
 }

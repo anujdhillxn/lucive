@@ -12,9 +12,9 @@ export const AppActions = React.createContext<AppActionsType | undefined>(
 );
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = React.useState<User | null>(null);
-    const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
-    const [rules, setRules] = React.useState<Rule[]>([]);
+    const [user, setUser] = React.useState<User | null | undefined>(undefined);
+    const [myDuo, setMyDuo] = React.useState<Duo | null | undefined>(undefined);
+    const [rules, setRules] = React.useState<Rule[] | undefined>(undefined);
     const [loadingCount, setLoadingCount] = React.useState(0);
     const { api, requestToken, setRequestToken } = useApi();
 
@@ -26,6 +26,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
         catch (e) {
             console.log(e);
+            setUser(null);
             setRequestToken(null);
         }
         setLoadingCount((prev) => prev - 1);
@@ -38,6 +39,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             setMyDuo(duoResp);
         }
         catch (e) {
+            setMyDuo(null);
             console.log(e);
         }
         setLoadingCount((prev) => prev - 1);
@@ -50,6 +52,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             setRules(rulesResp);
         }
         catch (e) {
+            setRules([]);
             console.log(e);
         }
         setLoadingCount((prev) => prev - 1);
@@ -58,22 +61,12 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     React.useEffect(() => {
         if (requestToken) {
             fetchAndSetUser();
+            fetchAndSetDuo();
+            fetchAndSetRules();
             AsyncStorage
                 .setItem('userToken', requestToken);
         }
     }, [requestToken]);
-
-    React.useEffect(() => {
-        if (user) {
-            fetchAndSetDuo();
-        }
-    }, [user]);
-
-    React.useEffect(() => {
-        if (myDuo) {
-            fetchAndSetRules();
-        }
-    }, [myDuo])
 
     return <AppContext.Provider value={{ user, myDuo, rules }}>
         <AppActions.Provider value={{ setUser, setMyDuo, setRules }}>

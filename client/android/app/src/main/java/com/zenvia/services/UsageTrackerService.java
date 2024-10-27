@@ -176,7 +176,7 @@ public class UsageTrackerService extends Service {
 
     public boolean isHourlyLimitExceeded(final String packageName) {
         Rule rule = ruleMap.get(packageName);
-        if (rule == null) {
+        if (rule == null || !rule.isActive()) {
             return false;
         }
         final int hourlyUsage = getHourlyScreentime(packageName);
@@ -185,7 +185,7 @@ public class UsageTrackerService extends Service {
 
     public boolean isDailyLimitExceeded(final String packageName) {
         Rule rule = ruleMap.get(packageName);
-        if (rule == null) {
+        if (rule == null || !rule.isActive()) {
             return false;
         }
         final int dailyUsage = getDailyScreentime(packageName);

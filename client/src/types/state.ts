@@ -38,13 +38,13 @@ export type Rule = {
 };
 
 export type AppContextType = {
-    user: User | null;
-    myDuo: Duo | null;
-    rules: Rule[];
+    user?: User | null;
+    myDuo?: Duo | null;
+    rules?: Rule[];
 };
 
 export type AppActionsType = {
-    setUser: React.Dispatch<React.SetStateAction<User | null>>;
-    setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
-    setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
+    setUser: React.Dispatch<React.SetStateAction<User | null | undefined>>;
+    setMyDuo: React.Dispatch<React.SetStateAction<Duo | null | undefined>>;
+    setRules: React.Dispatch<React.SetStateAction<Rule[] | undefined>>;
 };

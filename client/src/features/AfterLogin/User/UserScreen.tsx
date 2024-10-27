@@ -25,12 +25,14 @@ const UserScreen: React.FC = () => {
 
     const { confirm } = useConfirm(handleLogout, "Are you sure you want to logout?");
 
-    return (
+    return user ? (
         <View style={styles.container}>
-            <Text style={styles.title}>{`Hi ${user?.username}`}</Text>
+            <Text style={styles.title}>{`Hi ${user.username}`}</Text>
             <Button title="Logout" onPress={confirm} />
         </View>
-    );
+    ) : <View style={styles.container}>
+        <Text style={styles.title}>User not found</Text>
+    </View>;
 };
 
 const styles = StyleSheet.create({

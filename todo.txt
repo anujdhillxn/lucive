@@ -1,5 +1,6 @@
 - green and ambient UI
-- loading screens
-- validations on rule creator
+- validations on account creation backend/frontend both
+- google sign in
+- username change
 - use ApiResponse interface and type each Api properly
 - better permission UI

@@ -15,6 +15,8 @@ import DuoScreen from './AfterLogin/Duo/DuoScreen';
 import LoginScreen from './BeforeLogin/LoginScreen';
 import { Rule } from '../types/state';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNativeContext } from '../hooks/useNativeContext';
+import LoadingScreen from './LoadingScreen';
 
 const Stack = createStackNavigator();
 export type RootStackParamList = {
@@ -29,8 +31,12 @@ export type RootStackParamList = {
 
 export const AppScreenStack: React.FC = () => {
 
-    const { user, myDuo } = useAppContext();
-
+    const { user, myDuo, rules } = useAppContext();
+    const { permissions } = useNativeContext();
+    console.log(user === undefined, myDuo === undefined, rules === undefined, permissions.hasOverlayPermission === undefined, permissions.hasUsageStatsPermission === undefined);
+    if (user === undefined || myDuo === undefined || rules === undefined || permissions.hasOverlayPermission === undefined || permissions.hasUsageStatsPermission === undefined) {
+        return <LoadingScreen />
+    }
     return <SafeAreaView style={styles.container}>
         {user ? <Stack.Navigator initialRouteName={Boolean(myDuo) ? "Home" : "Duo"}>
             <Stack.Screen

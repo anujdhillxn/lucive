@@ -26,7 +26,7 @@ class UserTests(APITestCase):
         Test user registration.
         """
         data = {
-            'username': 'newuser',
+            'username': 'new.user_123',
             'email': 'newuser@example.com',
             'password': 'password123'
         }
@@ -39,6 +39,44 @@ class UserTests(APITestCase):
 
         # After registration, check that there are 2 users
         self.assertEqual(User.objects.count(), 2)  # 1 existing + 1 new user
+
+    def test_register_user_with_invalid_username(self):
+        """
+        Test registration with an invalid username.
+        """
+        data = {
+            'username': 'new user',  # Invalid username
+            'email': 'newuser@example.com',
+            'password': 'password123'
+        }
+        response = self.client.post(self.register_url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_register_user_with_invalid_password(self):
+        """
+        Test registration with an invalid password.
+        """
+        data = {
+            'username': 'newuser',
+            'email': 'newuser@example.com',
+            'password': 'pass'  # Invalid
+        }
+        response = self.client.post(self.register_url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_register_user_invalid_email(self):
+        """
+        Test user registration with invalid email.
+        """
+        data = {
+            'username': 'validusername',
+            'email': 'invalid-email',
+            'password': 'password123'
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', response.data)
+        self.assertEqual(response.data['email'][0], "Enter a valid email address.")
 
     def test_login_user_with_username(self):
         """

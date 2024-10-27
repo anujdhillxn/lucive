@@ -11,5 +11,7 @@ export type Permissions = {
 export type NativeContextType = {
     installedApps: Record<string, AppInfo>;
     permissions: Permissions;
-    setPermissions: React.Dispatch<React.SetStateAction<Permissions>>;
+    requestUsageStatsPermission: () => void;
+    requestOverlayPermission: () => void;
+    checkPermissions: () => void;
 };

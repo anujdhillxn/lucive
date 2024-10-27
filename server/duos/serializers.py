@@ -74,7 +74,7 @@ class DeleteDuoSerializer(serializers.Serializer):
         user = self.context['request'].user
         other_user = duo.user1 if duo.user2 == user else duo.user2
         other_user.invitation_token = uuid.uuid4()
-        user.invitation_token = uuid.uuid4()
+        user.invitation_token = self.context['new_user_token']
         other_user.save()
         user.save()
         duo.delete()

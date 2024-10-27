@@ -397,6 +397,7 @@ class RuleTests(APITestCase):
         self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp3').exists(), True)
     
     def test_delete_rule_modification_request(self):
+        Rule.objects.create(app='TestApp2', is_active=False, user=self.user1, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='FULL')
         self.authenticate(self.user1)
         delete_url = reverse('delete-rule-modification-request')
         data = {

@@ -6,53 +6,47 @@ import { NativeModules } from 'react-native';
 import { useAppContext } from '../../hooks/useAppContext';
 import { useActions } from '../../hooks/useActions';
 import { useNativeContext } from '../../hooks/useNativeContext';
-
 const { PermissionsModule } = NativeModules;
 
 export const PermissionsScreen: React.FC = () => {
-    const { permissions, setPermissions } = useNativeContext();
+    const { permissions, requestOverlayPermission, requestUsageStatsPermission, checkPermissions } = useNativeContext();
 
-    useEffect(() => {
-        checkPermissions();
+    React.useEffect(() => {
+        const timeout = setInterval(checkPermissions, 1000);
+        return () => {
+            clearInterval(timeout);
+        };
     }, []);
 
-    const checkPermissions = async () => {
-        const hasUsageStatsPermission = await PermissionsModule.hasUsageStatsPermission();
-        setPermissions((current) => { return { ...current, hasUsageStatsPermission } });
-        const hasOverlayPermission = await PermissionsModule.hasOverlayPermission();
-        setPermissions((current) => { return { ...current, hasOverlayPermission } });
-    };
+    if (permissions.hasUsageStatsPermission !== true) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>
+                    {permissions.hasUsageStatsPermission === undefined ? "Checking for usage stats permissions..." : permissions.hasUsageStatsPermission === false
+                        ? "Zenvia needs Usage Stats Permissions to monitor your screentime. Please enable them to continue."
+                        : null}
+                </Text>
+                {permissions.hasUsageStatsPermission === false && (
+                    <Button title="Grant Usage Stats Permission" onPress={() => requestUsageStatsPermission()} />
+                )}
+            </View>
+        );
+    }
 
-    const handleRequestUsageStatsPermission = async () => {
-        const hasUsageStatsPermission = await PermissionsModule.requestUsageStatsPermission();
-        setPermissions((current) => { return { ...current, hasUsageStatsPermission } });
-    };
-
-    const handleRequestOverlayPermission = async () => {
-        const hasOverlayPermission = await PermissionsModule.requestOverlayPermission();
-        setPermissions((current) => { return { ...current, hasOverlayPermission } });
-    };
-
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>
-                {permissions.hasUsageStatsPermission === false
-                    ? "Zenvia needs Usage Stats Permissions to monitor your screentime. Please enable them to continue."
-                    : "Checking for usage stats permissions..."}
-            </Text>
-            {permissions.hasUsageStatsPermission === false && (
-                <Button title="Grant Usage Stats Permission" onPress={handleRequestUsageStatsPermission} />
-            )}
-            <Text style={styles.title}>
-                {permissions.hasOverlayPermission === false
-                    ? "Zenvia needs Overlay Permissions to prevent you from excess screentime. Please enable them to continue."
-                    : "Checking for overlay permissions..."}
-            </Text>
-            {permissions.hasOverlayPermission === false && (
-                <Button title="Grant Overlay Permissions" onPress={handleRequestOverlayPermission} />
-            )}
-        </View>
-    );
+    if (permissions.hasOverlayPermission !== true) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>
+                    {permissions.hasOverlayPermission === undefined ? "Checking for overlay permissions..." : permissions.hasOverlayPermission === false
+                        ? "Zenvia needs Overlay Permissions to show you the screen time limit. Please enable them to continue." : null}
+                </Text>
+                {permissions.hasOverlayPermission === false && (
+                    <Button title="Grant Overlay Permissions" onPress={() => requestOverlayPermission()} />
+                )}
+            </View>
+        );
+    }
+    return null;
 };
 
 const styles = StyleSheet.create({
@@ -66,6 +60,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         marginBottom: 20,
+        marginTop: 20,
         textAlign: 'center',
     },
 });

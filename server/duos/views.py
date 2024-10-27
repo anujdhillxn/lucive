@@ -1,3 +1,4 @@
+import uuid
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from .models import Duo
@@ -30,7 +31,8 @@ class DeleteDuoView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'request': request})
+        new_user_token = uuid.uuid4()
+        serializer = self.get_serializer(data=request.data, context={'request': request, 'new_user_token': new_user_token})
         serializer.is_valid(raise_exception=True)
         serializer.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(new_user_token, status=status.HTTP_200_OK)

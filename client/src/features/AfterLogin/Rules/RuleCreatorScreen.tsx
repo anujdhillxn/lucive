@@ -13,6 +13,7 @@ import { useNativeContext } from '../../../hooks/useNativeContext';
 import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
+import { hasAChange, isApprovalRequired } from '../../../utils/validation';
 
 // const AppItem: React.FC<AppInfo> = ({ displayName, packageName, icon }) => (
 //     <View style={styles.appItem}>
@@ -55,8 +56,8 @@ export const RuleCreatorScreen: React.FC = () => {
         hideDatePicker();
     };
 
-    const handleSave = () => {
-        const newRule: Rule = {
+    const getNewRule = (): Rule => {
+        return {
             app: selectedApp,
             appDisplayName: installedApps[selectedApp].displayName,
             isActive: isRuleActive,
@@ -66,6 +67,10 @@ export const RuleCreatorScreen: React.FC = () => {
             interventionType: 'FULL',
             dailyReset: dailyReset.toTimeString().split(' ')[0],
         }
+    }
+
+    const handleSave = () => {
+        const newRule = getNewRule();
         if (rule) {
             api.ruleApi.updateRule(newRule).then((updatedRule) => {
                 setRules((rules) => rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r));
@@ -136,7 +141,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 onConfirm={handleConfirm}
                 onCancel={hideDatePicker}
             />
-            <Button title="Save" onPress={confirm} />
+            <Button title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} disabled={rule && !hasAChange(getNewRule(), rule)} onPress={confirm} />
         </ScrollView>
     );
 };

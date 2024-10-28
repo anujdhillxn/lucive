@@ -18,22 +18,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class EventManager {
     private final Map<String, List<Event>> eventsMap = new ConcurrentHashMap<>();
-    private long lastProcessedTimestamp = System.currentTimeMillis();
     private static final String PREFS_NAME = "EventManagerPrefs";
     private static final String EVENTS_MAP_KEY = "eventsMap";
-    private static final String LAST_PROCESSED_TIMESTAMP_KEY = "lastProcessedTimestamp";
     private final SharedPreferences sharedPreferences;
 
     public EventManager(Context context) {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-    }
-
-    public long getLastProcessedTimestamp() {
-        return lastProcessedTimestamp;
-    }
-
-    public void setLastProcessedTimestamp(long timestamp) {
-        this.lastProcessedTimestamp = timestamp;
     }
 
     public void processEvent(final String packageName, final long timestamp, final int eventType) {
@@ -47,17 +37,34 @@ public class EventManager {
                 newEvent.setCumulatedScreentime(0);
             } else {
                 Event lastEvent = packageEvents.get(packageEvents.size() - 1);
+                if (lastEvent.getTimeStamp() >= timestamp || lastEvent.getEventType() == eventType) {
+                    return;
+                }
+                assert lastEvent.getEventType() != eventType;
                 newEvent.setCumulatedScreentime(eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ? lastEvent.getCumulatedScreentime() : lastEvent.getCumulatedScreentime() + timestamp - lastEvent.getTimeStamp());
             }
             packageEvents.add(newEvent);
-            lastProcessedTimestamp = timestamp;
+        }
+    }
+
+    public void clearOldEvents(final long thresholdTimestamp) {
+        for (List<Event> packageEvents : eventsMap.values()) {
+            Iterator<Event> iterator = packageEvents.iterator();
+            while (iterator.hasNext()) {
+                Event event = iterator.next();
+                if (event.getTimeStamp() < thresholdTimestamp) {
+                    iterator.remove();
+                } else {
+                    break; // Since the list is sorted, we can stop once we reach the threshold
+                }
+            }
         }
     }
 
     public void saveData() {
+        clearOldEvents(AppUtils.getLastDayStart());
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(EVENTS_MAP_KEY, serializeEventsMap());
-        editor.putLong(LAST_PROCESSED_TIMESTAMP_KEY, lastProcessedTimestamp);
         editor.apply();
     }
 
@@ -66,7 +73,6 @@ public class EventManager {
         if (eventsMapJson != null) {
             deserializeEventsMap(eventsMapJson);
         }
-        lastProcessedTimestamp = sharedPreferences.getLong(LAST_PROCESSED_TIMESTAMP_KEY, System.currentTimeMillis());
     }
 
     private String serializeEventsMap() {

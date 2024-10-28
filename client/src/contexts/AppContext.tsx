@@ -1,13 +1,26 @@
 import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApi } from '../hooks/useApi';
-import { AppActionsType, AppContextType, Duo, Rule, User } from '../types/state';
+import { Duo, Rule, User } from '../types/state';
 
-export const AppContext = React.createContext<AppContextType | undefined>(
+export type AppContextProps = {
+    user: User | null;
+    myDuo: Duo | null;
+    rules: Rule[];
+    appLoading: boolean;
+};
+
+export type AppActionsProps = {
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
+    setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
+    setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
+};
+
+export const AppContext = React.createContext<AppContextProps | undefined>(
     undefined
 );
 
-export const AppActions = React.createContext<AppActionsType | undefined>(
+export const AppActions = React.createContext<AppActionsProps | undefined>(
     undefined
 );
 
@@ -15,60 +28,58 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [user, setUser] = React.useState<User | null>(null);
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
     const [rules, setRules] = React.useState<Rule[]>([]);
-    const [loadingCount, setLoadingCount] = React.useState(0);
     const { api, requestToken, setRequestToken } = useApi();
+    const [appLoading, setAppLoading] = React.useState(true);
+    const fetchData = async () => {
+        setAppLoading(true);
+        if (requestToken) {
+            await fetchAndSetUser();
+            await fetchAndSetDuo();
+            await fetchAndSetRules();
+        }
+        setAppLoading(false);
+    };
 
     const fetchAndSetUser = async () => {
-        setLoadingCount((prev) => prev + 1);
         try {
             const userResp = await api.userApi.getUser();
             setUser(userResp);
         }
         catch (e) {
             console.log(e);
-            setUser(null);
             setRequestToken(null);
         }
-        setLoadingCount((prev) => prev - 1);
     }
 
     const fetchAndSetDuo = async () => {
-        setLoadingCount((prev) => prev + 1);
         try {
             const duoResp = await api.duoApi.getDuo();
             setMyDuo(duoResp);
         }
         catch (e) {
-            setMyDuo(null);
             console.log(e);
         }
-        setLoadingCount((prev) => prev - 1);
     }
 
     const fetchAndSetRules = async () => {
-        setLoadingCount((prev) => prev + 1);
         try {
             const rulesResp = await api.ruleApi.getRules();
             setRules(rulesResp);
         }
         catch (e) {
-            setRules([]);
             console.log(e);
         }
-        setLoadingCount((prev) => prev - 1);
     }
 
     React.useEffect(() => {
         if (requestToken) {
+            fetchData();
             AsyncStorage
-                .setItem('userToken', requestToken);
+                .setItem('requestToken', requestToken);
         }
-        fetchAndSetUser();
-        fetchAndSetDuo();
-        fetchAndSetRules();
     }, [requestToken]);
 
-    return <AppContext.Provider value={{ user, myDuo, rules }}>
+    return <AppContext.Provider value={{ user, myDuo, rules, appLoading }}>
         <AppActions.Provider value={{ setUser, setMyDuo, setRules }}>
             {children}
         </AppActions.Provider>

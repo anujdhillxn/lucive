@@ -28,7 +28,7 @@ export const AllRulesView: React.FC = () => {
         return () => <RuleCardContainer rule={rule} />;
     });
     return (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
             <TouchableOpacity style={styles.createButton} onPress={navigateToRuleCreator}>
                 <Text style={styles.createButtonText}>Create New Rule</Text>
                 <Icon name="add" size={20} color="#fff" />

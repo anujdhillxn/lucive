@@ -116,7 +116,6 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
         final int dailyMaxSeconds = map.getInt("dailyMaxSeconds");
         final int hourlyMaxSeconds = map.getInt("hourlyMaxSeconds");
         final String dailyStartsAt = map.getString("dailyReset");
-        Log.i(TAG, dailyStartsAt);
         return new Rule(app, isActive, dailyMaxSeconds, hourlyMaxSeconds, dailyStartsAt);
     }
 }

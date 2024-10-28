@@ -36,15 +36,3 @@ export type Rule = {
     lastModifiedAt?: string;
     modificationData?: RuleModificationData;
 };
-
-export type AppContextType = {
-    user: User | null;
-    myDuo: Duo | null;
-    rules: Rule[];
-};
-
-export type AppActionsType = {
-    setUser: React.Dispatch<React.SetStateAction<User | null>>;
-    setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
-    setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
-};

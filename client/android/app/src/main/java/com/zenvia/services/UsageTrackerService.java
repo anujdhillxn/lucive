@@ -121,31 +121,22 @@ public class UsageTrackerService extends Service {
 
     private void checkScreenUsages() {
         final long endTime = System.currentTimeMillis();
-        long startTime = eventManager.getLastProcessedTimestamp() + 1;
+        long startTime = endTime - 5 * 1000; // to avoid missing events
+        UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
+        UsageEvents.Event event = new UsageEvents.Event();
 
-        final long CHUNK_SIZE = 60 * 1000;
+        while (usageEvents.hasNextEvent()) {
+            usageEvents.getNextEvent(event);
+            eventManager.processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType());
+        }
 
-        while (startTime < endTime) {
-            long chunkEndTime = Math.min(startTime + CHUNK_SIZE, endTime);
-
-            UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, chunkEndTime);
-            UsageEvents.Event event = new UsageEvents.Event();
-
-            while (usageEvents.hasNextEvent()) {
-                usageEvents.getNextEvent(event);
-                eventManager.processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType());
-            }
-
-            final String packageName = eventManager.getCurrentlyOpenedApp();
-            if (isHourlyLimitExceeded(packageName) || isDailyLimitExceeded(packageName)) {
-                final Intent showScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
-                startService(showScreenTimeExceeded);
-            } else {
-                final Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
-                stopService(hideScreenTimeExceeded);
-            }
-
-            startTime = chunkEndTime + 1;
+        final String packageName = eventManager.getCurrentlyOpenedApp();
+        if (isHourlyLimitExceeded(packageName) || isDailyLimitExceeded(packageName)) {
+            final Intent showScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
+            startService(showScreenTimeExceeded);
+        } else {
+            final Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
+            stopService(hideScreenTimeExceeded);
         }
     }
 

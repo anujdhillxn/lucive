@@ -10,20 +10,17 @@ import { useNativeContext } from '../../hooks/useNativeContext';
 const HomeScreen: React.FC = () => {
     const { myDuo } = useAppContext();
     const { permissions } = useNativeContext();
+
     if (!permissions.hasUsageStatsPermission || !permissions.hasOverlayPermission) {
         return <PermissionsScreen />
     }
 
-    return (
-        <View style={styles.container}>
-            {myDuo ? (
-                <AllRulesView />
-            ) : (
-                <NoDuoFoundView />
-            )}
-        </View>
-    );
-};
+    if (!myDuo) {
+        return <NoDuoFoundView />
+    }
+
+    return <AllRulesView />
+}
 
 const styles = StyleSheet.create({
     container: {

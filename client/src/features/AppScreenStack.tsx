@@ -31,35 +31,41 @@ export type RootStackParamList = {
 
 export const AppScreenStack: React.FC = () => {
 
-    const { user, myDuo } = useAppContext();
-    return <SafeAreaView style={styles.container}>
-        {user ? <Stack.Navigator initialRouteName={Boolean(myDuo) ? "Home" : "Duo"}>
-            <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={({ navigation }) => ({
-                    headerRight: () => (
-                        <View style={{ flexDirection: 'row' }}>
-                            {myDuo && <TouchableOpacity onPress={() => navigation.navigate('Duo')}>
-                                <Icon5 name="user-friends" size={30} color="#000" style={{ marginRight: 10 }} />
-                            </TouchableOpacity>}
-                            <TouchableOpacity onPress={() => navigation.navigate('User')}>
-                                <Icon name="user" size={30} color="#000" style={{ marginRight: 10 }} />
-                            </TouchableOpacity>
-                        </View>
-                    ),
-                })}
-            />
-            <Stack.Screen name="User" component={UserScreen} />
-            <Stack.Screen name="RuleCreator" component={RuleCreatorScreen} />
-            <Stack.Screen name="Duo" component={DuoScreen} />
-        </Stack.Navigator> : <Stack.Navigator initialRouteName={"Login"} >
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
-        </Stack.Navigator>}
+    const { user, myDuo, appLoading } = useAppContext();
+    if (appLoading) {
+        return <LoadingScreen />
+    }
+    if (!user) {
+        return <SafeAreaView style={styles.container}>
+            <Stack.Navigator initialRouteName={"Login"} >
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Signup" component={SignupScreen} />
+            </Stack.Navigator>
+            <StatusBar style="auto" />
+        </SafeAreaView>
+    }
 
-        <StatusBar style="auto" />
-    </SafeAreaView>
+    return <Stack.Navigator initialRouteName={Boolean(myDuo) ? "Home" : "Duo"}>
+        <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={({ navigation }) => ({
+                headerRight: () => (
+                    <View style={{ flexDirection: 'row' }}>
+                        {myDuo && <TouchableOpacity onPress={() => navigation.navigate('Duo')}>
+                            <Icon5 name="user-friends" size={30} color="#000" style={{ marginRight: 10 }} />
+                        </TouchableOpacity>}
+                        <TouchableOpacity onPress={() => navigation.navigate('User')}>
+                            <Icon name="user" size={30} color="#000" style={{ marginRight: 10 }} />
+                        </TouchableOpacity>
+                    </View>
+                ),
+            })}
+        />
+        <Stack.Screen name="User" component={UserScreen} />
+        <Stack.Screen name="RuleCreator" component={RuleCreatorScreen} />
+        <Stack.Screen name="Duo" component={DuoScreen} />
+    </Stack.Navigator>
 }
 
 const styles = StyleSheet.create({

@@ -6,6 +6,7 @@ import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const MyDuo: React.FC = () => {
     const myDuo = useAppContext().myDuo!;
     const user = useAppContext().user!;
@@ -21,6 +22,9 @@ const MyDuo: React.FC = () => {
                 setMyDuo(null);
                 setRules([]);
                 setUser({ ...user, invitationToken: resp })
+                AsyncStorage.removeItem('myDuo');
+                AsyncStorage.setItem('rules', JSON.stringify([]));
+                AsyncStorage.setItem('user', JSON.stringify({ ...user, invitationToken: resp }));
                 showNotification('Duo deleted successfully', 'success');
             })
             .catch((err) => {

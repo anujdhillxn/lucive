@@ -42,19 +42,39 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const fetchAndSetUser = async () => {
         try {
-            const userResp = await api.userApi.getUser();
-            setUser(userResp);
+            const localResp = await AsyncStorage.getItem('user');
+            console.log(localResp);
+            if (localResp) {
+                setUser(JSON.parse(localResp));
+            }
         }
         catch (e) {
             console.log(e);
-            setRequestToken(null);
+        }
+        try {
+            const userResp = await api.userApi.getUser();
+            setUser(userResp);
+            AsyncStorage.setItem('user', JSON.stringify(userResp));
+        }
+        catch (e) {
+            console.log(e);
         }
     }
 
     const fetchAndSetDuo = async () => {
         try {
+            const localResp = await AsyncStorage.getItem('myDuo');
+            if (localResp) {
+                setMyDuo(JSON.parse(localResp));
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+        try {
             const duoResp = await api.duoApi.getDuo();
             setMyDuo(duoResp);
+            AsyncStorage.setItem('myDuo', JSON.stringify(duoResp));
         }
         catch (e) {
             console.log(e);
@@ -63,8 +83,18 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const fetchAndSetRules = async () => {
         try {
+            const localResp = await AsyncStorage.getItem('rules');
+            if (localResp) {
+                setRules(JSON.parse(localResp));
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+        try {
             const rulesResp = await api.ruleApi.getRules();
             setRules(rulesResp);
+            AsyncStorage.setItem('rules', JSON.stringify(rulesResp));
         }
         catch (e) {
             console.log(e);
@@ -72,11 +102,10 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
 
     React.useEffect(() => {
-        if (requestToken) {
-            fetchData();
+        fetchData();
+        if (requestToken)
             AsyncStorage
                 .setItem('requestToken', requestToken);
-        }
     }, [requestToken]);
 
     return <AppContext.Provider value={{ user, myDuo, rules, appLoading }}>

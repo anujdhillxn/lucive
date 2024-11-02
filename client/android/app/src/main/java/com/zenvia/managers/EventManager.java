@@ -37,10 +37,12 @@ public class EventManager {
                 newEvent.setCumulatedScreentime(0);
             } else {
                 Event lastEvent = packageEvents.get(packageEvents.size() - 1);
-                if (lastEvent.getTimeStamp() >= timestamp || lastEvent.getEventType() == eventType) {
+                if (lastEvent.getTimeStamp() >= timestamp) {
                     return;
                 }
-                assert lastEvent.getEventType() != eventType;
+                if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) { // last app open's closing event was not recorded, so we remove the last event. Will not count some screentime, but it's better than counting it for the wrong app
+                    packageEvents.remove(packageEvents.size() - 1);
+                }
                 newEvent.setCumulatedScreentime(eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ? lastEvent.getCumulatedScreentime() : lastEvent.getCumulatedScreentime() + timestamp - lastEvent.getTimeStamp());
             }
             packageEvents.add(newEvent);

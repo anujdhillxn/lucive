@@ -8,6 +8,7 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
@@ -34,6 +35,7 @@ export const NoDuoFoundView: React.FC = () => {
         if (invitationToken) {
             api.duoApi.createDuo(invitationToken).then((duo) => {
                 setMyDuo(duo);
+                AsyncStorage.setItem('myDuo', JSON.stringify(duo));
                 navigation.navigate('Duo');
                 showNotification('Duo created successfully', 'success');
             }).catch((error) => {

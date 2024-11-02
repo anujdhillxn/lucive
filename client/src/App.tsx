@@ -8,6 +8,7 @@ import { NativeContextProvider } from './contexts/NativeContext';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { ConfirmModalProvider } from './contexts/ConfirmModalContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { ConfigProvider } from './contexts/ConfigContext';
 
 GoogleSignin.configure({
     webClientId: '437935332203-n66ssb26co1452gnk6v1qe1hh0duv0ql.apps.googleusercontent.com',
@@ -15,21 +16,24 @@ GoogleSignin.configure({
 
 export default function App() {
     return (
-        <MenuProvider>
-            <NavigationContainer>
-                <NotificationProvider>
-                    <ConfirmModalProvider>
-                        <ApiProvider>
-                            <AppContextProvider>
-                                <NativeContextProvider>
-                                    <AppScreenStack />
-                                </NativeContextProvider>
-                            </AppContextProvider>
-                        </ApiProvider>
-                    </ConfirmModalProvider>
-                </NotificationProvider>
-            </NavigationContainer>
-        </MenuProvider>
+        <ConfigProvider>
+            <MenuProvider>
+                <NavigationContainer>
+                    <NotificationProvider>
+                        <ConfirmModalProvider>
+
+                            <ApiProvider>
+                                <AppContextProvider>
+                                    <NativeContextProvider>
+                                        <AppScreenStack />
+                                    </NativeContextProvider>
+                                </AppContextProvider>
+                            </ApiProvider>
+                        </ConfirmModalProvider>
+                    </NotificationProvider>
+                </NavigationContainer>
+            </MenuProvider>
+        </ConfigProvider>
     );
 }
 

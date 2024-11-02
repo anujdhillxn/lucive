@@ -4,11 +4,13 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useApi } from '../../hooks/useApi';
 import { RootStackParamList } from '../AppScreenStack';
 import { GoogleLoginButton } from './GoogleSignInButton';
+import { useConfig } from '../../hooks/useConfig';
 
 const LoginScreen: React.FC = () => {
     const [identifier, setIdentifer] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const config = useConfig();
     const { api, setRequestToken } = useApi();
     const handleLogin = async () => {
         const loginResp = await api.userApi.login({ identifier, password });
@@ -17,27 +19,27 @@ const LoginScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Username/Email"
-                value={identifier}
-                onChangeText={setIdentifer}
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-            <Button title="Login" onPress={handleLogin} />
+            {config.showUsernameLoginBlock && <><Text style={styles.title}>Login</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Username/Email"
+                    value={identifier}
+                    onChangeText={setIdentifer}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                />
+                <Button title="Login" onPress={handleLogin} />
+                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                    <Text style={styles.link}>Don't have an account? Sign up</Text>
+                </TouchableOpacity></>}
             <GoogleLoginButton />
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                <Text style={styles.link}>Don't have an account? Sign up</Text>
-            </TouchableOpacity>
         </View>
     );
 };

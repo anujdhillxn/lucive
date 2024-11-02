@@ -14,6 +14,8 @@ import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { hasAChange, isApprovalRequired } from '../../../utils/validation';
+import { useAppContext } from '../../../hooks/useAppContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const AppItem: React.FC<AppInfo> = ({ displayName, packageName, icon }) => (
 //     <View style={styles.appItem}>
@@ -32,6 +34,7 @@ export const RuleCreatorScreen: React.FC = () => {
     const route = useRoute<RuleEditorRouteProp>();
     const rule = route.params;
     const { api } = useApi();
+    const { rules } = useAppContext();
     const { setRules } = useActions();
     const [selectedApp, setSelectedApp] = useState<string>(rule?.app || '');
     const [dailyMaxMinutes, setDailyMaxMinutes] = useState(rule?.dailyMaxSeconds ? Math.floor(rule.dailyMaxSeconds / 60) : 30);
@@ -73,7 +76,9 @@ export const RuleCreatorScreen: React.FC = () => {
         const newRule = getNewRule();
         if (rule) {
             api.ruleApi.updateRule(newRule).then((updatedRule) => {
-                setRules((rules) => rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r));
+                const newRules = rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r);
+                setRules(newRules);
+                AsyncStorage.setItem('rules', JSON.stringify(newRules));
                 showNotification('Rule updated successfully', 'success');
                 navigation.navigate('Home');
             }).catch((e) => {
@@ -83,7 +88,9 @@ export const RuleCreatorScreen: React.FC = () => {
         }
         else {
             api.ruleApi.createRule(newRule).then((createdRule) => {
-                setRules((rules) => [...rules, createdRule]);
+                const newRules = [...rules, createdRule];
+                setRules(newRules);
+                AsyncStorage.setItem('rules', JSON.stringify(newRules));
                 showNotification('Rule created successfully', 'success');
                 navigation.navigate('Home');
             }).catch((e) => {

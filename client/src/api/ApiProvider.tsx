@@ -10,7 +10,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const config = useConfig();
     const baseUrl = config.apiUrl;
     React.useEffect(() => {
-        AsyncStorage.getItem("userToken").then((token) => {
+        AsyncStorage.getItem("requestToken").then((token) => {
             token && setRequestToken(token);
         });
     }, []);

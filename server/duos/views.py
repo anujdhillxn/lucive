@@ -1,4 +1,6 @@
 import uuid
+from django.http import HttpResponseRedirect
+from django.views import View
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from .models import Duo
@@ -36,3 +38,13 @@ class DeleteDuoView(generics.DestroyAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.delete()
         return Response(new_user_token, status=status.HTTP_200_OK)
+    
+class DeepLinkRedirectView(View):
+    def get(self, request, *args, **kwargs):
+        invitation_token = kwargs.get('invitation_token')
+        if invitation_token:
+            deep_link_url = f"com.zenvia://open?invitationToken={invitation_token}"
+            return HttpResponseRedirect(deep_link_url)
+        else:
+            # Handle the case where the invitation token is missing
+            return Response("Invitation token is missing", status=status.HTTP_400_BAD_REQUEST)

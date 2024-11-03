@@ -9,11 +9,13 @@ import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useConfig } from '../../../hooks/useConfig';
 
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
     const { setMyDuo } = useActions();
-    const appUrl = `com.zenvia://open?invitationToken=${user?.invitationToken}`;
+    const config = useConfig();
+    const appUrl = config.apiUrl + 'deeplink?invitationToken=' + user?.invitationToken;
     const handleShare = async () => {
         try {
             await Share.share({

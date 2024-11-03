@@ -6,6 +6,7 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
+import { config } from '../../../config';
 
 const UserScreen: React.FC = () => {
     const { user } = useAppContext();
@@ -42,7 +43,7 @@ const UserScreen: React.FC = () => {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>{`Hi ${user.username}`}</Text>
-                <Button title="Logout" onPress={handleLogout} />
+                {config.showLogoutButton && <Button title="Logout" onPress={handleLogout} />}
             </View>
             <TouchableOpacity onPress={() => setIsChangingUsername(!isChangingUsername)}>
                 <Text style={styles.changeUsernameText}>Change Username</Text>

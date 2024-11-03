@@ -43,17 +43,19 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
         </Text>
         {rule.hourlyMaxSeconds &&
             <Text style={styles.timeLimit}>
-                <Text>
-                    Hourly: {currentHourlyUsage}/
-                </Text>
+                {'Hourly: '}
+                {rule.isMyRule && <Text>
+                    {currentHourlyUsage}/
+                </Text>}
                 <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.hourlyMaxSeconds!) : ''} old={formatTime(rule.hourlyMaxSeconds)} changed={Boolean(rule.modificationData && rule.hourlyMaxSeconds !== rule.modificationData.hourlyMaxSeconds)} />
             </Text>}
         {rule.dailyMaxSeconds &&
             <>
                 <Text style={styles.timeLimit}>
-                    <Text>
-                        Daily: {currentDailyUsage}/
-                    </Text>
+                    {"Daily: "}
+                    {rule.isMyRule && <Text>
+                        {currentDailyUsage}/
+                    </Text>}
                     <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.dailyMaxSeconds!) : ''} old={formatTime(rule.dailyMaxSeconds)} changed={Boolean(rule.modificationData && rule.dailyMaxSeconds !== rule.modificationData.dailyMaxSeconds)} />
                 </Text>
                 <Text style={styles.timeLimit}>

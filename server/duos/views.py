@@ -3,6 +3,8 @@ from django.http import HttpResponseRedirect
 from django.views import View
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
+
+from .responses import CustomSchemeRedirect
 from .models import Duo
 from .serializers import CreateDuoSerializer, DeleteDuoSerializer, DuoInfoSerializer
 from django.db.models import Q
@@ -44,7 +46,7 @@ class DeepLinkRedirectView(View):
         invitation_token = kwargs.get('invitation_token')
         if invitation_token:
             deep_link_url = f"com.zenvia://open?invitationToken={invitation_token}"
-            return HttpResponseRedirect(deep_link_url)
+            return CustomSchemeRedirect(deep_link_url)
         else:
             # Handle the case where the invitation token is missing
             return Response("Invitation token is missing", status=status.HTTP_400_BAD_REQUEST)

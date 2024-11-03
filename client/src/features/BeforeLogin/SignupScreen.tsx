@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { useApi } from '../../hooks/useApi';
+import { useNotification } from '../../contexts/NotificationContext';
 
 const SignupScreen: React.FC = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { setRequestToken, api } = useApi();
-
+    const { showNotification } = useNotification();
     const handleSignup = async () => {
-        const registerResp = await api.userApi.register({ username, email, password });
-        setRequestToken(registerResp.token);
+        api.userApi.register({ username, email, password }).then((resp) => {
+            setRequestToken(resp.token);
+        }).catch((error) => {
+            console.error('Error signing up', error);
+            showNotification('Error signing up', 'failure');
+        });
     };
 
     return (

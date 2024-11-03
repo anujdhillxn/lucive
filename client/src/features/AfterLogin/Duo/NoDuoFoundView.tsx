@@ -9,13 +9,12 @@ import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useConfig } from '../../../hooks/useConfig';
+import { config } from '../../../config';
 
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
     const { setMyDuo } = useActions();
-    const config = useConfig();
-    const appUrl = config.apiUrl + 'deeplink?invitationToken=' + user?.invitationToken;
+    const appUrl = config.apiUrl + 'duos/deeplink/' + user?.invitationToken + '/';
     const handleShare = async () => {
         try {
             await Share.share({
@@ -34,6 +33,7 @@ export const NoDuoFoundView: React.FC = () => {
         const url = event.url;
         const params = new URLSearchParams(url.split('?')[1]);
         const invitationToken = params.get('invitationToken');
+        console.log(url);
         if (invitationToken) {
             api.duoApi.createDuo(invitationToken).then((duo) => {
                 setMyDuo(duo);

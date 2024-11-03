@@ -45,7 +45,7 @@ export const AppScreenStack: React.FC = () => {
         </SafeAreaView>
     }
 
-    return <Stack.Navigator initialRouteName={Boolean(myDuo) ? "Home" : "Duo"}>
+    return <Stack.Navigator initialRouteName="Home">
         <Stack.Screen
             name="Home"
             component={HomeScreen}

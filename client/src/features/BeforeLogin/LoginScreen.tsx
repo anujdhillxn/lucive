@@ -4,17 +4,22 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useApi } from '../../hooks/useApi';
 import { RootStackParamList } from '../AppScreenStack';
 import { GoogleLoginButton } from './GoogleSignInButton';
-import { useConfig } from '../../hooks/useConfig';
+import { useNotification } from '../../contexts/NotificationContext';
+import { config } from '../../config';
 
 const LoginScreen: React.FC = () => {
     const [identifier, setIdentifer] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const config = useConfig();
     const { api, setRequestToken } = useApi();
-    const handleLogin = async () => {
-        const loginResp = await api.userApi.login({ identifier, password });
-        setRequestToken(loginResp.token);
+    const {showNotification} = useNotification();
+    const handleLogin = () => {
+        api.userApi.login({ identifier, password }).then((resp) => {
+            setRequestToken(resp.token);
+        }).catch((error) => {
+            console.error('Error logging in', error);
+            showNotification('Error logging in', 'failure');
+        });
     };
 
     return (

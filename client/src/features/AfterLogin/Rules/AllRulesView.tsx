@@ -1,20 +1,25 @@
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { MyRulesHeaderRenderer, PartnerRulesHeaderRenderer } from '../../../components/RuleMenuHeader';
 import { useAppContext } from '../../../hooks/useAppContext';
 import RuleCardContainer from './RuleCardContainer';
 import { RootStackParamList } from '../../AppScreenStack';
 import { HideableView } from '../../../components/HideableView';
-import { Rule } from '../../../types/state';
-import { useNativeContext } from '../../../hooks/useNativeContext';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useActions } from '../../../hooks/useActions';
 
 export const AllRulesView: React.FC = () => {
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
+    const [refreshing, setRefreshing] = React.useState(false);
+    const { fetchData } = useActions();
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchData();
+        setRefreshing(false);
+    };
     const navigateToRuleCreator = () => {
         navigation.navigate('RuleCreator');
     };
@@ -28,7 +33,9 @@ export const AllRulesView: React.FC = () => {
         return () => <RuleCardContainer rule={rule} />;
     });
     return (
-        <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.container} refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
             <TouchableOpacity style={styles.createButton} onPress={navigateToRuleCreator}>
                 <Text style={styles.createButtonText}>Create New Rule</Text>
                 <Icon name="add" size={20} color="#fff" />

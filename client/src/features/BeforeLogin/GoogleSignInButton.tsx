@@ -2,10 +2,12 @@ import React from 'react';
 import { Button, Alert } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useApi } from '../../hooks/useApi';
+import { useNotification } from '../../contexts/NotificationContext';
 
 export const GoogleLoginButton = () => {
 
     const { api, setRequestToken } = useApi();
+    const { showNotification } = useNotification();
     const signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
@@ -14,7 +16,7 @@ export const GoogleLoginButton = () => {
             setRequestToken(signInResp.token);
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", "Sign-in failed");
+            showNotification('Error logging in with Google', 'failure');
         }
     };
 

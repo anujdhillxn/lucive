@@ -14,6 +14,7 @@ export type AppActionsProps = {
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
     setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
     setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
+    fetchData: () => Promise<void>;
 };
 
 export const AppContext = React.createContext<AppContextProps | undefined>(
@@ -108,7 +109,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, [requestToken]);
 
     return <AppContext.Provider value={{ user, myDuo, rules, appLoading }}>
-        <AppActions.Provider value={{ setUser, setMyDuo, setRules }}>
+        <AppActions.Provider value={{ setUser, setMyDuo, setRules, fetchData }}>
             {children}
         </AppActions.Provider>
     </AppContext.Provider>

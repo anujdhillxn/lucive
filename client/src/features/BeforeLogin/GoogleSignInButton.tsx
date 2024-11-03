@@ -10,7 +10,6 @@ export const GoogleLoginButton = () => {
         try {
             await GoogleSignin.hasPlayServices();
             const resp = await GoogleSignin.signIn();
-            console.log(resp);
             const signInResp = await api.userApi.googleLogin(resp.data?.idToken || '')
             setRequestToken(signInResp.token);
         } catch (error) {

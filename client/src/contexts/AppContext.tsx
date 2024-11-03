@@ -43,7 +43,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const fetchAndSetUser = async () => {
         try {
             const localResp = await AsyncStorage.getItem('user');
-            console.log(localResp);
             if (localResp) {
                 setUser(JSON.parse(localResp));
             }

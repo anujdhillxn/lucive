@@ -11,7 +11,7 @@ export const ConfigContext = createContext<Config | undefined>(undefined);
 
 // Define environment-specific values
 const config: Config = {
-    apiUrl: __DEV__ ? 'https://api-dev.example.com' : 'https://api-prod.example.com',
+    apiUrl: __DEV__ ? 'http://localhost:8000/api/' : 'http://localhost:8000/api/',
     showUsernameLoginBlock: __DEV__ ? true : false,
 };
 

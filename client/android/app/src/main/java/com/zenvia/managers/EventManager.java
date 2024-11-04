@@ -3,6 +3,7 @@ package com.zenvia.managers;
 import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.zenvia.models.Event;
 import com.zenvia.utils.AppUtils;
@@ -38,6 +39,9 @@ public class EventManager {
             } else {
                 Event lastEvent = packageEvents.get(packageEvents.size() - 1);
                 if (lastEvent.getTimeStamp() >= timestamp) {
+                    return;
+                }
+                if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_BACKGROUND && eventType == UsageEvents.Event.MOVE_TO_BACKGROUND) {
                     return;
                 }
                 if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) { // last app open's closing event was not recorded, so we remove the last event. Will not count some screentime, but it's better than counting it for the wrong app

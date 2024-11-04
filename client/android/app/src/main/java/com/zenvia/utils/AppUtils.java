@@ -31,12 +31,10 @@ public class AppUtils {
         "com.netflix.mediaclient", // Netflix
         "com.hulu.plus", // Hulu
         "com.amazon.avod.thirdpartyclient", // Prime Video
-        "com.disney.disneyplus", // Disney+
-        "com.tinder", // Tinder
-        "com.okcupid.okcupid", // OkCupid
         "com.bumble.app", // Bumble
         "co.hinge.app", // Hinge
-        "com.match.com" // Match.com
+        "com.google.android.youtube", //Youtube
+        "com.linkedin.android", // LinkedIn
     };
 
     public static Calendar parseTimeString(String timeString) {

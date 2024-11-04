@@ -24,6 +24,8 @@
     <package android:name="com.bumble.app"/>  <!-- Bumble -->
     <package android:name="co.hinge.app"/>  <!-- Hinge -->
     <package android:name="com.match.com"/>  <!-- Match.com -->
+    <package android:name="com.google.android.youtube"/>  <!-- YouTube -->
+    <package android:name="com.linkedin.android"/>  <!-- LinkedIn -->
     <intent>
       <action android:name="android.intent.action.VIEW"/>
       <category android:name="android.intent.category.BROWSABLE"/>

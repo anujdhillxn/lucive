@@ -45,27 +45,35 @@ export const AppScreenStack: React.FC = () => {
         </SafeAreaView>
     }
 
-    return <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={({ navigation }) => ({
-                headerRight: () => (
-                    <View style={{ flexDirection: 'row' }}>
-                        {myDuo && <TouchableOpacity onPress={() => navigation.navigate('Duo')}>
-                            <Icon5 name="user-friends" size={30} color="#000" style={{ marginRight: 10 }} />
-                        </TouchableOpacity>}
-                        <TouchableOpacity onPress={() => navigation.navigate('User')}>
-                            <Icon name="user" size={30} color="#000" style={{ marginRight: 10 }} />
-                        </TouchableOpacity>
-                    </View>
-                ),
-            })}
-        />
-        <Stack.Screen name="User" component={UserScreen} />
-        <Stack.Screen name="RuleCreator" component={RuleCreatorScreen} />
-        <Stack.Screen name="Duo" component={DuoScreen} />
-    </Stack.Navigator>
+    return <SafeAreaView style={styles.container}>
+        <Stack.Navigator initialRouteName="Home">
+            <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={({ navigation }) => ({
+                    title: 'Zenvia',
+                    headerRight: () => (
+                        <View style={{ flexDirection: 'row' }}>
+                            {myDuo && <TouchableOpacity onPress={() => navigation.navigate('Duo')}>
+                                <Icon5 name="user-friends" size={30} color="#000" style={{ marginRight: 10 }} />
+                            </TouchableOpacity>}
+                            <TouchableOpacity onPress={() => navigation.navigate('User')}>
+                                <Icon name="user" size={30} color="#000" style={{ marginRight: 10 }} />
+                            </TouchableOpacity>
+                        </View>
+                    ),
+                })}
+            />
+            <Stack.Screen name="User" component={UserScreen} options={
+                () => (
+                    { title: user.username }
+                )
+            } />
+            <Stack.Screen name="RuleCreator" component={RuleCreatorScreen} options={
+                ({ route }) => ({ title: route.params ? 'Edit Rule' : 'Create Rule' })
+            } />
+            <Stack.Screen name="Duo" component={DuoScreen} />
+        </Stack.Navigator></SafeAreaView>
 }
 
 const styles = StyleSheet.create({

@@ -41,7 +41,7 @@ export const AllRulesView: React.FC = () => {
                 <Icon name="add" size={20} color="#fff" />
             </TouchableOpacity>
             <HideableView
-
+                openedInitially
                 Header={MyRulesHeaderRenderer}
                 Components={MyRuleComponents}
             />

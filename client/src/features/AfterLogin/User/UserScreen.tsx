@@ -42,12 +42,10 @@ const UserScreen: React.FC = () => {
     return user ? (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>{`Hi ${user.username}`}</Text>
+                <Button title="Change Username" onPress={() => setIsChangingUsername(true)} />
                 {config.showLogoutButton && <Button title="Logout" onPress={handleLogout} />}
             </View>
-            <TouchableOpacity onPress={() => setIsChangingUsername(!isChangingUsername)}>
-                <Text style={styles.changeUsernameText}>Change Username</Text>
-            </TouchableOpacity>
+
             {isChangingUsername && (
                 <View style={styles.changeUsernameContainer}>
                     <TextInput

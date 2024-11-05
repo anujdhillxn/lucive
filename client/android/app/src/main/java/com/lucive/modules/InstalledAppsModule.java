@@ -44,7 +44,7 @@ public class InstalledAppsModule extends ReactContextBaseJavaModule {
 
             for (ApplicationInfo app : apps) {
                 for (String packageName : AppUtils.TARGET_PACKAGES) {
-                    if (app.packageName.equals(packageName) && (app.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                    if (app.packageName.equals(packageName)) {
                         targetApps.add(app);
                     }
                 }

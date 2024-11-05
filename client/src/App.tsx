@@ -10,7 +10,7 @@ import { ConfirmModalProvider } from './contexts/ConfirmModalContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
 GoogleSignin.configure({
-    webClientId: '437935332203-n66ssb26co1452gnk6v1qe1hh0duv0ql.apps.googleusercontent.com',
+    webClientId: '517721570590-tt54mso1lts163bib4j3ibrrseibr347.apps.googleusercontent.com',
 });
 
 export default function App() {

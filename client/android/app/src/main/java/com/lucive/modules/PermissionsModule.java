@@ -1,4 +1,4 @@
-package com.zenvia.modules;
+package com.lucive.modules;
 
 import android.app.AppOpsManager;
 import android.content.Context;

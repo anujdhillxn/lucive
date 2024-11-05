@@ -1,11 +1,11 @@
-package com.zenvia.utils;
+package com.lucive.utils;
 
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 
-import com.zenvia.models.Event;
+import com.lucive.models.Event;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

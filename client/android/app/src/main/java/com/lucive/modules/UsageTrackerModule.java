@@ -1,4 +1,4 @@
-package com.zenvia.modules;
+package com.lucive.modules;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -7,9 +7,9 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.zenvia.models.Rule;
-import com.zenvia.services.UsageTrackerService;
-import com.zenvia.utils.AppUtils;
+import com.lucive.models.Rule;
+import com.lucive.services.UsageTrackerService;
+import com.lucive.utils.AppUtils;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;

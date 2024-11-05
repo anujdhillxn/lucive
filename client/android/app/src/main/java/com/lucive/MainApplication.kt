@@ -1,8 +1,8 @@
-package com.zenvia
+package com.lucive
 
 import android.app.Application
 import android.content.res.Configuration
-import com.zenvia.modules.ZenviaPackage
+import com.lucive.modules.LucivePackage
 
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -24,7 +24,7 @@ class MainApplication : Application(), ReactApplication {
             // Packages that cannot be autolinked yet can be added manually here, for example:
             // packages.add(new MyReactNativePackage());
             val packages = PackageList(this).packages
-            packages.add(ZenviaPackage())
+            packages.add(LucivePackage())
             println(packages);
             return packages;
           }

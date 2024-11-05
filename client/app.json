@@ -1,7 +1,7 @@
 {
     "expo": {
-        "name": "zenvia",
-        "slug": "zenvia",
+        "name": "lucive",
+        "slug": "lucive",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
@@ -19,7 +19,7 @@
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.zenvia"
+            "package": "com.lucive"
         },
         "web": {
             "favicon": "./assets/favicon.png"

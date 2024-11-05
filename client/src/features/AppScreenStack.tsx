@@ -51,7 +51,7 @@ export const AppScreenStack: React.FC = () => {
                 name="Home"
                 component={HomeScreen}
                 options={({ navigation }) => ({
-                    title: 'Zenvia',
+                    title: 'Lucive',
                     headerRight: () => (
                         <View style={{ flexDirection: 'row' }}>
                             {myDuo && <TouchableOpacity onPress={() => navigation.navigate('Duo')}>

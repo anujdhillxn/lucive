@@ -1,6 +1,6 @@
-package com.zenvia.models;
+package com.lucive.models;
 
-import com.zenvia.utils.AppUtils;
+import com.lucive.utils.AppUtils;
 
 import java.util.Calendar;
 

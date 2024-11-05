@@ -1,4 +1,4 @@
-package com.zenvia.services;
+package com.lucive.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.zenvia.R;
+import com.lucive.R;
 
 public class FloatingWindowService extends Service {
     private WindowManager windowManager;

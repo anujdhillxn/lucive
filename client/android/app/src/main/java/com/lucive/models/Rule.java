@@ -1,4 +1,4 @@
-package com.zenvia.models;
+package com.lucive.models;
 
 import java.util.Calendar;
 

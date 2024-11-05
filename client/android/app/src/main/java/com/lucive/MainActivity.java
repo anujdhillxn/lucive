@@ -1,4 +1,4 @@
-package com.zenvia;
+package com.lucive;
 
 import android.os.Build;
 import android.os.Bundle;

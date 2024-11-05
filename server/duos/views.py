@@ -45,7 +45,7 @@ class DeepLinkRedirectView(View):
     def get(self, request, *args, **kwargs):
         invitation_token = kwargs.get('invitation_token')
         if invitation_token:
-            deep_link_url = f"com.zenvia://open?invitationToken={invitation_token}"
+            deep_link_url = f"com.lucive://open?invitationToken={invitation_token}"
             return CustomSchemeRedirect(deep_link_url)
         else:
             # Handle the case where the invitation token is missing

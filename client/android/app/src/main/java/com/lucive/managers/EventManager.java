@@ -1,12 +1,12 @@
-package com.zenvia.managers;
+package com.lucive.managers;
 
 import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.zenvia.models.Event;
-import com.zenvia.utils.AppUtils;
+import com.lucive.models.Event;
+import com.lucive.utils.AppUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;

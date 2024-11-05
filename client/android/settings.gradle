@@ -44,7 +44,7 @@ if (getRNMinorVersion() >= 75) {
   }
 }
 
-rootProject.name = 'zenvia'
+rootProject.name = 'lucive'
 
 dependencyResolutionManagement {
   versionCatalogs {

@@ -109,14 +109,14 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.zenvia'
+    namespace 'com.lucive'
     defaultConfig {
-        applicationId 'com.zenvia'
+        applicationId 'com.lucive'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
-        resValue "string", "app_name", "Zenvia"
+        resValue "string", "app_name", "Lucive"
     }
     signingConfigs {
         debug {
@@ -129,7 +129,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            resValue "string", "app_name", "Zenvia Dev"
+            resValue "string", "app_name", "Lucive Dev"
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -139,7 +139,7 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
-            resValue "string", "app_name", "Zenvia"
+            resValue "string", "app_name", "Lucive"
         }
     }
     packagingOptions {

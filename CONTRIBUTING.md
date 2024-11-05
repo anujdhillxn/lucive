@@ -1,4 +1,4 @@
-# Contributing to Zenvia
+# Contributing to Lucive
 
 We welcome contributions from the community! To contribute to this project, please follow these steps:
 

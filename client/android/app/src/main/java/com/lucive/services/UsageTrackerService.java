@@ -1,4 +1,4 @@
-package com.zenvia.services;
+package com.lucive.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,9 +14,9 @@ import android.os.IBinder;
 import android.os.Looper;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
-import com.zenvia.managers.EventManager;
-import com.zenvia.models.Rule;
-import com.zenvia.utils.AppUtils;
+import com.lucive.managers.EventManager;
+import com.lucive.models.Rule;
+import com.lucive.utils.AppUtils;
 
 import java.util.Calendar;
 import java.util.Map;

@@ -1,6 +1,6 @@
-# Zenvia - Digital Detox and Screen Time Management
+# Lucive - Digital Detox and Screen Time Management
 
-Zenvia is an application designed to help users take control of their screen time. With Zenvia, users form duos to keep each other accountable and stay on track with their digital detox goals.
+Lucive is an application designed to help users take control of their screen time. With Lucive, users form duos to keep each other accountable and stay on track with their digital detox goals.
 
 ## Features
 

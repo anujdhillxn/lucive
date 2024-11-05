@@ -23,7 +23,7 @@ export const PermissionsScreen: React.FC = () => {
             <View style={styles.container}>
                 <Text style={styles.title}>
                     {permissions.hasUsageStatsPermission === undefined ? "Checking for usage stats permissions..." : permissions.hasUsageStatsPermission === false
-                        ? "Zenvia needs Usage Stats Permissions to monitor your screentime. Please enable them to continue."
+                        ? "Lucive needs Usage Stats Permissions to monitor your screentime. Please enable them to continue."
                         : null}
                 </Text>
                 {permissions.hasUsageStatsPermission === false && (
@@ -38,7 +38,7 @@ export const PermissionsScreen: React.FC = () => {
             <View style={styles.container}>
                 <Text style={styles.title}>
                     {permissions.hasOverlayPermission === undefined ? "Checking for overlay permissions..." : permissions.hasOverlayPermission === false
-                        ? "Zenvia needs Overlay Permissions to show you the screen time limit. Please enable them to continue." : null}
+                        ? "Lucive needs Overlay Permissions to show you the screen time limit. Please enable them to continue." : null}
                 </Text>
                 {permissions.hasOverlayPermission === false && (
                     <Button title="Grant Overlay Permissions" onPress={() => requestOverlayPermission()} />

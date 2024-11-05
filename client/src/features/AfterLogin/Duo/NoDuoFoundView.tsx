@@ -18,7 +18,7 @@ export const NoDuoFoundView: React.FC = () => {
     const handleShare = async () => {
         try {
             await Share.share({
-                message: `Join me on Zenvia: ${appUrl}`,
+                message: `Join me on Lucive: ${appUrl}`,
             });
         } catch (error) {
             console.error('Error sharing', error);

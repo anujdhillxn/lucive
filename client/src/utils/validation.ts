@@ -5,32 +5,45 @@ export const hasAChange = (newRule: Rule, rule: Rule): boolean => {
         newRule.dailyMaxSeconds !== rule.dailyMaxSeconds ||
         newRule.hourlyMaxSeconds !== rule.hourlyMaxSeconds ||
         newRule.dailyReset !== rule.dailyReset ||
-        newRule.isActive !== rule.isActive
+        newRule.isActive !== rule.isActive ||
+        newRule.sessionMaxSeconds !== rule.sessionMaxSeconds ||
+        newRule.isDailyMaxSecondsEnforced !== rule.isDailyMaxSecondsEnforced ||
+        newRule.isHourlyMaxSecondsEnforced !==
+            rule.isHourlyMaxSecondsEnforced ||
+        newRule.isSessionMaxSecondsEnforced !==
+            rule.isSessionMaxSecondsEnforced ||
+        newRule.isStartupDelayEnabled !== rule.isStartupDelayEnabled
     );
 };
 
 export const isApprovalRequired = (newRule: Rule, rule: Rule): boolean => {
     const dailyMaxSecondsRemoved =
-        !!rule.dailyMaxSeconds && !newRule.dailyMaxSeconds;
+        rule.isDailyMaxSecondsEnforced && !newRule.isDailyMaxSecondsEnforced;
     const hourlyMaxSecondsRemoved =
-        !!rule.hourlyMaxSeconds && !newRule.hourlyMaxSeconds;
+        rule.isHourlyMaxSecondsEnforced && !newRule.isHourlyMaxSecondsEnforced;
+    const sessionMaxSecondsRemoved =
+        rule.isSessionMaxSecondsEnforced &&
+        !newRule.isSessionMaxSecondsEnforced;
     const dailyResetChanged = rule.dailyReset !== newRule.dailyReset;
     const isActiveChanged = rule.isActive !== newRule.isActive;
     const dailyMaxSecondsIncreased =
-        !!rule.dailyMaxSeconds &&
-        !!newRule.dailyMaxSeconds &&
         rule.dailyMaxSeconds < newRule.dailyMaxSeconds;
     const hourlyMaxSecondsIncreased =
-        !!rule.hourlyMaxSeconds &&
-        !!newRule.hourlyMaxSeconds &&
         rule.hourlyMaxSeconds < newRule.hourlyMaxSeconds;
+    const sessionMaxSecondsIncreased =
+        rule.sessionMaxSeconds < newRule.sessionMaxSeconds;
+    const startupDelayDisabled =
+        rule.isStartupDelayEnabled && !newRule.isStartupDelayEnabled;
     return (
         dailyMaxSecondsRemoved ||
         hourlyMaxSecondsRemoved ||
+        sessionMaxSecondsRemoved ||
         dailyResetChanged ||
         isActiveChanged ||
         dailyMaxSecondsIncreased ||
-        hourlyMaxSecondsIncreased
+        hourlyMaxSecondsIncreased ||
+        sessionMaxSecondsIncreased ||
+        startupDelayDisabled
     );
 };
 

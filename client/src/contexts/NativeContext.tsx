@@ -17,9 +17,7 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
     const { rules } = useAppContext();
     const { requestUsageStatsPermission, requestOverlayPermission } = PermissionsModule;
     const setRules = () => {
-        if (rules !== undefined) {
-            UsageTracker.setRules(rules?.filter(rule => rule.isMyRule));
-        }
+        UsageTracker.setRules(rules?.filter(rule => rule.isMyRule));
     }
     const [installedApps, setInstalledApps] = React.useState<Record<string, AppInfo>>({});
     const [permissions, setPermissions] = React.useState<Permissions>({});

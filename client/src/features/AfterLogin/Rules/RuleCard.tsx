@@ -41,7 +41,7 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
         <Text style={styles.title}>
             {rule.appDisplayName} (<StrikeThroughText new={rule.modificationData?.isActive ? "Active" : "Inactive"} old={rule.isActive ? "Active" : "Inactive"} changed={Boolean(rule.modificationData && rule.isActive !== rule.modificationData?.isActive)} />)
         </Text>
-        {rule.hourlyMaxSeconds &&
+        {rule.isHourlyMaxSecondsEnforced &&
             <Text style={styles.timeLimit}>
                 {'Hourly: '}
                 {rule.isMyRule && <Text>
@@ -49,7 +49,7 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
                 </Text>}
                 <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.hourlyMaxSeconds!) : ''} old={formatTime(rule.hourlyMaxSeconds)} changed={Boolean(rule.modificationData && rule.hourlyMaxSeconds !== rule.modificationData.hourlyMaxSeconds)} />
             </Text>}
-        {rule.dailyMaxSeconds &&
+        {rule.isDailyMaxSecondsEnforced &&
             <>
                 <Text style={styles.timeLimit}>
                     {"Daily: "}
@@ -63,6 +63,19 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
                     <StrikeThroughText new={rule.modificationData ? convertHHMMSSToDate(rule.modificationData?.dailyReset!).toLocaleTimeString() : ''} old={convertHHMMSSToDate(rule.dailyReset).toLocaleTimeString()} changed={Boolean(rule.modificationData && rule.dailyReset !== rule.modificationData.dailyReset)} />
                 </Text>
             </>
+        }
+        {rule.isSessionMaxSecondsEnforced &&
+            <>
+                <Text style={styles.timeLimit}>
+                    {"Session Limit: "}
+                    <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.sessionMaxSeconds!) : ''} old={formatTime(rule.sessionMaxSeconds)} changed={Boolean(rule.modificationData && rule.sessionMaxSeconds !== rule.modificationData.sessionMaxSeconds)} />
+                </Text>
+            </>}
+        {rule.isStartupDelayEnabled &&
+            <Text style={styles.timeLimit}>
+                {"Startup Delay: "}
+                <StrikeThroughText new={rule.modificationData ? rule.modificationData?.isStartupDelayEnabled ? "Enabled" : "Disabled" : ''} old={rule.isStartupDelayEnabled ? "Enabled" : "Disabled"} changed={Boolean(rule.modificationData && rule.isStartupDelayEnabled !== rule.modificationData.isStartupDelayEnabled)} />
+            </Text>
         }
     </View>
 };

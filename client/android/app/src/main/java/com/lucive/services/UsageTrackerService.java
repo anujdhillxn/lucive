@@ -30,8 +30,9 @@ public class UsageTrackerService extends Service {
     private Handler handler;
     private Runnable trackingRunnable;
     private Runnable saveRunnable;
-    private static final long INTERVAL = 3 * 1000;
+    private static final long INTERVAL = 1000;
     private static final long SAVE_INTERVAL = 10 * 60 * 1000;
+    private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
 
     private EventManager eventManager;
@@ -120,18 +121,18 @@ public class UsageTrackerService extends Service {
     }
 
     private void checkScreenUsages() {
-        final long endTime = System.currentTimeMillis();
-        long startTime = endTime - 5 * 1000; // to avoid missing events
+        final long endTime = System.currentTimeMillis() + 1000;
+        long startTime = endTime - 3 * 1000; // to avoid missing events
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
         UsageEvents.Event event = new UsageEvents.Event();
 
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
-            eventManager.processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType());
+            eventManager.processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getClassName());
         }
 
         final String packageName = eventManager.getCurrentlyOpenedApp();
-        if (isHourlyLimitExceeded(packageName) || isDailyLimitExceeded(packageName)) {
+        if (isHourlyLimitExceeded(packageName) || isDailyLimitExceeded(packageName) || isSessionLimitExceeded(packageName) || delayStartup(packageName)) {
             final Intent showScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
             startService(showScreenTimeExceeded);
         } else {
@@ -167,7 +168,7 @@ public class UsageTrackerService extends Service {
 
     public boolean isHourlyLimitExceeded(final String packageName) {
         Rule rule = ruleMap.get(packageName);
-        if (rule == null || !rule.isActive()) {
+        if (rule == null || !rule.isActive() || !rule.isHourlyMaxSecondsEnforced()) {
             return false;
         }
         final int hourlyUsage = getHourlyScreentime(packageName);
@@ -176,11 +177,28 @@ public class UsageTrackerService extends Service {
 
     public boolean isDailyLimitExceeded(final String packageName) {
         Rule rule = ruleMap.get(packageName);
-        if (rule == null || !rule.isActive()) {
+        if (rule == null || !rule.isActive() || !rule.isDailyMaxSecondsEnforced()) {
             return false;
         }
         final int dailyUsage = getDailyScreentime(packageName);
         return dailyUsage >= rule.dailyMaxSeconds();
+    }
+
+    public boolean isSessionLimitExceeded(final String packageName) {
+        Rule rule = ruleMap.get(packageName);
+        if (rule == null || !rule.isActive() || !rule.isSessionMaxSecondsEnforced()) {
+            return false;
+        }
+        final int sessionDuration = (int) eventManager.getSessionTime(packageName) / 1000;
+        return sessionDuration >= rule.sessionMaxSeconds();
+    }
+
+    public boolean delayStartup(final String packageName) {
+        Rule rule = ruleMap.get(packageName);
+        if (rule == null || !rule.isActive() || !rule.isStartupDelayEnabled()) {
+            return false;
+        }
+        return eventManager.getSessionTime(packageName) < STARTUP_DELAY;
     }
 
     public void updateRules(final Map<String, Rule> newRules) {

@@ -10,7 +10,7 @@ import { ScrollView, Switch, TouchableOpacity } from 'react-native-gesture-handl
 import CustomTimePicker from '../../../components/CustomTimePicker';
 import { Rule } from '../../../types/state';
 import { useNativeContext } from '../../../hooks/useNativeContext';
-import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
+import { convertHHMMSSToDate, formatTime, getTodayMidnight } from '../../../utils/time';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { hasAChange, isApprovalRequired } from '../../../utils/validation';
@@ -36,12 +36,19 @@ export const RuleCreatorScreen: React.FC = () => {
     const { api } = useApi();
     const { rules } = useAppContext();
     const { setRules } = useActions();
+
     const [selectedApp, setSelectedApp] = useState<string>(rule?.app || '');
     const [dailyMaxMinutes, setDailyMaxMinutes] = useState(rule?.dailyMaxSeconds ? Math.floor(rule.dailyMaxSeconds / 60) : 30);
     const [hourlyMaxMinutes, setHourlyMaxMinutes] = useState(rule?.hourlyMaxSeconds ? Math.floor(rule.hourlyMaxSeconds / 60) : 5);
-    const [dailyReset, setDailyReset] = useState<Date>(rule?.dailyReset ? convertHHMMSSToDate(rule.dailyReset) : new Date());
+    const [sessionMaxMinutes, setSessionMaxMinutes] = useState(rule?.sessionMaxSeconds ? Math.floor(rule.sessionMaxSeconds / 60) : 5);
+    const [isDailyMaxSecondsEnforced, setIsDailyMaxSecondsEnforced] = useState(rule?.isDailyMaxSecondsEnforced ?? true);
+    const [isHourlyMaxSecondsEnforced, setIsHourlyMaxSecondsEnforced] = useState(rule?.isHourlyMaxSecondsEnforced ?? true);
+    const [isSessionMaxSecondsEnforced, setIsSessionMaxSecondsEnforced] = useState(rule?.isSessionMaxSecondsEnforced ?? true);
+    const [dailyReset, setDailyReset] = useState<Date>(rule?.dailyReset ? convertHHMMSSToDate(rule.dailyReset) : getTodayMidnight());
     const [isRuleActive, setIsRuleActive] = useState(rule?.isActive ?? true);
+    const [isStartupDelayEnabled, setIsStartupDelayEnabled] = useState(rule?.isStartupDelayEnabled ?? true);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
     const { installedApps } = useNativeContext();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { showNotification } = useNotification();
@@ -62,13 +69,18 @@ export const RuleCreatorScreen: React.FC = () => {
     const getNewRule = (): Rule => {
         return {
             app: selectedApp,
-            appDisplayName: installedApps[selectedApp].displayName,
+            appDisplayName: selectedApp in installedApps ? installedApps[selectedApp].displayName : selectedApp,
             isActive: isRuleActive,
             isMyRule: true,
             dailyMaxSeconds: dailyMaxMinutes * 60,
             hourlyMaxSeconds: hourlyMaxMinutes * 60,
+            sessionMaxSeconds: sessionMaxMinutes * 60,
+            isDailyMaxSecondsEnforced,
+            isHourlyMaxSecondsEnforced,
+            isSessionMaxSecondsEnforced,
             interventionType: 'FULL',
             dailyReset: dailyReset.toTimeString().split(' ')[0],
+            isStartupDelayEnabled
         }
     }
 
@@ -124,22 +136,64 @@ export const RuleCreatorScreen: React.FC = () => {
                         style={styles.switch}
                     />
                 </View>
-
+            </View>
+            <View style={styles.touchable}>
+                <View style={styles.switchContainer}>
+                    <Text style={styles.text}>Delay Startup</Text>
+                    <Switch
+                        value={isStartupDelayEnabled}
+                        onValueChange={(value) => setIsStartupDelayEnabled(value)}
+                        style={styles.switch}
+                    />
+                </View>
             </View>
             <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
                 <Text style={styles.text}>Daily Limit Reset</Text>
                 <Text style={styles.textSmall}>{dailyReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
             </TouchableOpacity>
-            <CustomTimePicker onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
+            <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                 <View style={styles.touchable}>
-                    <Text style={styles.text}>Daily Max Screen Time</Text>
-                    <Text style={styles.textSmall}>{formatTime(dailyMaxMinutes * 60)}</Text>
+                    <View style={styles.switchContainer}>
+                        <View>
+                            <Text style={styles.text}>Daily Max Screen Time</Text>
+                            <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? formatTime(dailyMaxMinutes * 60) : 'N/A'}</Text>
+                        </View>
+                        <Switch
+                            value={isDailyMaxSecondsEnforced}
+                            onValueChange={(value) => setIsDailyMaxSecondsEnforced(value)}
+                            style={styles.switch}
+                        />
+                    </View>
                 </View>
             </CustomTimePicker>
-            <CustomTimePicker hideHours onConfirm={(hh, mm) => setHourlyMaxMinutes(Number(hh) * 60 + Number(mm))}>
+            <CustomTimePicker editable={isHourlyMaxSecondsEnforced} hideHours onConfirm={(hh, mm) => setHourlyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                 <View style={styles.touchable}>
-                    <Text style={styles.text}>Hourly Max Screen Time</Text>
-                    <Text style={styles.textSmall}>{formatTime(hourlyMaxMinutes * 60)}</Text>
+                    <View style={styles.switchContainer}>
+                        <View>
+                            <Text style={styles.text}>Hourly Max Screen Time</Text>
+                            <Text style={styles.textSmall}>{isHourlyMaxSecondsEnforced ? formatTime(hourlyMaxMinutes * 60) : 'N/A'}</Text>
+                        </View>
+                        <Switch
+                            value={isHourlyMaxSecondsEnforced}
+                            onValueChange={(value) => setIsHourlyMaxSecondsEnforced(value)}
+                            style={styles.switch}
+                        />
+                    </View>
+                </View>
+            </CustomTimePicker>
+            <CustomTimePicker editable={isSessionMaxSecondsEnforced} onConfirm={(hh, mm) => setSessionMaxMinutes(Number(hh) * 60 + Number(mm))}>
+                <View style={styles.touchable}>
+                    <View style={styles.switchContainer}>
+                        <View>
+                            <Text style={styles.text}>Session Max Screen Time</Text>
+                            <Text style={styles.textSmall}>{isSessionMaxSecondsEnforced ? formatTime(sessionMaxMinutes * 60) : 'N/A'}</Text>
+                        </View>
+                        <Switch
+                            value={isSessionMaxSecondsEnforced}
+                            onValueChange={(value) => setIsSessionMaxSecondsEnforced(value)}
+                            style={styles.switch}
+                        />
+                    </View>
                 </View>
             </CustomTimePicker>
             <DateTimePickerModal
@@ -148,7 +202,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 onConfirm={handleConfirm}
                 onCancel={hideDatePicker}
             />
-            <Button title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} disabled={rule && !hasAChange(getNewRule(), rule)} onPress={confirm} />
+            <Button title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} disabled={selectedApp === '' || (rule && !hasAChange(getNewRule(), rule))} onPress={confirm} />
         </ScrollView>
     );
 };

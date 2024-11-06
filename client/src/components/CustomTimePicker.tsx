@@ -8,6 +8,7 @@ export type CustomTimePickerProps = {
     hideMinutes?: boolean;
     onConfirm: (hour: string, minute: string) => void;
     children: React.ReactNode;
+    editable?: boolean;
 }
 
 const CustomTimePicker = (props: CustomTimePickerProps) => {
@@ -19,6 +20,9 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
     const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')); // "00" to "59"
 
     const showPicker = () => {
+        if (!props.editable) {
+            return;
+        }
         setPickerVisible(true);
     };
 
@@ -61,7 +65,7 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
                             style={styles.picker}
                             onValueChange={(itemValue) => setSelectedMinute(itemValue)}
                         >
-                            {minutes.map((minute) => (
+                            {(selectedHour === '00' ? minutes.filter(minute => minute !== '00') : minutes).map((minute) => (
                                 <Picker.Item key={minute} label={minute} value={minute} />
                             ))}
                         </Picker>}

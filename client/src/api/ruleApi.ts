@@ -15,9 +15,13 @@ export const createRuleApi = (remote: Remote) => {
             daily_max_seconds: rule.dailyMaxSeconds,
             hourly_max_seconds: rule.hourlyMaxSeconds,
             session_max_seconds: rule.sessionMaxSeconds,
+            is_daily_max_seconds_enforced: rule.isDailyMaxSecondsEnforced,
+            is_hourly_max_seconds_enforced: rule.isHourlyMaxSecondsEnforced,
+            is_session_max_seconds_enforced: rule.isSessionMaxSecondsEnforced,
             intervention_type: rule.interventionType,
             daily_reset: rule.dailyReset,
             is_active: rule.isActive,
+            is_startup_delay_enabled: rule.isStartupDelayEnabled,
         });
     };
 
@@ -27,9 +31,13 @@ export const createRuleApi = (remote: Remote) => {
             daily_max_seconds: rule.dailyMaxSeconds,
             hourly_max_seconds: rule.hourlyMaxSeconds,
             session_max_seconds: rule.sessionMaxSeconds,
+            is_daily_max_seconds_enforced: rule.isDailyMaxSecondsEnforced,
+            is_hourly_max_seconds_enforced: rule.isHourlyMaxSecondsEnforced,
+            is_session_max_seconds_enforced: rule.isSessionMaxSecondsEnforced,
             intervention_type: rule.interventionType,
             daily_reset: rule.dailyReset,
             is_active: rule.isActive,
+            is_startup_delay_enabled: rule.isStartupDelayEnabled,
         });
     };
 

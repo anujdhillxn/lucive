@@ -1,4 +1,4 @@
 - green and ambient UI
 - use ApiResponse interface and type each Api properly
 - can we make event handling perfect?
-- change name
+- hourly, daily optional

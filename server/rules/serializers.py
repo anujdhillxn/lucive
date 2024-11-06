@@ -25,13 +25,14 @@ class RuleSerializer(serializers.ModelSerializer):
             'createdAt': ret['created_at'],
             'lastModifiedAt': ret['last_modified_at'],
             'isMyRule': self.get_isMyRule(instance),
+            'isDailyMaxSecondsEnforced': ret['is_daily_max_seconds_enforced'],
+            'isHourlyMaxSecondsEnforced': ret['is_hourly_max_seconds_enforced'],
+            'isSessionMaxSecondsEnforced': ret['is_session_max_seconds_enforced'],
+            'dailyMaxSeconds': ret['daily_max_seconds'],
+            'hourlyMaxSeconds': ret['hourly_max_seconds'],
+            'sessionMaxSeconds': ret['session_max_seconds'],
+            'isStartupDelayEnabled': ret['is_startup_delay_enabled']
         }
-        if ret['daily_max_seconds']:
-            res['dailyMaxSeconds'] = ret['daily_max_seconds']
-        if ret['hourly_max_seconds']:
-            res['hourlyMaxSeconds'] = ret['hourly_max_seconds']
-        if ret['session_max_seconds']:
-            res['sessionMaxSeconds'] = ret['session_max_seconds']
         return res
 
 class RuleModificationRequestSerializer(serializers.ModelSerializer):
@@ -52,13 +53,14 @@ class RuleModificationRequestSerializer(serializers.ModelSerializer):
             'dailyReset': ret['daily_reset'],
             'interventionType': ret['intervention_type'],
             'isMyRule': self.get_isMyRule(instance),
+            'isDailyMaxSecondsEnforced': ret['is_daily_max_seconds_enforced'],
+            'isHourlyMaxSecondsEnforced': ret['is_hourly_max_seconds_enforced'],
+            'isSessionMaxSecondsEnforced': ret['is_session_max_seconds_enforced'],
+            'dailyMaxSeconds': ret['daily_max_seconds'],
+            'hourlyMaxSeconds': ret['hourly_max_seconds'],
+            'sessionMaxSeconds': ret['session_max_seconds'],
+            'isStartupDelayEnabled': ret['is_startup_delay_enabled']
         }
-        if ret['daily_max_seconds']:
-            res['dailyMaxSeconds'] = ret['daily_max_seconds']
-        if ret['hourly_max_seconds']:
-            res['hourlyMaxSeconds'] = ret['hourly_max_seconds']
-        if ret['session_max_seconds']:
-            res['sessionMaxSeconds'] = ret['session_max_seconds']
         return res
 
 class DeleteRuleSerializer(serializers.Serializer):
@@ -73,18 +75,26 @@ class DeleteRuleSerializer(serializers.Serializer):
         if rule.is_active:
             raise serializers.ValidationError("You cannot delete an active rule.")
         data['rule'] = rule
+        try:
+            rule_mod_request = RuleModificationRequest.objects.get(user=user, app=app)
+            data['rule_mod_request'] = rule_mod_request
+        except RuleModificationRequest.DoesNotExist:
+            data['rule_mod_request'] = None
         return data
 
     def delete(self):
         rule = self.validated_data['rule']
+        rule_mod_request = self.validated_data['rule_mod_request']
+        if rule_mod_request:
+            rule_mod_request.delete()
         rule.delete()
       
 class CreateRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rule
         fields = [
-            'app', 'app_display_name', 'is_active', 'daily_max_seconds', 'hourly_max_seconds',
-            'session_max_seconds', 'daily_reset', 'intervention_type'
+            'app', 'app_display_name', 'is_active', 'daily_max_seconds', 'is_daily_max_seconds_enforced', 'hourly_max_seconds', 'is_hourly_max_seconds_enforced',
+            'session_max_seconds', 'is_session_max_seconds_enforced', 'daily_reset', 'intervention_type', 'is_startup_delay_enabled'
         ]
 
     def validate(self, data):
@@ -110,7 +120,9 @@ class UpdateRuleSerializer(serializers.ModelSerializer):
         model = Rule
         fields = [
             'app', 'is_active', 'daily_max_seconds', 'hourly_max_seconds',
-            'session_max_seconds', 'daily_reset', 'intervention_type'
+            'session_max_seconds', 'daily_reset', 'intervention_type',
+            'is_daily_max_seconds_enforced', 'is_hourly_max_seconds_enforced',
+            'is_session_max_seconds_enforced', 'is_startup_delay_enabled'
         ]
 
     def validate(self, data):
@@ -121,7 +133,12 @@ class UpdateRuleSerializer(serializers.ModelSerializer):
         self.check_if_max_seconds_removed(data, rule)
         self.check_if_intervention_relaxed(data, rule)
         self.check_if_daily_reset_changed(data, rule)
+        self.check_if_startup_delay_disabled(data, rule)
         return data
+    
+    def check_if_startup_delay_disabled(self, new_rule, old_rule):
+        if not new_rule.get('is_startup_delay_enabled') and old_rule.is_startup_delay_enabled:
+            raise serializers.ValidationError("You cannot disable the startup delay.")
     
     def check_if_daily_reset_changed(self, new_rule, old_rule):
         if new_rule.get('daily_reset') != old_rule.daily_reset:
@@ -148,32 +165,44 @@ class UpdateRuleSerializer(serializers.ModelSerializer):
             return
         if new_rule.get('intervention_type') != old_rule.intervention_type:
             return
+        if new_rule.get('is_daily_max_seconds_enforced') != old_rule.is_daily_max_seconds_enforced:
+            return
+        if new_rule.get('is_hourly_max_seconds_enforced') != old_rule.is_hourly_max_seconds_enforced:
+            return
+        if new_rule.get('is_session_max_seconds_enforced') != old_rule.is_session_max_seconds_enforced:
+            return
+        if new_rule.get('is_startup_delay_enabled') != old_rule.is_startup_delay_enabled:
+            return
         raise serializers.ValidationError("No changes detected.")
     
-    def check_if_max_seconds_removed(self, new_rule, old_rule):
-        if new_rule.get('daily_max_seconds') is None and old_rule.daily_max_seconds:
-            raise serializers.ValidationError("You cannot remove the daily max seconds.")
-        if new_rule.get('hourly_max_seconds') is None and old_rule.hourly_max_seconds:
-            raise serializers.ValidationError("You cannot remove the hourly max seconds.")
-        if new_rule.get('session_max_seconds') is None and old_rule.session_max_seconds:
-            raise serializers.ValidationError("You cannot remove the session max seconds.")
-
     def check_if_max_seconds_increased(self, new_rule, old_rule):
-        if new_rule.get('daily_max_seconds') and new_rule['daily_max_seconds'] > old_rule.daily_max_seconds:
+        if new_rule.get('daily_max_seconds') > old_rule.daily_max_seconds:
             raise serializers.ValidationError("You cannot increase the daily max seconds.")
-        if new_rule.get('hourly_max_seconds') and new_rule['hourly_max_seconds'] > old_rule.hourly_max_seconds:
+        if new_rule.get('hourly_max_seconds') > old_rule.hourly_max_seconds:
             raise serializers.ValidationError("You cannot increase the hourly max seconds.")
-        if new_rule.get('session_max_seconds') and new_rule['session_max_seconds'] > old_rule.session_max_seconds:
+        if new_rule.get('session_max_seconds') > old_rule.session_max_seconds:
             raise serializers.ValidationError("You cannot increase the session max seconds.")
+    
+    def check_if_max_seconds_removed(self, new_rule, old_rule):
+        if not new_rule.get('is_daily_max_seconds_enforced') and old_rule.is_daily_max_seconds_enforced:
+            raise serializers.ValidationError("You cannot remove the daily max seconds.")
+        if not new_rule.get('is_hourly_max_seconds_enforced') and old_rule.is_hourly_max_seconds_enforced:
+            raise serializers.ValidationError("You cannot remove the hourly max seconds.")
+        if not new_rule.get('is_session_max_seconds_enforced') and old_rule.is_session_max_seconds_enforced:
+            raise serializers.ValidationError("You cannot remove the session max seconds.")
 
     def update(self, instance, validated_data):
         instance.app = validated_data['app']
         instance.is_active = validated_data['is_active']
         instance.daily_max_seconds = validated_data['daily_max_seconds']
         instance.hourly_max_seconds = validated_data['hourly_max_seconds']
-        #instance.session_max_seconds = validated_data['session_max_seconds']
+        instance.session_max_seconds = validated_data['session_max_seconds']
+        instance.is_daily_max_seconds_enforced = validated_data['is_daily_max_seconds_enforced']
+        instance.is_hourly_max_seconds_enforced = validated_data['is_hourly_max_seconds_enforced']
+        instance.is_session_max_seconds_enforced = validated_data['is_session_max_seconds_enforced']
         instance.daily_reset = validated_data['daily_reset']
         instance.intervention_type = validated_data['intervention_type']
+        instance.is_startup_delay_enabled = validated_data['is_startup_delay_enabled']
         instance.save()
         return instance
     
@@ -183,7 +212,8 @@ class CreateRuleModificationRequestSerializer(serializers.ModelSerializer):
         model = RuleModificationRequest
         fields = [
             'app', 'is_active', 'daily_max_seconds', 'hourly_max_seconds',
-            'session_max_seconds', 'daily_reset', 'intervention_type'
+            'session_max_seconds', 'daily_reset', 'intervention_type',
+            'is_daily_max_seconds_enforced', 'is_hourly_max_seconds_enforced', 'is_session_max_seconds_enforced', 'is_startup_delay_enabled'
         ]
 
     def validate(self, data):
@@ -221,5 +251,13 @@ class CreateRuleModificationRequestSerializer(serializers.ModelSerializer):
         if new_rule.get('daily_reset') != old_rule.daily_reset:
             return
         if new_rule.get('intervention_type') != old_rule.intervention_type:
+            return
+        if new_rule.get('is_daily_max_seconds_enforced') != old_rule.is_daily_max_seconds_enforced:
+            return
+        if new_rule.get('is_hourly_max_seconds_enforced') != old_rule.is_hourly_max_seconds_enforced:
+            return
+        if new_rule.get('is_session_max_seconds_enforced') != old_rule.is_session_max_seconds_enforced:
+            return
+        if new_rule.get('is_startup_delay_enabled') != old_rule.is_startup_delay_enabled:
             return
         raise serializers.ValidationError("No changes detected.")

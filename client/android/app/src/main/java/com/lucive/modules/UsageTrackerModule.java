@@ -115,7 +115,12 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
         final String app = map.getString("app");
         final int dailyMaxSeconds = map.getInt("dailyMaxSeconds");
         final int hourlyMaxSeconds = map.getInt("hourlyMaxSeconds");
+        final int sessionMaxSeconds = map.getInt("sessionMaxSeconds");
+        final boolean isDailyMaxSecondsEnforced = map.getBoolean("isDailyMaxSecondsEnforced");
+        final boolean isHourlyMaxSecondsEnforced = map.getBoolean("isHourlyMaxSecondsEnforced");
+        final boolean isSessionMaxSecondsEnforced = map.getBoolean("isSessionMaxSecondsEnforced");
         final String dailyStartsAt = map.getString("dailyReset");
-        return new Rule(app, isActive, dailyMaxSeconds, hourlyMaxSeconds, dailyStartsAt);
+        final boolean isStartupDelayEnabled = map.getBoolean("isStartupDelayEnabled");
+        return new Rule(app, isActive, dailyMaxSeconds, hourlyMaxSeconds, sessionMaxSeconds, dailyStartsAt, isDailyMaxSecondsEnforced, isHourlyMaxSecondsEnforced, isSessionMaxSecondsEnforced, isStartupDelayEnabled);
     }
 }

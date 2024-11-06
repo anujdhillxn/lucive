@@ -16,10 +16,10 @@ class RuleTests(APITestCase):
         self.get_url = reverse('user-rules')
         self.duo = Duo.objects.create(user1=self.user1, user2=self.user2)
         
-        self.rule1 = Rule.objects.create(app='TestApp', is_active=False, user=self.user1, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='FULL')
-        self.rule2 = Rule.objects.create(app='TestApp2', is_active=True, user=self.user2, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='PARTIAL')
+        self.rule1 = Rule.objects.create(app='TestApp', is_active=False, user=self.user1, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='FULL', app_display_name='Test App', is_daily_max_seconds_enforced=True, is_hourly_max_seconds_enforced=False, is_session_max_seconds_enforced=True, is_startup_delay_enabled=True)
+        self.rule2 = Rule.objects.create(app='TestApp2', is_active=True, user=self.user2, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='PARTIAL', app_display_name='Test App 2', is_daily_max_seconds_enforced=False, is_hourly_max_seconds_enforced=False, is_session_max_seconds_enforced=False)
         
-        self.mod_request1 = RuleModificationRequest.objects.create(app='TestApp2', is_active=False, user=self.user1, daily_max_seconds=1800, hourly_max_seconds=300, session_max_seconds=150, daily_reset='00:00:00', intervention_type='PARTIAL')
+        self.mod_request1 = RuleModificationRequest.objects.create(app='TestApp2', is_active=False, user=self.user1, daily_max_seconds=1800, hourly_max_seconds=300, session_max_seconds=150, daily_reset='00:00:00', intervention_type='PARTIAL', is_startup_delay_enabled=False)   
         self.mod_request2 = RuleModificationRequest.objects.create(app='TestApp3', is_active=True, user=self.user1, daily_max_seconds=7200, hourly_max_seconds=1200, session_max_seconds=600, daily_reset='00:00:00', intervention_type='PARTIAL')
     def authenticate(self, user):
         self.client.force_authenticate(user=user)
@@ -34,6 +34,7 @@ class RuleTests(APITestCase):
         
         rule_data = response.data[0]
         self.assertEqual(rule_data['app'], 'TestApp')
+        self.assertEqual(rule_data['appDisplayName'], 'Test App')
         self.assertEqual(rule_data['isActive'], False)
         self.assertEqual(rule_data['dailyMaxSeconds'], 3600)
         self.assertEqual(rule_data['hourlyMaxSeconds'], 600)
@@ -41,9 +42,13 @@ class RuleTests(APITestCase):
         self.assertEqual(rule_data['dailyReset'], '00:00:00')
         self.assertEqual(rule_data['interventionType'], 'FULL')
         self.assertEqual(rule_data['isMyRule'], False)
+        self.assertEqual(rule_data['isDailyMaxSecondsEnforced'], True)
+        self.assertEqual(rule_data['isHourlyMaxSecondsEnforced'], False)
+        self.assertEqual(rule_data['isSessionMaxSecondsEnforced'], True)
+        self.assertEqual(rule_data['isStartupDelayEnabled'], True)
         self.assertEqual('modificationData' in rule_data, True)
         self.assertEqual(rule_data['modificationData']['isActive'], False)
-        self.assertEqual(rule_data['app'], 'TestApp')
+
     def test_get_user_rules_no_duo(self):
         self.authenticate(self.user_without_duo)
         response = self.client.get(self.get_url)
@@ -53,27 +58,6 @@ class RuleTests(APITestCase):
     def test_get_user_rules_no_authentication(self):
         response = self.client.get(self.get_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
-    def test_get_user_rules_daily_max_seconds_none(self):
-        self.rule1.daily_max_seconds = None
-        self.rule1.hourly_max_seconds = None
-        self.rule1.session_max_seconds = None
-        self.rule1.save()
-        self.authenticate(self.user1)
-        response = self.client.get(self.get_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual('dailyMaxSeconds' in response.data[0], False)
-        self.assertEqual('hourlyMaxSeconds' in response.data[0], False)
-        self.assertEqual('sessionMaxSeconds' in response.data[0], False)
-    
-    def test_get_user_rules_mod_request_daily_max_seconds_none(self):
-        self.mod_request1.daily_max_seconds = None
-        self.mod_request1.hourly_max_seconds = None
-        self.mod_request1.session_max_seconds = None
-        self.mod_request1.save()
-        self.authenticate(self.user1)
-        response = self.client.get(self.get_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_create_rule(self):
         self.authenticate(self.user1)
@@ -85,8 +69,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'FULL'
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.post(create_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -101,8 +89,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'FULL'
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.post(create_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -116,8 +108,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'FULL'
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.post(create_url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -132,8 +128,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'FULL'
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.post(create_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -176,6 +176,17 @@ class RuleTests(APITestCase):
         response = self.client.delete(delete_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Rule.objects.filter(app='TestApp2').exists(), True)
+
+    def test_delete_rule_mod_request(self):
+        self.authenticate(self.user1)
+        Rule.objects.create(app='TestApp3', is_active=False, user=self.user1, daily_max_seconds=3600, hourly_max_seconds=600, session_max_seconds=300, daily_reset='00:00:00', intervention_type='FULL')
+        delete_url = reverse('delete-rule')
+        data = {
+            'app': 'TestApp3'
+        }
+        response = self.client.delete(delete_url, data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp3').exists(), False)
     
     def test_update_rule(self):
         self.authenticate(self.user1)
@@ -186,14 +197,20 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 1800,
             'hourly_max_seconds': 300,
             'session_max_seconds': 150,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': True,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'FULL'
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.put(update_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Rule.objects.get(app='TestApp').daily_max_seconds, 1800)
         self.assertEqual(Rule.objects.get(app='TestApp').hourly_max_seconds, 300)
         self.assertEqual(Rule.objects.get(app='TestApp').intervention_type, 'FULL')
+        self.assertEqual(Rule.objects.get(app='TestApp').is_daily_max_seconds_enforced, True)
+        self.assertEqual(Rule.objects.get(app='TestApp').is_hourly_max_seconds_enforced, True)
         self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp').exists(), False)
 
     def test_update_rule_no_authentication(self):
@@ -204,8 +221,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 1800,
             'hourly_max_seconds': 300,
             'session_max_seconds': 150,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'PARTIAL'
+            'intervention_type': 'PARTIAL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.put(update_url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -222,8 +243,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 1800,
             'hourly_max_seconds': 300,
             'session_max_seconds': 150,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'PARTIAL'
+            'intervention_type': 'PARTIAL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.put(update_url, data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -237,6 +262,9 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 7200,
             'hourly_max_seconds': 1200,
             'session_max_seconds': 600,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
             'intervention_type': 'PARTIAL'
         }
@@ -258,6 +286,9 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
             'intervention_type': 'FULL'
         }
@@ -266,6 +297,27 @@ class RuleTests(APITestCase):
         self.assertEqual(Rule.objects.get(app='TestApp2').is_active, True)
         self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp2').exists(), True)
         self.assertEqual(RuleModificationRequest.objects.get(user=self.user2, app='TestApp2').is_active, False)
+
+    def test_update_rule_only_made_active(self):
+        self.authenticate(self.user2)
+        self.rule1.is_active = False
+        self.rule1.save()
+        update_url = reverse('update-rule')
+        data = {
+            'app': 'TestApp2',
+            'is_active': True,
+            'daily_max_seconds': 3600,
+            'hourly_max_seconds': 600,
+            'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
+            'daily_reset': '00:00:00',
+            'intervention_type': 'FULL'
+        }
+        response = self.client.put(update_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Rule.objects.get(app='TestApp2').is_active, True)
     
     def test_update_rule_no_changes(self):
         self.authenticate(self.user1)
@@ -276,8 +328,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'FULL'
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.put(update_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -293,8 +349,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'PARTIAL'
+            'intervention_type': 'PARTIAL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.put(update_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -311,8 +371,12 @@ class RuleTests(APITestCase):
             'daily_max_seconds': 3600,
             'hourly_max_seconds': 600,
             'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
             'daily_reset': '12:00:00',
-            'intervention_type': 'FULL'
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.put(update_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -327,15 +391,71 @@ class RuleTests(APITestCase):
             'app': 'TestApp',
             'is_active': True,
             'daily_reset': '00:00:00',
-            'intervention_type': 'FULL'
+            'daily_max_seconds': 3600,
+            'hourly_max_seconds': 600,
+            'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': False,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': False,
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
         }
         response = self.client.put(update_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Rule.objects.get(app='TestApp').daily_max_seconds, 3600)
         self.assertEqual(Rule.objects.get(app='TestApp').hourly_max_seconds, 600)
+        self.assertEqual(Rule.objects.get(app='TestApp').is_daily_max_seconds_enforced, True)
+        self.assertEqual(Rule.objects.get(app='TestApp').is_hourly_max_seconds_enforced, False)
+        self.assertEqual(Rule.objects.get(app='TestApp').is_session_max_seconds_enforced, True)
         self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp').exists(), True)
-        self.assertEqual(RuleModificationRequest.objects.get(app='TestApp').daily_max_seconds, None)
-        self.assertEqual(RuleModificationRequest.objects.get(app='TestApp').hourly_max_seconds, None)
+        self.assertEqual(RuleModificationRequest.objects.get(app='TestApp').is_daily_max_seconds_enforced, False)
+        self.assertEqual(RuleModificationRequest.objects.get(app='TestApp').is_hourly_max_seconds_enforced, False)
+        self.assertEqual(RuleModificationRequest.objects.get(app='TestApp').is_session_max_seconds_enforced, False)
+
+    def test_update_rule_only_startup_delay_disabled(self):
+        self.authenticate(self.user1)
+        update_url = reverse('update-rule')
+        data = {
+            'app': 'TestApp',
+            'is_active': True,
+            'daily_reset': '00:00:00',
+            'daily_max_seconds': 3600,
+            'hourly_max_seconds': 600,
+            'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': False
+        }
+        response = self.client.put(update_url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Rule.objects.get(app='TestApp').is_startup_delay_enabled, True)
+        self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp').exists(), True)
+        self.assertEqual(RuleModificationRequest.objects.get(app='TestApp').is_startup_delay_enabled, False)
+
+    def test_update_rule_only_startup_delay_enabled(self):
+        self.authenticate(self.user1)
+        self.rule1.is_startup_delay_enabled = False
+        self.rule1.save()
+        update_url = reverse('update-rule')
+        data = {
+            'app': 'TestApp',
+            'is_active': True,
+            'daily_reset': '00:00:00',
+            'daily_max_seconds': 3600,
+            'hourly_max_seconds': 600,
+            'session_max_seconds': 300,
+            'is_daily_max_seconds_enforced': True,
+            'is_hourly_max_seconds_enforced': False,
+            'is_session_max_seconds_enforced': True,
+            'intervention_type': 'FULL',
+            'is_startup_delay_enabled': True
+        }
+        response = self.client.put(update_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Rule.objects.get(app='TestApp').is_startup_delay_enabled, True)
+        self.assertEqual(RuleModificationRequest.objects.filter(app='TestApp').exists(), False)    
     
     def test_approve_rule_modification_request(self):
         self.authenticate(self.user2)

@@ -74,5 +74,6 @@ const styles = StyleSheet.create({
     },
     menuItem: {
         marginBottom: 10,
+        overflow: 'hidden',
     },
 });

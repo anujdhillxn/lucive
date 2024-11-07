@@ -1,4 +1,3 @@
-- rule modification better UI
-- better session screentime calculation (multiple activities causing problem, one activity ends, another starts just after makes lucive think these were two different sessions)
+- rule card better UI for modification
 - single DB call, and API call to fetch all user info
-
+-info on rule creator

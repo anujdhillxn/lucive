@@ -29,10 +29,10 @@ public class UsageTrackerService extends Service {
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable trackingRunnable;
-    private static final long INTERVAL = 500;
+    private static final long INTERVAL = 300;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
-
+    private int delayCounter = 0;
     private EventManager eventManager;
 
     public class LocalBinder extends Binder {
@@ -113,7 +113,13 @@ public class UsageTrackerService extends Service {
         }
 
         final String packageName = eventManager.getCurrentlyOpenedApp();
-        if (isHourlyLimitExceeded(packageName) || isDailyLimitExceeded(packageName) || isSessionLimitExceeded(packageName) || delayStartup(packageName)) {
+        if (delayStartup(packageName)) {
+            delayCounter++;
+        }
+        else {
+            delayCounter = 0;
+        }
+        if (isHourlyLimitExceeded(packageName) || isDailyLimitExceeded(packageName) || isSessionLimitExceeded(packageName) || delayCounter > 2  ) {
             final Intent showScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
             startService(showScreenTimeExceeded);
         } else {

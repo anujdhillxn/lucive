@@ -147,10 +147,6 @@ export const RuleCreatorScreen: React.FC = () => {
                     />
                 </View>
             </View>
-            <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
-                <Text style={styles.text}>Daily Limit Reset</Text>
-                <Text style={styles.textSmall}>{dailyReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-            </TouchableOpacity>
             <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                 <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
@@ -166,6 +162,10 @@ export const RuleCreatorScreen: React.FC = () => {
                     </View>
                 </View>
             </CustomTimePicker>
+            <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
+                <Text style={styles.text}>Daily Limit Reset</Text>
+                <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? dailyReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}</Text>
+            </TouchableOpacity>
             <CustomTimePicker editable={isHourlyMaxSecondsEnforced} hideHours onConfirm={(hh, mm) => setHourlyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                 <View style={styles.touchable}>
                     <View style={styles.switchContainer}>

@@ -29,9 +29,7 @@ public class UsageTrackerService extends Service {
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable trackingRunnable;
-    private Runnable saveRunnable;
-    private static final long INTERVAL = 1000;
-    private static final long SAVE_INTERVAL = 10 * 60 * 1000;
+    private static final long INTERVAL = 500;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
 
@@ -53,12 +51,10 @@ public class UsageTrackerService extends Service {
     public void onCreate() {
         super.onCreate();
         usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        eventManager = new EventManager(this);
-        eventManager.loadData(); // Load data on service start
+        eventManager = new EventManager();
         Log.i(TAG, "Service created");
         startForeground(1, createNotification());
         startTracking();
-        startSavingData(); // Start periodic data saving
     }
 
     @Override
@@ -76,8 +72,6 @@ public class UsageTrackerService extends Service {
     @Override
     public void onDestroy() {
         handler.removeCallbacks(trackingRunnable);
-        handler.removeCallbacks(saveRunnable);
-        eventManager.saveData(); // Save data on service destroy
         Log.i(TAG, "Service destroyed");
         super.onDestroy();
     }
@@ -108,24 +102,11 @@ public class UsageTrackerService extends Service {
         handler.post(trackingRunnable);
     }
 
-    private void startSavingData() {
-        handler = new Handler(Looper.getMainLooper());
-        saveRunnable = new Runnable() {
-            @Override
-            public void run() {
-                eventManager.saveData();
-                handler.postDelayed(this, SAVE_INTERVAL);
-            }
-        };
-        handler.post(saveRunnable);
-    }
-
     private void checkScreenUsages() {
-        final long endTime = System.currentTimeMillis() + 1000;
-        long startTime = endTime - 3 * 1000; // to avoid missing events
+        final long endTime = System.currentTimeMillis();
+        long startTime = eventManager.getLastTimestamp() + 1;
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
         UsageEvents.Event event = new UsageEvents.Event();
-
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
             eventManager.processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getClassName());
@@ -139,6 +120,7 @@ public class UsageTrackerService extends Service {
             final Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
             stopService(hideScreenTimeExceeded);
         }
+        Log.i(TAG, "Time taken: " + (System.currentTimeMillis() - endTime));
     }
 
     public int getHourlyScreentime(final String packageName) {

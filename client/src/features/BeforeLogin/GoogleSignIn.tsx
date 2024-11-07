@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Alert } from 'react-native';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { useApi } from '../../hooks/useApi';
 import { useNotification } from '../../contexts/NotificationContext';
 
@@ -20,5 +20,5 @@ export const GoogleLoginButton = () => {
         }
     };
 
-    return <Button title="Sign in with Google" onPress={signIn} />;
+    return <GoogleSigninButton onPress={signIn} />
 };

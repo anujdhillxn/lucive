@@ -14,15 +14,12 @@ export type CustomTimePickerProps = {
 const CustomTimePicker = (props: CustomTimePickerProps) => {
     const [isPickerVisible, setPickerVisible] = useState(false);
     const [selectedHour, setSelectedHour] = useState('00');
-    const [selectedMinute, setSelectedMinute] = useState('00');
+    const [selectedMinute, setSelectedMinute] = useState('01');
 
-    const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')); // "00" to "23"
-    const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')); // "00" to "59"
+    const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+    const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
 
     const showPicker = () => {
-        if (!props.editable) {
-            return;
-        }
         setPickerVisible(true);
     };
 
@@ -37,7 +34,7 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
 
     return (
         <View >
-            <TouchableOpacity onPress={showPicker}>
+            <TouchableOpacity onPress={showPicker} disabled={!props.editable}>
                 {props.children}
             </TouchableOpacity>
             {/* Custom Modal Picker */}

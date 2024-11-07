@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Notification {
     message: string;
@@ -54,11 +53,11 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         <NotificationContext.Provider value={{ showNotification }}>
             {children}
             {currentNotification && (
-                <SafeAreaView style={styles.safeArea}>
+                <View style={styles.safeArea}>
                     <Animated.View style={[styles.notification, styles[currentNotification.type], { transform: [{ translateX: slideAnim }] }]}>
                         <Text style={styles.notificationText}>{currentNotification.message}</Text>
                     </Animated.View>
-                </SafeAreaView>
+                </View>
             )}
         </NotificationContext.Provider>
     );

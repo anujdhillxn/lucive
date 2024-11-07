@@ -1,4 +1,4 @@
-- green and ambient UI
-- use ApiResponse interface and type each Api properly
-- can we make event handling perfect?
-- hourly, daily optional
+- rule modification better UI
+- better session screentime calculation (multiple activities causing problem, one activity ends, another starts just after makes lucive think these were two different sessions)
+- single DB call, and API call to fetch all user info
+

@@ -1,12 +1,9 @@
 import * as React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import SignupScreen from './BeforeLogin/SignupScreen';
-import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icon5 from 'react-native-vector-icons/FontAwesome5';
-import { MenuProvider } from 'react-native-popup-menu';
 import { useAppContext } from '../hooks/useAppContext';
 import HomeScreen from './AfterLogin/HomeScreen';
 import UserScreen from './AfterLogin/User/UserScreen';
@@ -14,8 +11,6 @@ import { RuleCreatorScreen } from './AfterLogin/Rules/RuleCreatorScreen';
 import DuoScreen from './AfterLogin/Duo/DuoScreen';
 import LoginScreen from './BeforeLogin/LoginScreen';
 import { Rule } from '../types/state';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNativeContext } from '../hooks/useNativeContext';
 import LoadingScreen from './LoadingScreen';
 
 const Stack = createStackNavigator();
@@ -36,16 +31,15 @@ export const AppScreenStack: React.FC = () => {
         return <LoadingScreen />
     }
     if (!user) {
-        return <SafeAreaView style={styles.container}>
+        return <View style={styles.container}>
             <Stack.Navigator initialRouteName={"Login"} >
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Signup" component={SignupScreen} />
             </Stack.Navigator>
-            <StatusBar style="auto" />
-        </SafeAreaView>
+        </View>
     }
 
-    return <SafeAreaView style={styles.container}>
+    return <View style={styles.container}>
         <Stack.Navigator initialRouteName="Home">
             <Stack.Screen
                 name="Home"
@@ -73,7 +67,7 @@ export const AppScreenStack: React.FC = () => {
                 ({ route }) => ({ title: route.params ? 'Edit Rule' : 'Create Rule' })
             } />
             <Stack.Screen name="Duo" component={DuoScreen} />
-        </Stack.Navigator></SafeAreaView>
+        </Stack.Navigator></View>
 }
 
 const styles = StyleSheet.create({

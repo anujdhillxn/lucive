@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'rea
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useApi } from '../../hooks/useApi';
 import { RootStackParamList } from '../AppScreenStack';
-import { GoogleLoginButton } from './GoogleSignInButton';
+import { GoogleLoginButton } from './GoogleSignIn';
 import { useNotification } from '../../contexts/NotificationContext';
 import { config } from '../../config';
 
@@ -12,7 +12,7 @@ const LoginScreen: React.FC = () => {
     const [password, setPassword] = useState('');
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { api, setRequestToken } = useApi();
-    const {showNotification} = useNotification();
+    const { showNotification } = useNotification();
     const handleLogin = () => {
         api.userApi.login({ identifier, password }).then((resp) => {
             setRequestToken(resp.token);
@@ -44,7 +44,7 @@ const LoginScreen: React.FC = () => {
                 <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
                     <Text style={styles.link}>Don't have an account? Sign up</Text>
                 </TouchableOpacity></>}
-            <GoogleLoginButton />
+            <View style={styles.googleContainer}><GoogleLoginButton /></View>
         </View>
     );
 };
@@ -54,6 +54,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         padding: 16,
+    },
+    googleContainer: {
+        marginTop: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     title: {
         fontSize: 24,

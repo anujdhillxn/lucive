@@ -34,8 +34,11 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
     }
 
     React.useEffect(() => {
-        fetchHourlyScreenTime();
-        fetchDailyScreenTime();
+        const interval = setInterval(() => {
+            fetchHourlyScreenTime();
+            fetchDailyScreenTime();
+        });
+        return () => clearInterval(interval);
     }, []);
     return <View style={styles.card}>
         <Text style={styles.title}>

@@ -1,7 +1,6 @@
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Share, Linking } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RootStackParamList } from '../../AppScreenStack';
 import { AnimatedSequence } from '../../../components/AnimatedComponentSequence';
 import { useAppContext } from '../../../hooks/useAppContext';

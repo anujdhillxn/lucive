@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User } from '../../../types/state';
-import { useAppContext } from '../../../hooks/useAppContext';
+import * as React from 'react';
+import { View, Button, TextInput, StyleSheet } from 'react-native';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../../../config';
+import { User } from '../../../types/state';
+import Colors from '../../../styles/colors';
 
-const UserScreen: React.FC = () => {
-    const { user } = useAppContext();
+export const UserDetails: React.FC = () => {
+
     const { setRequestToken, api } = useApi();
     const { setUser } = useActions();
     const { showNotification } = useNotification();
-    const [isChangingUsername, setIsChangingUsername] = useState(false);
-    const [newUsername, setNewUsername] = useState('');
+    const [isChangingUsername, setIsChangingUsername] = React.useState(false);
+    const [newUsername, setNewUsername] = React.useState('');
 
     const handleLogout = () => {
         api.userApi.logout().then(() => {
@@ -38,13 +38,9 @@ const UserScreen: React.FC = () => {
             showNotification("Failed to change username", "failure");
         });
     };
-
-    return user ? (
+    return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Button title="Change Username" onPress={() => setIsChangingUsername(true)} />
-                {config.showLogoutButton && <Button title="Logout" onPress={handleLogout} />}
-            </View>
+            <Button color={Colors.Primary1} title="Change Username" onPress={() => setIsChangingUsername(true)} />
 
             {isChangingUsername && (
                 <View style={styles.changeUsernameContainer}>
@@ -54,30 +50,20 @@ const UserScreen: React.FC = () => {
                         value={newUsername}
                         onChangeText={setNewUsername}
                     />
-                    <Button title="Change" onPress={handleChangeUsername} />
+                    <Button color={Colors.Primary1} title="Change" onPress={handleChangeUsername} />
                 </View>
             )}
+
+            {config.showLogoutButton && <Button color={Colors.Danger} title="Logout" onPress={handleLogout} />}
         </View>
-    ) : (
-        <View style={styles.container}>
-            <Text style={styles.title}>User not found</Text>
-        </View>
-    );
+    )
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'flex-start',
-        alignItems: 'stretch',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: Colors.Background1,
         padding: 16,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
     },
     title: {
         fontSize: 24,
@@ -85,11 +71,13 @@ const styles = StyleSheet.create({
     changeUsernameText: {
         color: 'blue',
         marginTop: 16,
+        marginBottom: 16,
     },
     changeUsernameContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 8,
+        marginBottom: 8,
     },
     input: {
         flex: 1,
@@ -100,5 +88,3 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
 });
-
-export default UserScreen;

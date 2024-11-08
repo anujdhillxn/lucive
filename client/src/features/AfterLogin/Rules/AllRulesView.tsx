@@ -7,7 +7,8 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import RuleCardContainer from './RuleCardContainer';
 import { RootStackParamList } from '../../AppScreenStack';
 import { HideableView } from '../../../components/HideableView';
-
+import Colors from '../../../styles/colors';
+import { ScrollView } from 'react-native-gesture-handler';
 export const AllRulesView: React.FC = () => {
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -24,10 +25,10 @@ export const AllRulesView: React.FC = () => {
         return () => <RuleCardContainer rule={rule} />;
     });
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <TouchableOpacity style={styles.createButton} onPress={navigateToRuleCreator}>
                 <Text style={styles.createButtonText}>Create New Rule</Text>
-                <Icon name="add" size={20} color="#fff" />
+                <Icon name="add" size={20} color={Colors.Text1} />
             </TouchableOpacity>
             <HideableView
                 openedInitially
@@ -38,14 +39,14 @@ export const AllRulesView: React.FC = () => {
                 Header={PartnerRulesHeaderRenderer}
                 Components={PartnerRuleComponents}
             />
-        </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: Colors.Background1,
         paddingHorizontal: 20,
     },
     createButton: {
@@ -54,14 +55,13 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         paddingVertical: 10,
         paddingHorizontal: 20,
-        backgroundColor: '#007BFF',
-        borderRadius: 5,
+        backgroundColor: Colors.Primary1,
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center',
     },
     createButtonText: {
-        color: '#fff',
+        color: Colors.Text1,
         fontSize: 16,
     }
 });

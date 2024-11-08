@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import Color from '../styles/colors';
 import { HeaderProps } from './HideableView';
-
+import Colors from '../styles/colors';
 export type RuleHeaderProps = {
     title: string;
     itemCount: number;
@@ -34,7 +34,7 @@ const RuleHeader: React.FC<RuleHeaderProps> = ({ title, menuVisible, toggleMenu,
             <Icon
                 name="keyboard-arrow-right"
                 size={24}
-                color="#fff"
+                color={Color.Text1}
             />
         </Animated.View>
     </TouchableOpacity>;
@@ -48,10 +48,6 @@ export const PartnerRulesHeaderRenderer: React.FC<HeaderProps> = (props: HeaderP
     <RuleHeader menuVisible={props.menuVisible} toggleMenu={props.toggleMenu} itemCount={props.itemCount} title="Your Detox partner's rules" />
 );
 
-export const DuoRequestHeaderRenderer: React.FC<HeaderProps> = (props: HeaderProps) => (
-    <RuleHeader menuVisible={props.menuVisible} toggleMenu={props.toggleMenu} itemCount={props.itemCount} title="Duo Requests" />
-);
-
 const styles = StyleSheet.create({
     menuButton: {
         flexDirection: 'row',
@@ -60,10 +56,11 @@ const styles = StyleSheet.create({
         marginTop: 5,
         paddingVertical: 10,
         paddingHorizontal: 20,
-        backgroundColor: '#007BFF',
+        backgroundColor: Colors.Primary1,
     },
     menuButtonText: {
-        color: '#fff',
+        color: Colors.Text1,
         fontSize: 16,
+        fontWeight: 'bold',
     }
 });

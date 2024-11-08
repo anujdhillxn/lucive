@@ -64,6 +64,12 @@ public class AppUtils {
         return calendar.getTimeInMillis();
     }
 
+    public static long get24HoursBefore() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        return calendar.getTimeInMillis();
+    }
+
     public static String formatTime(int totalSeconds) {
         int hours = totalSeconds / 3600;
         int secondsLeft = totalSeconds % 3600;

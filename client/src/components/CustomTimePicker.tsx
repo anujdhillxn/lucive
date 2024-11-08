@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Button, Modal, StyleSheet, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; // Using React Native Picker
 import ModalPicker from 'react-native-modal';
+import Colors from '../styles/colors';
 
 export type CustomTimePickerProps = {
     hideHours?: boolean;
@@ -49,7 +50,12 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
                         {!Boolean(props.hideHours) && <Picker
                             selectedValue={selectedHour}
                             style={styles.picker}
-                            onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                            onValueChange={(itemValue) => {
+                                setSelectedHour(itemValue)
+                                if (itemValue === '00' && selectedMinute === '00') {
+                                    setSelectedMinute('01')
+                                }
+                            }}
                         >
                             {hours.map((hour) => (
                                 <Picker.Item key={hour} label={hour} value={hour} />
@@ -101,7 +107,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     confirmButton: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: Colors.Accent1,
         padding: 10,
         borderRadius: 5,
         marginTop: 20,

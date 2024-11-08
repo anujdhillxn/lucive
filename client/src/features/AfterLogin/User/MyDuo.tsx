@@ -7,6 +7,8 @@ import { useActions } from '../../../hooks/useActions';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Colors from '../../../styles/colors';
+
 const MyDuo: React.FC = () => {
     const myDuo = useAppContext().myDuo!;
     const user = useAppContext().user!;
@@ -44,7 +46,7 @@ const MyDuo: React.FC = () => {
                 <Text style={{ fontStyle: 'italic' }}>{new Date(myDuo.createdAt!).toLocaleDateString()}</Text>
             </Text>
             <View style={styles.buttonContainer}>
-                <Button title="Delete Duo" onPress={confirm} color="#ff5c5c" /></View>
+                <Button title="Delete Duo" onPress={confirm} color={Colors.Danger} /></View>
         </View>
     );
 };
@@ -53,13 +55,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: Colors.Background1,
     },
     text: {
         fontSize: 20,
-        color: '#333',
+        color: Colors.Text2,
     },
     buttonContainer: {
         marginTop: 20,

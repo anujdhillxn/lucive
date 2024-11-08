@@ -119,13 +119,24 @@ public class UsageTrackerService extends Service {
         else {
             delayCounter = 0;
         }
-        if (isHourlyLimitExceeded(packageName) || isDailyLimitExceeded(packageName) || isSessionLimitExceeded(packageName) || delayCounter > 2  ) {
-            final Intent showScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
-            startService(showScreenTimeExceeded);
+        if (isHourlyLimitExceeded(packageName)) {
+            String message = "Hourly screen time limit of " + AppUtils.formatTime(ruleMap.get(packageName).hourlyMaxSeconds()) + " exceeded!";
+            sendModalIntent(message);
+        } else if (isDailyLimitExceeded(packageName)) {
+            String message = "Daily screen time limit of " + AppUtils.formatTime(ruleMap.get(packageName).dailyMaxSeconds()) + " exceeded!";
+            sendModalIntent(message);
+        } else if (isSessionLimitExceeded(packageName)) {
+            String message = "Session screen time limit of " + AppUtils.formatTime(ruleMap.get(packageName).sessionMaxSeconds()) + " exceeded!";
+            sendModalIntent(message);
+        } else if (delayCounter > 2) {
+            String message = "App starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(packageName)) / 1000 + " seconds!";
+            sendModalIntent(message);
         } else {
-            final Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
-            stopService(hideScreenTimeExceeded);
+            Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
+            hideScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", false);
+            startService(hideScreenTimeExceeded);
         }
+
         Log.i(TAG, "Time taken: " + (System.currentTimeMillis() - endTime));
     }
 
@@ -192,5 +203,12 @@ public class UsageTrackerService extends Service {
     public void updateRules(final Map<String, Rule> newRules) {
         ruleMap.clear();
         ruleMap.putAll(newRules);
+    }
+
+    private void sendModalIntent(String message) {
+        Intent showScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
+        showScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", true);
+        showScreenTimeExceeded.putExtra("EXTRA_MODAL_MESSAGE", message);
+        startService(showScreenTimeExceeded);
     }
 }

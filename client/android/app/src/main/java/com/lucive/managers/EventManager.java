@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EventManager {
     private final Map<String, List<Event>> eventsMap = new ConcurrentHashMap<>();
     private final Map<String, List<String>> activityMap = new ConcurrentHashMap<>();
-    private long lastTimestamp = AppUtils.getLastDayStart();
+    private long lastTimestamp = AppUtils.get24HoursBefore();
 
     public void processEvent(final String packageName, final long timestamp, int eventType, final String activity) {
         if (eventType == UsageEvents.Event.ACTIVITY_STOPPED) {
@@ -24,7 +24,6 @@ public class EventManager {
         }
         if (eventType == UsageEvents.Event.MOVE_TO_FOREGROUND || eventType == UsageEvents.Event.MOVE_TO_BACKGROUND) {
             lastTimestamp = timestamp;
-            Log.i("EventManager", "Event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
             if (!activityMap.containsKey(packageName)) {
                 activityMap.put(packageName, new ArrayList<>());
             }

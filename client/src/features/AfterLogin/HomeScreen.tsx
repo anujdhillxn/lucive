@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { AllRulesView } from './Rules/AllRulesView';
-import { NoDuoFoundView } from './Duo/NoDuoFoundView';
+import { NoDuoFoundView } from './User/NoDuoFoundView';
 import { useAppContext } from '../../hooks/useAppContext';
 import { NativeModules } from 'react-native';
-import { PermissionsScreen } from './Permissions';
+import { PermissionsScreen } from './PermissionsScreen';
 import { useNativeContext } from '../../hooks/useNativeContext';
 import { useActions } from '../../hooks/useActions';
+import UserView from './User/UserView';
 
 const HomeScreen: React.FC = () => {
     const { myDuo } = useAppContext();
@@ -21,10 +22,6 @@ const HomeScreen: React.FC = () => {
         await fetchData();
         setRefreshing(false);
     };
-    return <ScrollView showsVerticalScrollIndicator={false} refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-    }>
-        {myDuo ? <AllRulesView /> : <NoDuoFoundView />}
-    </ScrollView>
+    return myDuo ? <AllRulesView /> : <UserView />
 }
 export default HomeScreen;

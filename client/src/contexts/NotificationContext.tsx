@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-
+import Colors from '../styles/colors';
 interface Notification {
     message: string;
     type: 'success' | 'failure';
@@ -85,13 +85,13 @@ const styles = StyleSheet.create({
         margin: 10,
     },
     success: {
-        backgroundColor: '#4caf50', // Green background for success
+        backgroundColor: Colors.Accent1, // Green background for success
     },
     failure: {
-        backgroundColor: '#f44336', // Red background for failure
+        backgroundColor: Colors.Danger, // Red background for failure
     },
     notificationText: {
-        color: '#fff',
+        color: Colors.Text1,
         fontSize: 16,
     },
 });

@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     menuItem: {
-        marginBottom: 10,
+        marginBottom: 3,
         overflow: 'hidden',
     },
 });

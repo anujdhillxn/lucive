@@ -17,7 +17,7 @@ import { hasAChange, isApprovalRequired } from '../../../utils/validation';
 import { useAppContext } from '../../../hooks/useAppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Separator from '../../../components/Separator';
-
+import Colors from '../../../styles/colors'
 // const AppItem: React.FC<AppInfo> = ({ displayName, packageName, icon }) => (
 //     <View style={styles.appItem}>
 //         <Image source={{ uri: icon }} style={styles.appIcon} />
@@ -42,7 +42,7 @@ export const RuleCreatorScreen: React.FC = () => {
     const [dailyMaxMinutes, setDailyMaxMinutes] = useState(rule?.dailyMaxSeconds ? Math.floor(rule.dailyMaxSeconds / 60) : 30);
     const [hourlyMaxMinutes, setHourlyMaxMinutes] = useState(rule?.hourlyMaxSeconds ? Math.floor(rule.hourlyMaxSeconds / 60) : 5);
     const [sessionMaxMinutes, setSessionMaxMinutes] = useState(rule?.sessionMaxSeconds ? Math.floor(rule.sessionMaxSeconds / 60) : 5);
-    const [isDailyMaxSecondsEnforced, setIsDailyMaxSecondsEnforced] = useState(rule?.isDailyMaxSecondsEnforced ?? false);
+    const [isDailyMaxSecondsEnforced, setIsDailyMaxSecondsEnforced] = useState(rule?.isDailyMaxSecondsEnforced ?? true);
     const [isHourlyMaxSecondsEnforced, setIsHourlyMaxSecondsEnforced] = useState(rule?.isHourlyMaxSecondsEnforced ?? false);
     const [isSessionMaxSecondsEnforced, setIsSessionMaxSecondsEnforced] = useState(rule?.isSessionMaxSecondsEnforced ?? false);
     const [dailyReset, setDailyReset] = useState<Date>(rule?.dailyReset ? convertHHMMSSToDate(rule.dailyReset) : getTodayMidnight());
@@ -117,20 +117,24 @@ export const RuleCreatorScreen: React.FC = () => {
 
     return (
         <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-            <Picker
-                enabled={!Boolean(rule)}
-                selectedValue={selectedApp}
-                onValueChange={(itemValue) => setSelectedApp(itemValue)}
-            >
-                <Picker.Item label="Select App" value={''} style={styles.placeholder} />
-                {Object.keys(installedApps).map((packageName) => (
-                    <Picker.Item key={packageName} label={installedApps[packageName].displayName} value={packageName} />
-                ))}
-            </Picker>
+            <View style={styles.touchable}>
+                <Picker
+                    enabled={!Boolean(rule)}
+                    selectedValue={selectedApp}
+                    onValueChange={(itemValue) => setSelectedApp(itemValue)}
+                >
+                    <Picker.Item label="Select App" value={''} style={styles.placeholder} />
+                    {Object.keys(installedApps).map((packageName) => (
+                        <Picker.Item key={packageName} style={styles.text} label={installedApps[packageName].displayName} value={packageName} />
+                    ))}
+                </Picker>
+            </View>
             <View style={styles.touchable}>
                 <View style={styles.switchContainer}>
                     <Text style={styles.text}>Active</Text>
                     <Switch
+                        thumbColor={isRuleActive ? Colors.Accent1 : Colors.Text3}
+                        trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
                         value={isRuleActive}
                         onValueChange={(value) => setIsRuleActive(value)}
                         style={styles.switch}
@@ -143,6 +147,8 @@ export const RuleCreatorScreen: React.FC = () => {
                 <View style={styles.switchContainer}>
                     <Text style={styles.text}>Delay Startup</Text>
                     <Switch
+                        thumbColor={isStartupDelayEnabled ? Colors.Accent1 : Colors.Text3}
+                        trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
                         value={isStartupDelayEnabled}
                         onValueChange={(value) => setIsStartupDelayEnabled(value)}
                         style={styles.switch}
@@ -159,6 +165,8 @@ export const RuleCreatorScreen: React.FC = () => {
                             <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? formatTime(dailyMaxMinutes * 60) : 'N/A'}</Text>
                         </View>
                         <Switch
+                            thumbColor={isDailyMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                            trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
                             value={isDailyMaxSecondsEnforced}
                             onValueChange={(value) => setIsDailyMaxSecondsEnforced(value)}
                             style={styles.switch}
@@ -168,12 +176,12 @@ export const RuleCreatorScreen: React.FC = () => {
                     <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? "Tap to set daily limit" : "Enforce a daily limit"}</Text>
                 </View>
             </CustomTimePicker>
-            <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
+            {isDailyMaxSecondsEnforced && <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
                 <Text style={styles.text}>Daily Limit Reset</Text>
                 <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? dailyReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}</Text>
                 <Separator />
                 <Text style={styles.textSmall}>Tap to set when the daily limit resets</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>}
             <CustomTimePicker editable={isHourlyMaxSecondsEnforced} hideHours onConfirm={(hh, mm) => setHourlyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                 <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
@@ -182,6 +190,8 @@ export const RuleCreatorScreen: React.FC = () => {
                             <Text style={styles.textSmall}>{isHourlyMaxSecondsEnforced ? formatTime(hourlyMaxMinutes * 60) : 'N/A'}</Text>
                         </View>
                         <Switch
+                            thumbColor={isHourlyMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                            trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
                             value={isHourlyMaxSecondsEnforced}
                             onValueChange={(value) => setIsHourlyMaxSecondsEnforced(value)}
                             style={styles.switch}
@@ -199,6 +209,8 @@ export const RuleCreatorScreen: React.FC = () => {
                             <Text style={styles.textSmall}>{isSessionMaxSecondsEnforced ? formatTime(sessionMaxMinutes * 60) : 'N/A'}</Text>
                         </View>
                         <Switch
+                            thumbColor={isSessionMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                            trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
                             value={isSessionMaxSecondsEnforced}
                             onValueChange={(value) => setIsSessionMaxSecondsEnforced(value)}
                             style={styles.switch}
@@ -215,7 +227,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 onCancel={hideDatePicker}
             />
             <View>
-                <Button title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} disabled={selectedApp === '' || (rule && !hasAChange(getNewRule(), rule))} onPress={confirm} />
+                <Button color={Colors.Primary1} title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} disabled={selectedApp === '' || (rule && !hasAChange(getNewRule(), rule))} onPress={confirm} />
             </View>
 
         </ScrollView>
@@ -226,20 +238,14 @@ const styles = StyleSheet.create({
     container: {
         paddingLeft: 20,
         paddingRight: 20,
-        marginBottom: 20,
+        backgroundColor: Colors.Background1,
     },
     text: {
         fontSize: 18,
-        color: '#333',
+        color: Colors.Text2,
         marginBottom: 10,
     },
     ruleDetailsContainer: {
-        marginTop: 20,
-    },
-    selectedAppText: {
-        fontSize: 18,
-        color: '#007BFF',
-        textAlign: 'center',
         marginTop: 20,
     },
     pickerContainer: {
@@ -247,12 +253,12 @@ const styles = StyleSheet.create({
     },
     placeholderText: {
         fontSize: 16,
-        color: '#999',
+        color: Colors.Text3,
         textAlign: 'center',
         marginTop: 20,
     },
     placeholder: {
-        color: '#888', // Grey color for the placeholder text
+        color: Colors.Text3,
     },
     appList: {
         paddingBottom: 20,
@@ -261,7 +267,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.Text1,
         marginBottom: 10,
         borderRadius: 5,
         shadowColor: '#000',
@@ -275,29 +281,21 @@ const styles = StyleSheet.create({
         height: 40,
         marginRight: 10,
     },
-    appName: {
-        fontSize: 16,
-        color: '#333',
-        flex: 1,
-    },
-    appPackage: {
-        fontSize: 12,
-        color: '#999',
-    },
     header: {
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
     },
     touchable: {
-        marginBottom: 20,
+        marginTop: 10,
+        marginBottom: 10,
         padding: 10, // Add padding for better touch area
         borderRadius: 5, // Optional: Add border radius for rounded corners
-        backgroundColor: '#fff',
+        backgroundColor: Colors.Background2,
     },
     textSmall: {
         fontSize: 14,
-        color: '#777',
+        color: Colors.Text3,
     },
     switch: {
         transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],

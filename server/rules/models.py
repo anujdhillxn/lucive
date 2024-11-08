@@ -35,7 +35,7 @@ class Rule(models.Model):
         unique_together = ('app', 'user')
 
     def __str__(self):
-        return f"{self.user.username}''s rule for {self.app_display_name}"
+        return f"{self.user.username}''s rule for {self.app}"
     
 class RuleModificationRequest(models.Model):
     app = models.CharField(max_length=100)
@@ -58,4 +58,4 @@ class RuleModificationRequest(models.Model):
         unique_together = ('app', 'user')
 
     def __str__(self):
-        return f"{self.user.username}''s rule modification request for {self.app_display_name}"
+        return f"{self.user.username}''s rule modification request for {self.app}"

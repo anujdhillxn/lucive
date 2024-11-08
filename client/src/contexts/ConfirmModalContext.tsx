@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-
+import Colors from '../styles/colors';
 interface ConfirmModalContextProps {
     showModal: (message: string, onConfirm: () => void) => void;
     hideModal: () => void;
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     button: {
-        backgroundColor: '#007bff',
+        backgroundColor: Colors.Accent1,
         padding: 10,
         borderRadius: 5,
         marginHorizontal: 10,
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttonText: {
-        color: '#fff',
+        color: Colors.Text1,
         fontSize: 16,
     },
 });

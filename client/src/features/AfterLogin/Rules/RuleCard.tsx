@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Button, NativeModules } from 'react-native';
 import { Rule } from '../../../types/state';
 import { convertHHMMSSToDate, formatTime } from '../../../utils/time';
 import StrikeThroughText from '../../../components/StrikeThroughText';
+import Colors from '../../../styles/colors';
 const { UsageTracker } = NativeModules;
 
 interface RuleCardProps {
@@ -86,12 +87,12 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
 const styles = StyleSheet.create({
     card: {
         padding: 20,
-        backgroundColor: '#fff',
     },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
+        color: Colors.Text2,
     },
     description: {
         fontSize: 14,
@@ -99,6 +100,6 @@ const styles = StyleSheet.create({
     },
     timeLimit: {
         fontSize: 12,
-        color: '#888',
+        color: Colors.Text3,
     },
 });

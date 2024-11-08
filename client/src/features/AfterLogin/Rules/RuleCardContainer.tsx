@@ -10,6 +10,7 @@ import { useActions } from '../../../hooks/useActions';
 import { Rule } from '../../../types/state';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
+import Colors from '../../../styles/colors';
 
 type RuleCardContainerProps = {
     rule: Rule;
@@ -70,7 +71,7 @@ const MyRuleActions: React.FC<MyRuleActionsProps> = (props: MyRuleActionsProps) 
 
     return <Menu>
         <MenuTrigger>
-            <Icon name="more-vert" size={24} />
+            <Icon name="more-vert" color={Colors.Text2} size={24} />
         </MenuTrigger>
         <MenuOptions>
             {!Boolean(props.rule.modificationData) && <MenuOption onSelect={navigateToRuleEditor} text="Edit" />}
@@ -102,14 +103,14 @@ const PartnerRuleActions: React.FC<PartnerRuleActionsProps> = (props: PartnerRul
 
     const { confirm } = useConfirm(onApproveChange, "Are you sure you want to approve this change?");
 
-    return Boolean(props.rule.modificationData) ? <Button title="Approve" onPress={confirm} /> : null;
+    return Boolean(props.rule.modificationData) ? <Button color={Colors.Accent1} title="Approve" onPress={confirm} /> : null;
 }
 
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         paddingHorizontal: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.Background2, //
         alignItems: 'center',
     },
     detailsSection: {
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     button: {
-        marginVertical: 4,
+        marginVertical: 1,
     },
 });
 export default RuleCardContainer;

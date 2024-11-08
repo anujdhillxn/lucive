@@ -6,6 +6,7 @@ import { RootStackParamList } from '../AppScreenStack';
 import { GoogleLoginButton } from './GoogleSignIn';
 import { useNotification } from '../../contexts/NotificationContext';
 import { config } from '../../config';
+import Colors from '../../styles/colors';
 
 const LoginScreen: React.FC = () => {
     const [identifier, setIdentifer] = useState('');
@@ -32,6 +33,7 @@ const LoginScreen: React.FC = () => {
                     onChangeText={setIdentifer}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    placeholderTextColor={Colors.Text3}
                 />
                 <TextInput
                     style={styles.input}
@@ -39,8 +41,9 @@ const LoginScreen: React.FC = () => {
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
+                    placeholderTextColor={Colors.Text3}
                 />
-                <Button title="Login" onPress={handleLogin} />
+                <Button color={Colors.Primary1} title="Login" onPress={handleLogin} />
                 <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
                     <Text style={styles.link}>Don't have an account? Sign up</Text>
                 </TouchableOpacity></>}
@@ -54,6 +57,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         padding: 16,
+        backgroundColor: Colors.Background1,
     },
     googleContainer: {
         marginTop: 16,
@@ -64,17 +68,18 @@ const styles = StyleSheet.create({
         fontSize: 24,
         marginBottom: 16,
         textAlign: 'center',
+        color: Colors.Primary1,
     },
     input: {
         height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
         marginBottom: 12,
         paddingHorizontal: 8,
+        backgroundColor: Colors.Background2,
+        color: Colors.Text2,
     },
     link: {
         marginTop: 16,
-        color: 'blue',
+        color: Colors.Accent1,
         textAlign: 'center',
     },
 });

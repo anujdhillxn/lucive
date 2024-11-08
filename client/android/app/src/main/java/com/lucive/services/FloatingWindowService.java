@@ -1,5 +1,7 @@
 package com.lucive.services;
 
+import static android.content.Intent.getIntent;
+
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -7,6 +9,7 @@ import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.lucive.R;
 
@@ -20,28 +23,56 @@ public class FloatingWindowService extends Service {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        boolean showModal = intent != null && intent.getBooleanExtra("EXTRA_SHOW_MODAL", false);
+
+        if (showModal) {
+            String message = intent.getStringExtra("EXTRA_MODAL_MESSAGE");
+
+            // Check if floatingView already exists
+            if (floatingView == null) {
+                // Inflate the view and add it to the WindowManager
+                floatingView = LayoutInflater.from(this).inflate(R.layout.modal_layout, null);
+                TextView modalMessage = floatingView.findViewById(R.id.modal_message);
+                modalMessage.setText(message != null ? message : "Screen Time Exceeded!");
+
+                WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        PixelFormat.TRANSLUCENT);
+
+                windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+                windowManager.addView(floatingView, params);
+            } else {
+                // Update the message if view already exists
+                TextView modalMessage = floatingView.findViewById(R.id.modal_message);
+                modalMessage.setText(message != null ? message : "Screen Time Exceeded!");
+            }
+        } else {
+            // Hide the view if present
+            if (floatingView != null) {
+                windowManager.removeView(floatingView);
+                floatingView = null;
+            }
+            // Stop the service when modal is hidden
+            stopSelf();
+        }
+
+        return START_STICKY;
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
-
-        // Inflate the floating view
-        floatingView = LayoutInflater.from(this).inflate(R.layout.modal_layout, null);
-
-        // Setup window manager parameters
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT);
-
-        // Initialize the WindowManager and add the floating view
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        windowManager.addView(floatingView, params);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        // Ensure floatingView is removed to prevent memory leaks
         if (floatingView != null) {
             windowManager.removeView(floatingView);
         }

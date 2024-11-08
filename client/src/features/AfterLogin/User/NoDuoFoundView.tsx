@@ -9,7 +9,7 @@ import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../../../config';
-
+import Colors from '../../../styles/colors'
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
     const { setMyDuo } = useActions();
@@ -37,7 +37,7 @@ export const NoDuoFoundView: React.FC = () => {
             api.duoApi.createDuo(invitationToken).then((duo) => {
                 setMyDuo(duo);
                 AsyncStorage.setItem('myDuo', JSON.stringify(duo));
-                navigation.navigate('Duo');
+                navigation.navigate('Home');
                 showNotification('Duo created successfully', 'success');
             }).catch((error) => {
                 console.error('Error creating duo', error);
@@ -81,30 +81,11 @@ export const NoDuoFoundView: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: Colors.Background1,
         paddingHorizontal: 20,
         justifyContent: 'space-between',
         marginTop: 20,
         marginBottom: '100%',
-    },
-    createButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginTop: 20,
-        marginBottom: 20,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#007BFF',
-        borderRadius: 5,
-        alignSelf: 'center'
-    },
-    createButtonText: {
-        color: '#fff',
-        fontSize: 16,
-    },
-    createButtonIcon: {
-        marginRight: 10, // Add margin to the left of the icon
     },
     noDuoText1: {
         fontSize: 24,
@@ -114,19 +95,19 @@ const styles = StyleSheet.create({
     },
     noDuoText2: {
         fontSize: 16,
-        color: '#333',
+        color: Colors.Text3,
         textAlign: 'center',
         marginTop: 20,
     },
     button: {
-        backgroundColor: '#007bff',
+        backgroundColor: Colors.Primary1,
         padding: 10,
         borderRadius: 5,
         alignItems: 'center',
         marginVertical: 10,
     },
     buttonText: {
-        color: '#fff',
+        color: Colors.Text1,
         fontSize: 16,
     },
 });

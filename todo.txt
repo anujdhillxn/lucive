@@ -1,5 +1,2 @@
-- rule card better UI for modification
 - single DB call, and API call to fetch all user info
-- logo integration
-- app selector screen
 - push notifications on actions from partner

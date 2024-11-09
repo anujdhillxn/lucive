@@ -116,121 +116,122 @@ export const RuleCreatorScreen: React.FC = () => {
     const { confirm } = useConfirm(handleSave, "Are you sure you want to save this rule?");
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-            <View style={styles.touchable}>
+        <View style={styles.container}>
+            <ScrollView showsVerticalScrollIndicator={false}>
                 <Picker
                     enabled={!Boolean(rule)}
                     selectedValue={selectedApp}
                     onValueChange={(itemValue) => setSelectedApp(itemValue)}
+                    style={styles.pickerContainer}
+                    mode='dropdown'
                 >
                     <Picker.Item label="Select App" value={''} style={styles.placeholder} />
                     {Object.keys(installedApps).map((packageName) => (
-                        <Picker.Item key={packageName} style={styles.text} label={installedApps[packageName].displayName} value={packageName} />
+                        <Picker.Item key={packageName} style={styles.appOption} label={installedApps[packageName].displayName} value={packageName} />
                     ))}
                 </Picker>
-            </View>
-            <View style={styles.touchable}>
-                <View style={styles.switchContainer}>
-                    <Text style={styles.text}>Active</Text>
-                    <Switch
-                        thumbColor={isRuleActive ? Colors.Accent1 : Colors.Text3}
-                        trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
-                        value={isRuleActive}
-                        onValueChange={(value) => setIsRuleActive(value)}
-                        style={styles.switch}
-                    />
-                </View>
-                <Separator />
-                <Text style={styles.textSmall}>Rule will be applied when this switch is on</Text>
-            </View>
-            <View style={styles.touchable}>
-                <View style={styles.switchContainer}>
-                    <Text style={styles.text}>Delay Startup</Text>
-                    <Switch
-                        thumbColor={isStartupDelayEnabled ? Colors.Accent1 : Colors.Text3}
-                        trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
-                        value={isStartupDelayEnabled}
-                        onValueChange={(value) => setIsStartupDelayEnabled(value)}
-                        style={styles.switch}
-                    />
-                </View>
-                <Separator />
-                <Text style={styles.textSmall}>Enforce a 10 seconds pause before the app opens up</Text>
-            </View>
-            <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                 <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
-                        <View>
-                            <Text style={styles.text}>Daily Max Screen Time</Text>
-                            <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? formatTime(dailyMaxMinutes * 60) : 'N/A'}</Text>
-                        </View>
+                        <Text style={styles.text}>Active</Text>
                         <Switch
-                            thumbColor={isDailyMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                            thumbColor={isRuleActive ? Colors.Accent1 : Colors.Text3}
                             trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
-                            value={isDailyMaxSecondsEnforced}
-                            onValueChange={(value) => setIsDailyMaxSecondsEnforced(value)}
+                            value={isRuleActive}
+                            onValueChange={(value) => setIsRuleActive(value)}
                             style={styles.switch}
                         />
                     </View>
                     <Separator />
-                    <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? "Tap to set daily limit" : "Enforce a daily limit"}</Text>
+                    <Text style={styles.textSmall}>Rule will be applied when this switch is on</Text>
                 </View>
-            </CustomTimePicker>
-            {isDailyMaxSecondsEnforced && <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
-                <Text style={styles.text}>Daily Limit Reset</Text>
-                <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? dailyReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}</Text>
-                <Separator />
-                <Text style={styles.textSmall}>Tap to set when the daily limit resets</Text>
-            </TouchableOpacity>}
-            <CustomTimePicker editable={isHourlyMaxSecondsEnforced} hideHours onConfirm={(hh, mm) => setHourlyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                 <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
-                        <View>
-                            <Text style={styles.text}>Hourly Max Screen Time</Text>
-                            <Text style={styles.textSmall}>{isHourlyMaxSecondsEnforced ? formatTime(hourlyMaxMinutes * 60) : 'N/A'}</Text>
-                        </View>
+                        <Text style={styles.text}>Delay Startup</Text>
                         <Switch
-                            thumbColor={isHourlyMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                            thumbColor={isStartupDelayEnabled ? Colors.Accent1 : Colors.Text3}
                             trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
-                            value={isHourlyMaxSecondsEnforced}
-                            onValueChange={(value) => setIsHourlyMaxSecondsEnforced(value)}
+                            value={isStartupDelayEnabled}
+                            onValueChange={(value) => setIsStartupDelayEnabled(value)}
                             style={styles.switch}
                         />
                     </View>
                     <Separator />
-                    <Text style={styles.textSmall}>{isHourlyMaxSecondsEnforced ? "Tap to set hourly limit" : "Enforce an hourly limit"}</Text>
+                    <Text style={styles.textSmall}>Enforce a 10 seconds pause before the app opens up</Text>
                 </View>
-            </CustomTimePicker>
-            <CustomTimePicker editable={isSessionMaxSecondsEnforced} onConfirm={(hh, mm) => setSessionMaxMinutes(Number(hh) * 60 + Number(mm))}>
-                <View style={styles.touchable}>
-                    <View style={styles.switchContainer}>
-                        <View>
-                            <Text style={styles.text}>Session Max Screen Time</Text>
-                            <Text style={styles.textSmall}>{isSessionMaxSecondsEnforced ? formatTime(sessionMaxMinutes * 60) : 'N/A'}</Text>
+                <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
+                    <View style={styles.touchable}>
+                        <View style={styles.switchContainer}>
+                            <View>
+                                <Text style={styles.text}>Daily Max Screen Time</Text>
+                                <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? formatTime(dailyMaxMinutes * 60) : 'N/A'}</Text>
+                            </View>
+                            <Switch
+                                thumbColor={isDailyMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                                trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
+                                value={isDailyMaxSecondsEnforced}
+                                onValueChange={(value) => setIsDailyMaxSecondsEnforced(value)}
+                                style={styles.switch}
+                            />
                         </View>
-                        <Switch
-                            thumbColor={isSessionMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
-                            trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
-                            value={isSessionMaxSecondsEnforced}
-                            onValueChange={(value) => setIsSessionMaxSecondsEnforced(value)}
-                            style={styles.switch}
-                        />
+                        <Separator />
+                        <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? "Tap to set daily limit" : "Enforce a daily limit"}</Text>
                     </View>
+                </CustomTimePicker>
+                {isDailyMaxSecondsEnforced && <TouchableOpacity onPress={showDatePicker} style={styles.touchable}>
+                    <Text style={styles.text}>Daily Limit Reset</Text>
+                    <Text style={styles.textSmall}>{isDailyMaxSecondsEnforced ? dailyReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}</Text>
                     <Separator />
-                    <Text style={styles.textSmall}>{isSessionMaxSecondsEnforced ? "Tap to set session limit" : "Enforce a session limit"}</Text>
-                </View>
-            </CustomTimePicker>
-            <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="time"
-                onConfirm={handleConfirm}
-                onCancel={hideDatePicker}
-            />
-            <View>
+                    <Text style={styles.textSmall}>Tap to set when the daily limit resets</Text>
+                </TouchableOpacity>}
+                <CustomTimePicker editable={isHourlyMaxSecondsEnforced} hideHours onConfirm={(hh, mm) => setHourlyMaxMinutes(Number(hh) * 60 + Number(mm))}>
+                    <View style={styles.touchable}>
+                        <View style={styles.switchContainer}>
+                            <View>
+                                <Text style={styles.text}>Hourly Max Screen Time</Text>
+                                <Text style={styles.textSmall}>{isHourlyMaxSecondsEnforced ? formatTime(hourlyMaxMinutes * 60) : 'N/A'}</Text>
+                            </View>
+                            <Switch
+                                thumbColor={isHourlyMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                                trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
+                                value={isHourlyMaxSecondsEnforced}
+                                onValueChange={(value) => setIsHourlyMaxSecondsEnforced(value)}
+                                style={styles.switch}
+                            />
+                        </View>
+                        <Separator />
+                        <Text style={styles.textSmall}>{isHourlyMaxSecondsEnforced ? "Tap to set hourly limit" : "Enforce an hourly limit"}</Text>
+                    </View>
+                </CustomTimePicker>
+                <CustomTimePicker editable={isSessionMaxSecondsEnforced} onConfirm={(hh, mm) => setSessionMaxMinutes(Number(hh) * 60 + Number(mm))}>
+                    <View style={styles.touchable}>
+                        <View style={styles.switchContainer}>
+                            <View>
+                                <Text style={styles.text}>Session Max Screen Time</Text>
+                                <Text style={styles.textSmall}>{isSessionMaxSecondsEnforced ? formatTime(sessionMaxMinutes * 60) : 'N/A'}</Text>
+                            </View>
+                            <Switch
+                                thumbColor={isSessionMaxSecondsEnforced ? Colors.Accent1 : Colors.Text3}
+                                trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
+                                value={isSessionMaxSecondsEnforced}
+                                onValueChange={(value) => setIsSessionMaxSecondsEnforced(value)}
+                                style={styles.switch}
+                            />
+                        </View>
+                        <Separator />
+                        <Text style={styles.textSmall}>{isSessionMaxSecondsEnforced ? "Tap to set session limit" : "Enforce a session limit"}</Text>
+                    </View>
+                </CustomTimePicker>
+                <DateTimePickerModal
+                    isVisible={isDatePickerVisible}
+                    mode="time"
+                    onConfirm={handleConfirm}
+                    onCancel={hideDatePicker}
+                />
+            </ScrollView>
+            <View style={styles.saveButtonContainer}>
                 <Button color={Colors.Primary1} title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} disabled={selectedApp === '' || (rule && !hasAChange(getNewRule(), rule))} onPress={confirm} />
             </View>
-
-        </ScrollView>
+        </View>
     );
 };
 
@@ -239,6 +240,16 @@ const styles = StyleSheet.create({
         paddingLeft: 20,
         paddingRight: 20,
         backgroundColor: Colors.Background1,
+        flex: 1,
+    },
+    saveButtonContainer: {
+        padding: 10,
+    },
+    appOption: {
+        fontSize: 18,
+        color: Colors.Text2,
+        marginBottom: 10,
+        backgroundColor: Colors.Background2,
     },
     text: {
         fontSize: 18,
@@ -249,7 +260,9 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     pickerContainer: {
-        marginBottom: 20,
+        marginVertical: 10,
+        backgroundColor: Colors.Background2,
+        borderRadius: 5,
     },
     placeholderText: {
         fontSize: 16,
@@ -259,6 +272,7 @@ const styles = StyleSheet.create({
     },
     placeholder: {
         color: Colors.Text3,
+        backgroundColor: Colors.Background2,
     },
     appList: {
         paddingBottom: 20,

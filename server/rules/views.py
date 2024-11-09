@@ -111,9 +111,13 @@ class ApproveRuleModificationRequestView(APIView):
         rule.daily_max_seconds = rule_mod_request.daily_max_seconds
         rule.hourly_max_seconds = rule_mod_request.hourly_max_seconds
         rule.session_max_seconds = rule_mod_request.session_max_seconds
+        rule.is_daily_max_seconds_enforced = rule_mod_request.is_daily_max_seconds_enforced
+        rule.is_hourly_max_seconds_enforced = rule_mod_request.is_hourly_max_seconds_enforced
+        rule.is_session_max_seconds_enforced = rule_mod_request.is_session_max_seconds_enforced
         rule.is_active = rule_mod_request.is_active
         rule.daily_reset = rule_mod_request.daily_reset
         rule.intervention_type = rule_mod_request.intervention_type
+        rule.is_startup_delay_enabled = rule_mod_request.is_startup_delay_enabled
         rule.save()
         rule_mod_request.delete()
         return Response(RuleSerializer(rule, context={'request': request}).data , status=status.HTTP_200_OK)

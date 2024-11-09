@@ -51,6 +51,7 @@ export const NoDuoFoundView: React.FC = () => {
 
         // Check if the app was opened with a URL initially
         Linking.getInitialURL().then((url) => {
+            console.log('handleOpenURL', url);
             if (url) {
                 handleOpenURL({ url });
             }
@@ -59,10 +60,10 @@ export const NoDuoFoundView: React.FC = () => {
         return () => {
             subscription.remove();
         };
-    }, []);
+    }, [user]);
 
     return (
-        <View style={styles.container}>
+        <View>
             <View>
                 <Text style={styles.noDuoText1}>You have not formed a Duo</Text>
                 <TouchableOpacity style={styles.button} onPress={handleShare}>
@@ -83,26 +84,20 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.Background1,
         paddingHorizontal: 20,
-        justifyContent: 'space-between',
-        marginTop: 20,
-        marginBottom: '100%',
     },
     noDuoText1: {
         fontSize: 24,
         fontWeight: 'bold',
-        textAlign: 'center',
-        marginTop: 20,
+        color: Colors.Text2,
     },
     noDuoText2: {
         fontSize: 16,
         color: Colors.Text3,
-        textAlign: 'center',
         marginTop: 20,
     },
     button: {
         backgroundColor: Colors.Primary1,
         padding: 10,
-        borderRadius: 5,
         alignItems: 'center',
         marginVertical: 10,
     },

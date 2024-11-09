@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image, Dimensions, Animated } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useApi } from '../../hooks/useApi';
 import { RootStackParamList } from '../AppScreenStack';
@@ -7,13 +7,14 @@ import { GoogleLoginButton } from './GoogleSignIn';
 import { useNotification } from '../../contexts/NotificationContext';
 import { config } from '../../config';
 import Colors from '../../styles/colors';
-
+const screenWidth = Dimensions.get('window').width;
 const LoginScreen: React.FC = () => {
     const [identifier, setIdentifer] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { api, setRequestToken } = useApi();
     const { showNotification } = useNotification();
+    const fadeAnim = React.useRef(new Animated.Value(0)).current;
     const handleLogin = () => {
         api.userApi.login({ identifier, password }).then((resp) => {
             setRequestToken(resp.token);
@@ -23,9 +24,25 @@ const LoginScreen: React.FC = () => {
         });
     };
 
+
+    React.useEffect(() => {
+        Animated.timing(
+            fadeAnim,
+            {
+                toValue: 1,
+                duration: 500, // Duration of the fade-in animation
+                useNativeDriver: true,
+            }
+        ).start();
+    }, [fadeAnim]);
+
     return (
-        <View style={styles.container}>
-            {config.showUsernameLoginBlock && <><Text style={styles.title}>Login</Text>
+        <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+            <Image
+                source={require('../../../assets/fulllogo_transparent.png')} // Replace with your image path
+                style={styles.logo}
+            />
+            {config.showUsernameLoginBlock && <>
                 <TextInput
                     style={styles.input}
                     placeholder="Username/Email"
@@ -47,8 +64,8 @@ const LoginScreen: React.FC = () => {
                 <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
                     <Text style={styles.link}>Don't have an account? Sign up</Text>
                 </TouchableOpacity></>}
-            <View style={styles.googleContainer}><GoogleLoginButton /></View>
-        </View>
+            <GoogleLoginButton />
+        </Animated.View>
     );
 };
 
@@ -58,6 +75,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 16,
         backgroundColor: Colors.Background1,
+    },
+    logo: {
+        width: screenWidth,
+        height: screenWidth, // Set height equal to width to maintain square aspect ratio
+        marginBottom: 20,
+        alignSelf: 'center',
     },
     googleContainer: {
         marginTop: 16,

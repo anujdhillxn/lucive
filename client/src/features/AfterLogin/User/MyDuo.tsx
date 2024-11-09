@@ -38,7 +38,7 @@ const MyDuo: React.FC = () => {
     const { confirm } = useConfirm(handleDeleteDuo, "Are you sure you want to delete your Duo?");
 
     return (
-        <View style={styles.container}>
+        <View>
             <Text style={styles.text}>
                 {`You and `}
                 <Text style={{ fontWeight: 'bold' }}>{partner}</Text>

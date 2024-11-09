@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Button, TextInput, StyleSheet } from 'react-native';
+import { View, Button, TextInput, StyleSheet, Text } from 'react-native';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
@@ -7,11 +7,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../../../config';
 import { User } from '../../../types/state';
 import Colors from '../../../styles/colors';
+import { useAppContext } from '../../../hooks/useAppContext';
 
 export const UserDetails: React.FC = () => {
 
     const { setRequestToken, api } = useApi();
     const { setUser } = useActions();
+    const { user } = useAppContext();
     const { showNotification } = useNotification();
     const [isChangingUsername, setIsChangingUsername] = React.useState(false);
     const [newUsername, setNewUsername] = React.useState('');
@@ -20,7 +22,7 @@ export const UserDetails: React.FC = () => {
         api.userApi.logout().then(() => {
             setUser(null);
             setRequestToken(null);
-            AsyncStorage.removeItem('userToken');
+            AsyncStorage.removeItem('requestToken');
             showNotification("Logged out successfully", "success");
         }).catch((err: any) => {
             console.log('Error logging out:', err);
@@ -39,7 +41,8 @@ export const UserDetails: React.FC = () => {
         });
     };
     return (
-        <View style={styles.container}>
+        <View>
+            <Text style={styles.text}>{`Hi ${user?.username}`}</Text>
             <Button color={Colors.Primary1} title="Change Username" onPress={() => setIsChangingUsername(true)} />
 
             {isChangingUsername && (
@@ -49,6 +52,7 @@ export const UserDetails: React.FC = () => {
                         placeholder="New Username"
                         value={newUsername}
                         onChangeText={setNewUsername}
+                        placeholderTextColor={Colors.Text3}
                     />
                     <Button color={Colors.Primary1} title="Change" onPress={handleChangeUsername} />
                 </View>
@@ -60,18 +64,14 @@ export const UserDetails: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Colors.Background1,
-        padding: 16,
-    },
     title: {
         fontSize: 24,
     },
-    changeUsernameText: {
-        color: 'blue',
-        marginTop: 16,
-        marginBottom: 16,
+    text: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: Colors.Text2,
+        marginBottom: 8,
     },
     changeUsernameContainer: {
         flexDirection: 'row',
@@ -82,8 +82,8 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
+        backgroundColor: Colors.Background2,
+        color: Colors.Text2,
         paddingHorizontal: 8,
         marginRight: 8,
     },

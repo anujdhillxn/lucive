@@ -7,7 +7,7 @@ import { NativeModules } from 'react-native';
 import { PermissionsScreen } from './PermissionsScreen';
 import { useNativeContext } from '../../hooks/useNativeContext';
 import { useActions } from '../../hooks/useActions';
-import UserView from './User/UserView';
+import UserScreen from './User/UserScreen';
 
 const HomeScreen: React.FC = () => {
     const { myDuo } = useAppContext();
@@ -22,6 +22,6 @@ const HomeScreen: React.FC = () => {
         await fetchData();
         setRefreshing(false);
     };
-    return myDuo ? <AllRulesView /> : <UserView />
+    return myDuo ? <AllRulesView /> : <UserScreen />
 }
 export default HomeScreen;

@@ -25,7 +25,6 @@ export default function App() {
                             <AppContextProvider>
                                 <NativeContextProvider>
                                     <AppScreenStack />
-
                                     <StatusBar backgroundColor={Colors.Primary2} barStyle="light-content" />
                                 </NativeContextProvider>
                             </AppContextProvider>

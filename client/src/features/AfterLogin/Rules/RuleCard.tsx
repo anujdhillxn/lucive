@@ -41,6 +41,7 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
         });
         return () => clearInterval(interval);
     }, []);
+
     return <View style={styles.card}>
         <Text style={styles.title}>
             {rule.appDisplayName} (<StrikeThroughText new={rule.modificationData?.isActive ? "Active" : "Inactive"} old={rule.isActive ? "Active" : "Inactive"} changed={Boolean(rule.modificationData && rule.isActive !== rule.modificationData?.isActive)} />)
@@ -51,7 +52,7 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
                 {rule.isMyRule && <Text>
                     {currentHourlyUsage}/
                 </Text>}
-                <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.hourlyMaxSeconds!) : ''} old={formatTime(rule.hourlyMaxSeconds)} changed={Boolean(rule.modificationData && rule.hourlyMaxSeconds !== rule.modificationData.hourlyMaxSeconds)} />
+                <StrikeThroughText new={rule.modificationData ? (rule.modificationData.isHourlyMaxSecondsEnforced ? formatTime(rule.modificationData.hourlyMaxSeconds) : 'N/A') : ''} old={rule.isHourlyMaxSecondsEnforced ? formatTime(rule.hourlyMaxSeconds) : 'N/A'} changed={Boolean(rule.modificationData) && (rule.isHourlyMaxSecondsEnforced !== rule.modificationData?.isHourlyMaxSecondsEnforced || rule.hourlyMaxSeconds !== rule.modificationData.hourlyMaxSeconds)} />
             </Text>}
         {rule.isDailyMaxSecondsEnforced &&
             <>
@@ -60,7 +61,7 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
                     {rule.isMyRule && <Text>
                         {currentDailyUsage}/
                     </Text>}
-                    <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.dailyMaxSeconds!) : ''} old={formatTime(rule.dailyMaxSeconds)} changed={Boolean(rule.modificationData && rule.dailyMaxSeconds !== rule.modificationData.dailyMaxSeconds)} />
+                    <StrikeThroughText new={rule.modificationData ? (rule.modificationData.isDailyMaxSecondsEnforced ? formatTime(rule.modificationData.dailyMaxSeconds) : 'N/A') : ''} old={rule.isDailyMaxSecondsEnforced ? formatTime(rule.dailyMaxSeconds) : 'N/A'} changed={Boolean(rule.modificationData) && (rule.isDailyMaxSecondsEnforced !== rule.modificationData?.isDailyMaxSecondsEnforced || rule.dailyMaxSeconds !== rule.modificationData.dailyMaxSeconds)} />
                 </Text>
                 <Text style={styles.timeLimit}>
                     <Text>Resets at: </Text>
@@ -72,7 +73,7 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
             <>
                 <Text style={styles.timeLimit}>
                     {"Session Limit: "}
-                    <StrikeThroughText new={rule.modificationData ? formatTime(rule.modificationData?.sessionMaxSeconds!) : ''} old={formatTime(rule.sessionMaxSeconds)} changed={Boolean(rule.modificationData && rule.sessionMaxSeconds !== rule.modificationData.sessionMaxSeconds)} />
+                    <StrikeThroughText new={rule.modificationData ? (rule.modificationData.isSessionMaxSecondsEnforced ? formatTime(rule.modificationData.sessionMaxSeconds) : 'N/A') : ''} old={rule.isSessionMaxSecondsEnforced ? formatTime(rule.sessionMaxSeconds) : 'N/A'} changed={Boolean(rule.modificationData) && (rule.isSessionMaxSecondsEnforced !== rule.modificationData?.isSessionMaxSecondsEnforced || rule.sessionMaxSeconds !== rule.modificationData.sessionMaxSeconds)} />
                 </Text>
             </>}
         {rule.isStartupDelayEnabled &&

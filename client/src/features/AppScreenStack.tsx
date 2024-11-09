@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import SignupScreen from './BeforeLogin/SignupScreen';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useAppContext } from '../hooks/useAppContext';
 import HomeScreen from './AfterLogin/HomeScreen';
-import UserScreen from './AfterLogin/UserScreen';
+import UserScreen from './AfterLogin/User/UserScreen';
 import { RuleCreatorScreen } from './AfterLogin/Rules/RuleCreatorScreen';
 import LoginScreen from './BeforeLogin/LoginScreen';
 import { Rule } from '../types/state';
@@ -37,10 +37,8 @@ export const AppScreenStack: React.FC = () => {
                 <Stack.Screen name="Login" component={LoginScreen} options={
                     () => (
                         {
-                            title: 'Lucive', headerStyle: {
-                                backgroundColor: Colors.Primary2,
-                            },
-                            headerTintColor: Colors.Text1,
+                            headerShown: false
+
                         }
                     )
                 } />
@@ -59,7 +57,11 @@ export const AppScreenStack: React.FC = () => {
     }
 
     return <View style={styles.container}>
-        <Stack.Navigator initialRouteName={user && myDuo ? "Home" : "User"}>
+        <Stack.Navigator initialRouteName={user && myDuo ? "Home" : "User"}
+            screenOptions={{
+                cardStyle: { backgroundColor: Colors.Background1 }, // Set the background color of the card during transition
+                ...TransitionPresets.SlideFromRightIOS, // Use a transition preset
+            }}>
             <Stack.Screen
                 name="Home"
                 component={HomeScreen}

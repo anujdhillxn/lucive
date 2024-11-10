@@ -29,8 +29,11 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [user, setUser] = React.useState<User | null>(null);
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
     const [rules, setRules] = React.useState<Rule[]>([]);
+
     const { api, requestToken, setRequestToken } = useApi();
+
     const [appLoading, setAppLoading] = React.useState(true);
+
     const fetchData = async () => {
         setAppLoading(true);
         if (requestToken) {
@@ -100,6 +103,10 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             console.log(e);
         }
     }
+
+    React.useEffect(() => {
+        fetchAndSetRules();
+    }, [myDuo]);
 
     React.useEffect(() => {
         fetchData();

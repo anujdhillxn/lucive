@@ -72,7 +72,7 @@ export const NoDuoFoundView: React.FC = () => {
             </View>
             <AnimatedSequence>
                 <Text style={styles.noDuoText2}>You can start your digital detox journey after forming a Duo</Text>
-                <Text style={styles.noDuoText2}>Set various rules to keep your phone usage in check</Text>
+                <Text style={styles.noDuoText2}>Select an app and set rules to keep the screentime in check</Text>
                 <Text style={styles.noDuoText2}>Once a rule is set, it can be relaxed/disabled only after the change is approved by the other member of the Duo</Text>
             </AnimatedSequence>
         </View>

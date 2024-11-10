@@ -35,7 +35,7 @@ const MyDuo: React.FC = () => {
             });
     };
 
-    const { confirm } = useConfirm(handleDeleteDuo, "Are you sure you want to delete your Duo?");
+    const { confirm } = useConfirm(handleDeleteDuo, "Are you sure you want to delete your Duo? All rules will be disabled");
 
     return (
         <View>

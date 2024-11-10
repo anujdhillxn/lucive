@@ -42,10 +42,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '100%',
         height: 48,
-        backgroundColor: Colors.Primary1, // Use your purple color here
+        backgroundColor: Colors.Primary1,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: 5,
     },
     icon: {
         marginRight: 10,

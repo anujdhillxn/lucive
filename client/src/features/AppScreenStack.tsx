@@ -73,7 +73,7 @@ export const AppScreenStack: React.FC = () => {
                                 <Icon name="sync" size={24} solid={false} color={Colors.Text1} />
                             </TouchableOpacity>
                             <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => navigation.navigate('User')}>
-                                <Icon name="user" size={24} solid={false} color={Colors.Text1} style={{ marginRight: 10 }} />
+                                <Icon name="user" size={24} solid={false} color={Colors.Text1} style={{ marginRight: 20 }} />
                             </TouchableOpacity>
                         </View>
                     ),
@@ -92,12 +92,19 @@ export const AppScreenStack: React.FC = () => {
                             backgroundColor: Colors.Primary2,
                         },
                         headerTintColor: Colors.Text1,
+                        headerRight: () => (
+                            <View style={{ flexDirection: 'row' }}>
+                                <TouchableOpacity onPress={fetchData}>
+                                    <Icon name="sync" size={24} solid={false} color={Colors.Text1} style={{ marginRight: 20 }} />
+                                </TouchableOpacity>
+                            </View>
+                        ),
                     }
                 )
             } />
             <Stack.Screen name="RuleCreator" component={RuleCreatorScreen} options={
                 ({ route }) => ({
-                    title: route.params ? 'Edit Rule' : 'Create Rule', headerStyle: {
+                    title: route.params ? `Edit ${(route.params as Rule).appDisplayName}'s rule` : 'Create Rule', headerStyle: {
                         backgroundColor: Colors.Primary2,
                     },
                     headerTintColor: Colors.Text1,

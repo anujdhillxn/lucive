@@ -113,23 +113,29 @@ export const RuleCreatorScreen: React.FC = () => {
         }
     }
 
-    const { confirm } = useConfirm(handleSave, "Are you sure you want to save this rule?");
+    const { confirm } = useConfirm(handleSave, "Are you sure you want to save this rule? Once saved, you cannot relax it's restrictions or disable it without partner's approval");
+
+    const doesNotHaveRule = (app: string) => {
+        return !rules.filter(curr => curr.isMyRule).some((r) => r.app === app);
+    }
+
+    const isStartupDelayAvailable = selectedApp !== 'com.instagram.android';
 
     return (
         <View style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
-                <Picker
-                    enabled={!Boolean(rule)}
+                {!Boolean(rule) && <Picker
+                    dropdownIconColor={Colors.Text3}
                     selectedValue={selectedApp}
                     onValueChange={(itemValue) => setSelectedApp(itemValue)}
                     style={styles.pickerContainer}
                     mode='dropdown'
                 >
                     <Picker.Item label="Select App" value={''} style={styles.placeholder} />
-                    {Object.keys(installedApps).map((packageName) => (
+                    {Object.keys(installedApps).filter(doesNotHaveRule).map((packageName) => (
                         <Picker.Item key={packageName} style={styles.appOption} label={installedApps[packageName].displayName} value={packageName} />
                     ))}
-                </Picker>
+                </Picker>}
                 <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
                         <Text style={styles.text}>Active</Text>
@@ -142,21 +148,24 @@ export const RuleCreatorScreen: React.FC = () => {
                         />
                     </View>
                     <Separator />
-                    <Text style={styles.textSmall}>Rule will be applied when this switch is on</Text>
+                    <Text style={styles.textSmall}>Rule's restrictions will be applied when this switch is on</Text>
                 </View>
-                <View style={styles.touchable}>
+                <View style={[styles.touchable, !isStartupDelayAvailable && styles.disabled]}>
                     <View style={styles.switchContainer}>
-                        <Text style={styles.text}>Delay Startup</Text>
+                        <Text style={styles.text}>
+                            Delay Startup
+                        </Text>
                         <Switch
                             thumbColor={isStartupDelayEnabled ? Colors.Accent1 : Colors.Text3}
                             trackColor={{ false: Colors.Background1, true: Colors.Accent2 }}
                             value={isStartupDelayEnabled}
                             onValueChange={(value) => setIsStartupDelayEnabled(value)}
                             style={styles.switch}
+                            disabled={!isStartupDelayAvailable}
                         />
                     </View>
                     <Separator />
-                    <Text style={styles.textSmall}>Enforce a 10 seconds pause before the app opens up</Text>
+                    <Text style={styles.textSmall}>{isStartupDelayAvailable ? "Delay the opening of the app by 10 seconds" : "This feature is not available for this app"}</Text>
                 </View>
                 <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                     <View style={styles.touchable}>
@@ -304,7 +313,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 10,
         padding: 10, // Add padding for better touch area
-        borderRadius: 5, // Optional: Add border radius for rounded corners
         backgroundColor: Colors.Background2,
     },
     textSmall: {
@@ -318,5 +326,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-    }
+    },
+    disabled: {
+        opacity: 0.5, // Gray out the block
+    },
 });

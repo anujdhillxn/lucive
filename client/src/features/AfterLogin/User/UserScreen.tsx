@@ -6,6 +6,7 @@ import MyDuo from './MyDuo';
 import { NoDuoFoundView } from './NoDuoFoundView';
 import Separator from '../../../components/Separator';
 import Colors from '../../../styles/colors';
+import FooterText from '../../../components/FooterText';
 
 const UserScreen: React.FC = () => {
     const { myDuo } = useAppContext();
@@ -14,6 +15,7 @@ const UserScreen: React.FC = () => {
         <UserDetails />
         <Separator />
         <View>{myDuo ? <MyDuo /> : <NoDuoFoundView />}</View>
+        <FooterText />
     </View>
 };
 

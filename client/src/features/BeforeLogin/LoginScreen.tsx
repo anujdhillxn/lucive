@@ -7,6 +7,7 @@ import { GoogleLoginButton } from './GoogleSignIn';
 import { useNotification } from '../../contexts/NotificationContext';
 import { config } from '../../config';
 import Colors from '../../styles/colors';
+import FooterText from '../../components/FooterText';
 const screenWidth = Dimensions.get('window').width;
 const LoginScreen: React.FC = () => {
     const [identifier, setIdentifer] = useState('');
@@ -65,6 +66,7 @@ const LoginScreen: React.FC = () => {
                     <Text style={styles.link}>Don't have an account? Sign up</Text>
                 </TouchableOpacity></>}
             <GoogleLoginButton />
+            <FooterText />
         </Animated.View>
     );
 };

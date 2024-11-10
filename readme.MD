@@ -8,7 +8,8 @@ Lucive is an application designed to help users take control of their screen tim
 -   **Customizable Rules**: Set rules on specific apps, including:
     -   Hourly screen time limits
     -   Daily screen time limits
-    -   Additional customizable constraints
+    -   Screen time limit for a session
+    -   Initial delay of 10 seconds before opening an app
 -   **Approval for Rule Changes**: To change any rule, users must get permission from their partner, reinforcing accountability.
 
 ## License

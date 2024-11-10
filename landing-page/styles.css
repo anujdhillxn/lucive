@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #1e1e1e; /* Background1 */
+    color: #ffffff; /* Text1 */
+    padding: 20px; /* Add padding for mobile */
+    box-sizing: border-box; /* Ensure padding is included in the total width and height */
+}
+
+.content {
+    text-align: center;
+    width: 100%;
+    max-width: 600px; /* Limit the max width */
+    padding: 20px 0; /* Add padding to top and bottom */
+}
+
+.app-picture {
+    width: 100%;
+    height: auto;
+    margin: 10px 0; /* Reduced margin */
+}
+
+.container {
+    background: #2e2e2e; /* Background2 */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Ensure padding is included in the total width and height */
+}
+
+p {
+    font-size: 1.2em;
+    color: #e0e0e0; /* Text2 */
+    margin: 10px 0; /* Add margin for spacing */
+}
+
+.download-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1em;
+    color: #ffffff; /* Text1 */
+    background-color: #8a2be2; /* Primary2 */
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.download-button:hover {
+    background-color: #9370db; /* Primary1 */
+}
+
+.privacy-policy {
+    margin-top: 10px; /* Reduced margin */
+}
+
+.privacy-policy a {
+    color: #8a2be2; /* Primary2 */
+    text-decoration: none;
+}
+
+.privacy-policy a:hover {
+    text-decoration: underline;
+}
+
+.created-by {
+    margin-top: 5px; /* Reduced margin */
+    color: #ffffff; /* Text1 */
+}
+
+.created-by a {
+    color: #8a2be2; /* Primary2 */
+    text-decoration: none;
+}
+
+.created-by a:hover {
+    text-decoration: underline;
+}
+
+/* Media Queries for Mobile Responsiveness */
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    p {
+        font-size: 1em;
+    }
+
+    .download-button {
+        padding: 8px 16px;
+        font-size: 0.9em;
+    }
+}

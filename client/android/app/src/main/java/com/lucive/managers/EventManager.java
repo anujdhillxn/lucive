@@ -17,18 +17,49 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EventManager {
     private final Map<String, List<Event>> eventsMap = new ConcurrentHashMap<>();
     private final Map<String, List<String>> activityMap = new ConcurrentHashMap<>();
-    private long lastTimestamp = System.currentTimeMillis();
     private boolean isScreenOn = true;
+    private long screenOnLastTimestamp = System.currentTimeMillis();
+
+    public String processEventsChunk (final List<Event> events) {
+        for (Event event : events) {
+            processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getActivity());
+        }
+        if (!events.isEmpty()) {
+            return "Unknown";
+        }
+        String currentApp = getCurrentlyOpenedApp();
+        if (currentApp.equals("Unknown") && isScreenOn && !eventsMap.isEmpty()) {
+            long latestTimestamp = 0;
+            for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
+                List<Event> packageEvents = entry.getValue();
+                if (packageEvents.size() > 1) {
+                    Event lastOpenEvent = packageEvents.get(packageEvents.size() - 2);
+                    if (lastOpenEvent.getTimeStamp() > screenOnLastTimestamp
+                            && lastOpenEvent.getTimeStamp() > latestTimestamp
+                            && lastOpenEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                        currentApp = entry.getKey();
+                        latestTimestamp = lastOpenEvent.getTimeStamp();
+                    }
+                }
+            }
+            if (!currentApp.equals("Unknown")) {
+                final List<Event> packageEvents = eventsMap.get(currentApp);
+                packageEvents.remove(packageEvents.size() - 1);
+                Log.d("UsageTrackerService", "Session continued for " + currentApp);
+            }
+        }
+        return currentApp;
+    }
 
     public void processEvent(final String packageName, final long timestamp, int eventType, final String activity) {
-        Log.i("UsageTrackerService", "Processing event: " + packageName + " " + eventType + " " + activity + " " + new Date(timestamp));
-        lastTimestamp = timestamp;
+        Log.d("UsageTrackerService", "Processing event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
         if (eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
             isScreenOn = false;
             return;
         }
         if (eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
             isScreenOn = true;
+            screenOnLastTimestamp = timestamp;
             return;
         }
         if (eventType == UsageEvents.Event.ACTIVITY_STOPPED) {
@@ -92,22 +123,6 @@ public class EventManager {
                 }
             }
         }
-        if (currentApp.equals("Unknown") && isScreenOn && !eventsMap.isEmpty()) {
-            latestTimestamp = 0;
-            for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
-                List<Event> packageEvents = entry.getValue();
-                if (!packageEvents.isEmpty()) {
-                    Event lastEvent = packageEvents.get(packageEvents.size() - 1);
-                    if (lastEvent.getTimeStamp() > latestTimestamp) {
-                        currentApp = entry.getKey();
-                        latestTimestamp = lastEvent.getTimeStamp();
-                    }
-                }
-            }
-            final List<Event> packageEvents = eventsMap.get(currentApp);
-            packageEvents.remove(packageEvents.size() - 1);
-            return currentApp;
-        }
         return currentApp;
     }
 
@@ -161,7 +176,4 @@ public class EventManager {
         return new ArrayList<>();
     }
 
-    public long getLastTimestamp() {
-        return lastTimestamp;
-    }
 }

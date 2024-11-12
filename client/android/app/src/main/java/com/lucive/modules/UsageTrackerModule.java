@@ -106,8 +106,12 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
                 promise.reject("Error", e.getMessage());
             }
         }
-        usageTrackerService.updateRules(ruleMap);
-        promise.resolve("Rules set");
+        if (usageTrackerService != null) {
+            usageTrackerService.updateRules(ruleMap);
+            promise.resolve("Rules set");
+        } else {
+            promise.reject("Service Error", "UsageTrackerService not bound");
+        }
     }
 
     private Rule parseRule(ReadableMap map) {

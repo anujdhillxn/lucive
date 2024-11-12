@@ -54,13 +54,12 @@ public class AppUtils {
         return calendar;
     }
 
-    public static long getLastDayStart() {
+    public static long getDayStart() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
         return calendar.getTimeInMillis();
     }
 

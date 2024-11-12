@@ -15,10 +15,13 @@ import android.os.Looper;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import com.lucive.managers.EventManager;
+import com.lucive.models.Event;
 import com.lucive.models.Rule;
 import com.lucive.utils.AppUtils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,6 +36,7 @@ public class UsageTrackerService extends Service {
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
     private int delayCounter = 0;
+    private long lastTimestamp = AppUtils.get24HoursBefore();
     private EventManager eventManager;
 
     public class LocalBinder extends Binder {
@@ -104,25 +108,39 @@ public class UsageTrackerService extends Service {
 
     private void checkScreenUsages() {
         final long endTime = System.currentTimeMillis();
-        long startTime = eventManager.getLastTimestamp() + 1;
+        long startTime = lastTimestamp + 1;
+        String currentApp = "Unknown";
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
-        UsageEvents.Event event = new UsageEvents.Event();
-        int eventCount = 0;
+        UsageEvents.Event usageEvent = new UsageEvents.Event();
+        List<Event> allEvents = new ArrayList<>();
         while (usageEvents.hasNextEvent()) {
-            usageEvents.getNextEvent(event);
-            if (event.getEventType() != UsageEvents.Event.ACTIVITY_RESUMED
-                    && event.getEventType() != UsageEvents.Event.ACTIVITY_PAUSED
-                    && event.getEventType() != UsageEvents.Event.ACTIVITY_STOPPED
-                    && event.getEventType() != UsageEvents.Event.SCREEN_NON_INTERACTIVE
-                    && event.getEventType() != UsageEvents.Event.SCREEN_INTERACTIVE
-            ) {
-                continue;
+            usageEvents.getNextEvent(usageEvent);
+            if (usageEvent.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
+                    || usageEvent.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED
+                    || usageEvent.getEventType() == UsageEvents.Event.ACTIVITY_STOPPED
+                    || usageEvent.getEventType() == UsageEvents.Event.SCREEN_NON_INTERACTIVE
+                    || usageEvent.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
+                allEvents.add(new Event(usageEvent.getPackageName(), usageEvent.getEventType(), usageEvent.getTimeStamp(), usageEvent.getClassName()));
             }
-            eventManager.processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getClassName());
-            eventCount++;
         }
-        Log.i(TAG, "Open apps " + eventManager.openApps());
-        if (eventCount == 0) {
+
+        int eventIndex = 0;
+        for (long chunkStartTime = startTime; chunkStartTime < endTime; chunkStartTime += INTERVAL) {
+            final long chunkEndTime = chunkStartTime + INTERVAL;
+            List<Event> chunk = new ArrayList<>();
+
+            while (eventIndex < allEvents.size() && allEvents.get(eventIndex).getTimeStamp() < chunkEndTime) {
+                Event event = allEvents.get(eventIndex);
+
+                if (event.getTimeStamp() >= chunkStartTime) {
+                    chunk.add(event);
+                    lastTimestamp = event.getTimeStamp();
+                }
+                eventIndex++;
+            }
+            currentApp = eventManager.processEventsChunk(chunk);
+        }
+        if (!currentApp.equals("Unknown")) {
             final String packageName = eventManager.getCurrentlyOpenedApp();
             if (isHourlyLimitExceeded(packageName)) {
                 String message = "Hourly screen time limit of " + AppUtils.formatTime(ruleMap.get(packageName).hourlyMaxSeconds()) + " exceeded!";

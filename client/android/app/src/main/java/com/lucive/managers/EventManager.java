@@ -19,16 +19,22 @@ public class EventManager {
     private final Map<String, List<String>> activityMap = new ConcurrentHashMap<>();
     private boolean isScreenOn = true;
     private long screenOnLastTimestamp = System.currentTimeMillis();
-
+    private final String TAG = "EventManager";
+    private int lastEventChunkSize = 0;
+    private boolean currentlyOpenedAppMightChange = false;
+    private String currentApp = "Unknown";
     public String processEventsChunk (final List<Event> events) {
         for (Event event : events) {
             processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getActivity());
         }
         if (!events.isEmpty()) {
+            currentlyOpenedAppMightChange = true;
+            lastEventChunkSize = events.size();
             return "Unknown";
         }
-        String currentApp = getCurrentlyOpenedApp();
-        if (currentApp.equals("Unknown") && isScreenOn && !eventsMap.isEmpty()) {
+        currentApp = currentlyOpenedAppMightChange ? getCurrentlyOpenedApp() : currentApp;
+        //Log.i(TAG, "Current app: " + currentApp);
+        if (currentApp.equals("Unknown") && isScreenOn && !eventsMap.isEmpty() && lastEventChunkSize > 0) {
             long latestTimestamp = 0;
             for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
                 List<Event> packageEvents = entry.getValue();
@@ -45,14 +51,15 @@ public class EventManager {
             if (!currentApp.equals("Unknown")) {
                 final List<Event> packageEvents = eventsMap.get(currentApp);
                 packageEvents.remove(packageEvents.size() - 1);
-                Log.d("UsageTrackerService", "Session continued for " + currentApp);
+                //Log.d(TAG, "Session continued for " + currentApp);
             }
         }
+        lastEventChunkSize = 0;
         return currentApp;
     }
 
     public void processEvent(final String packageName, final long timestamp, int eventType, final String activity) {
-        Log.d("UsageTrackerService", "Processing event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
+        Log.d(TAG, "Processing event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
         if (eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
             isScreenOn = false;
             return;
@@ -110,6 +117,8 @@ public class EventManager {
 
 
     public String getCurrentlyOpenedApp() {
+        currentlyOpenedAppMightChange = false;
+        Log.i(TAG, "Getting currently opened app");
         String currentApp = "Unknown";
         long latestTimestamp = 0;
 

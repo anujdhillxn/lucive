@@ -141,18 +141,17 @@ public class UsageTrackerService extends Service {
             currentApp = eventManager.processEventsChunk(chunk);
         }
         if (!currentApp.equals("Unknown")) {
-            final String packageName = eventManager.getCurrentlyOpenedApp();
-            if (isHourlyLimitExceeded(packageName)) {
-                String message = "Hourly screen time limit of " + AppUtils.formatTime(ruleMap.get(packageName).hourlyMaxSeconds()) + " exceeded!";
+            if (isHourlyLimitExceeded(currentApp)) {
+                String message = "Hourly screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).hourlyMaxSeconds()) + " exceeded!";
                 sendModalIntent(message);
-            } else if (isDailyLimitExceeded(packageName)) {
-                String message = "Daily screen time limit of " + AppUtils.formatTime(ruleMap.get(packageName).dailyMaxSeconds()) + " exceeded!";
+            } else if (isDailyLimitExceeded(currentApp)) {
+                String message = "Daily screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).dailyMaxSeconds()) + " exceeded!";
                 sendModalIntent(message);
-            } else if (isSessionLimitExceeded(packageName)) {
-                String message = "Session screen time limit of " + AppUtils.formatTime(ruleMap.get(packageName).sessionMaxSeconds()) + " exceeded!";
+            } else if (isSessionLimitExceeded(currentApp)) {
+                String message = "Session screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).sessionMaxSeconds()) + " exceeded!";
                 sendModalIntent(message);
-            } else if (delayStartup(packageName)) {
-                String message = "App starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(packageName)) / 1000 + " seconds!";
+            } else if (delayStartup(currentApp)) {
+                String message = "App starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(currentApp)) / 1000 + " seconds!";
                 sendModalIntent(message);
             } else {
                 Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
@@ -160,6 +159,7 @@ public class UsageTrackerService extends Service {
                 startService(hideScreenTimeExceeded);
             }
         }
+        Log.i(TAG, "Time taken to process events: " + (System.currentTimeMillis() - endTime) + "ms");
     }
 
     public int getHourlyScreentime(final String packageName) {

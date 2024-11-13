@@ -32,10 +32,9 @@ public class UsageTrackerService extends Service {
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable trackingRunnable;
-    private static final long INTERVAL = 300;
+    private static final long INTERVAL = 200;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
-    private int delayCounter = 0;
     private long lastTimestamp = AppUtils.get24HoursBefore();
     private EventManager eventManager;
 
@@ -109,7 +108,10 @@ public class UsageTrackerService extends Service {
     private void checkScreenUsages() {
         final long endTime = System.currentTimeMillis();
         long startTime = lastTimestamp + 1;
-        String currentApp = "Unknown";
+        long totalDuration = endTime - startTime;
+        if (totalDuration < INTERVAL) {
+            return;
+        }
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
         UsageEvents.Event usageEvent = new UsageEvents.Event();
         List<Event> allEvents = new ArrayList<>();
@@ -121,45 +123,53 @@ public class UsageTrackerService extends Service {
                     || usageEvent.getEventType() == UsageEvents.Event.SCREEN_NON_INTERACTIVE
                     || usageEvent.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
                 allEvents.add(new Event(usageEvent.getPackageName(), usageEvent.getEventType(), usageEvent.getTimeStamp(), usageEvent.getClassName()));
+                lastTimestamp = usageEvent.getTimeStamp();
             }
         }
+        int numFullChunks = (int) (totalDuration / INTERVAL);
+        long remainder = totalDuration % INTERVAL;
 
+        // Distribute the remainder evenly across chunks, with leftover distributed to last chunks
+        long extraPerChunk = remainder / numFullChunks;
+        long additionalRemainder = remainder % numFullChunks;
+
+        long currentStart = startTime;
         int eventIndex = 0;
-        for (long chunkStartTime = startTime; chunkStartTime < endTime; chunkStartTime += INTERVAL) {
-            final long chunkEndTime = chunkStartTime + INTERVAL;
-            List<Event> chunk = new ArrayList<>();
-
-            while (eventIndex < allEvents.size() && allEvents.get(eventIndex).getTimeStamp() < chunkEndTime) {
-                Event event = allEvents.get(eventIndex);
-
-                if (event.getTimeStamp() >= chunkStartTime) {
-                    chunk.add(event);
-                    lastTimestamp = event.getTimeStamp();
-                }
+        String currentApp = "Unknown";
+        for (int i = 0; i < numFullChunks; i++) {
+            // For the first `additionalRemainder` chunks, add an extra 1 millisecond
+            List<Event> chunkEvents = new ArrayList<>();
+            long currentEnd = currentStart + INTERVAL + extraPerChunk + (i < additionalRemainder ? 1 : 0);
+            while (eventIndex < allEvents.size() && allEvents.get(eventIndex).getTimeStamp() < currentEnd) {
+                chunkEvents.add(allEvents.get(eventIndex));
                 eventIndex++;
             }
-            currentApp = eventManager.processEventsChunk(chunk);
+            currentApp = eventManager.processEventsChunk(chunkEvents);
+            currentStart = currentEnd;
         }
         if (!currentApp.equals("Unknown")) {
-            if (isHourlyLimitExceeded(currentApp)) {
-                String message = "Hourly screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).hourlyMaxSeconds()) + " exceeded!";
-                sendModalIntent(message);
-            } else if (isDailyLimitExceeded(currentApp)) {
-                String message = "Daily screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).dailyMaxSeconds()) + " exceeded!";
-                sendModalIntent(message);
-            } else if (isSessionLimitExceeded(currentApp)) {
-                String message = "Session screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).sessionMaxSeconds()) + " exceeded!";
-                sendModalIntent(message);
-            } else if (delayStartup(currentApp)) {
-                String message = "App starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(currentApp)) / 1000 + " seconds!";
-                sendModalIntent(message);
-            } else {
-                Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
-                hideScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", false);
-                startService(hideScreenTimeExceeded);
-            }
+            handleModal(currentApp);
         }
-        Log.i(TAG, "Time taken to process events: " + (System.currentTimeMillis() - endTime) + "ms");
+    }
+
+    private void handleModal (final String currentApp) {
+        if (isHourlyLimitExceeded(currentApp)) {
+            String message = "Hourly screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).hourlyMaxSeconds()) + " exceeded!";
+            sendModalIntent(message);
+        } else if (isDailyLimitExceeded(currentApp)) {
+            String message = "Daily screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).dailyMaxSeconds()) + " exceeded!";
+            sendModalIntent(message);
+        } else if (isSessionLimitExceeded(currentApp)) {
+            String message = "Session screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).sessionMaxSeconds()) + " exceeded!";
+            sendModalIntent(message);
+        } else if (delayStartup(currentApp)) {
+            String message = "App starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(currentApp)) / 1000 + " seconds!";
+            sendModalIntent(message);
+        } else {
+            Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
+            hideScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", false);
+            startService(hideScreenTimeExceeded);
+        }
     }
 
     public int getHourlyScreentime(final String packageName) {

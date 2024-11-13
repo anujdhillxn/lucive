@@ -18,7 +18,7 @@ public class EventManager {
     private final Map<String, List<Event>> eventsMap = new ConcurrentHashMap<>();
     private final Map<String, List<String>> activityMap = new ConcurrentHashMap<>();
     private boolean isScreenOn = true;
-    private long screenOnLastTimestamp = System.currentTimeMillis();
+    private long screenOnLastTimestamp = AppUtils.get24HoursBefore();
     private final String TAG = "EventManager";
     private int lastEventChunkSize = 0;
     private boolean currentlyOpenedAppMightChange = false;
@@ -33,7 +33,6 @@ public class EventManager {
             return "Unknown";
         }
         currentApp = currentlyOpenedAppMightChange ? getCurrentlyOpenedApp() : currentApp;
-        //Log.i(TAG, "Current app: " + currentApp);
         if (currentApp.equals("Unknown") && isScreenOn && !eventsMap.isEmpty() && lastEventChunkSize > 0) {
             long latestTimestamp = 0;
             for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
@@ -51,7 +50,7 @@ public class EventManager {
             if (!currentApp.equals("Unknown")) {
                 final List<Event> packageEvents = eventsMap.get(currentApp);
                 packageEvents.remove(packageEvents.size() - 1);
-                //Log.d(TAG, "Session continued for " + currentApp);
+                Log.d(TAG, "Session continued for " + currentApp);
             }
         }
         lastEventChunkSize = 0;
@@ -118,7 +117,6 @@ public class EventManager {
 
     public String getCurrentlyOpenedApp() {
         currentlyOpenedAppMightChange = false;
-        Log.i(TAG, "Getting currently opened app");
         String currentApp = "Unknown";
         long latestTimestamp = 0;
 

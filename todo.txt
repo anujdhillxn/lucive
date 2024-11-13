@@ -1,7 +1,7 @@
 - push notifications on actions from partner
-- motivational messages on interruption screen
-- fix instagram's screen delay problem
+- motivational messages, word of the day, math problem on interruption screen
 - points rewarded by time lucive service was running in the background, with penalties as per breaking limits
 - font change
 - UI components refactor for buttons and texts to use a single component
 - buttons that show loader when they do something
+- screentime calc optimizations

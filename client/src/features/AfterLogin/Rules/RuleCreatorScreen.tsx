@@ -119,8 +119,6 @@ export const RuleCreatorScreen: React.FC = () => {
         return !rules.filter(curr => curr.isMyRule).some((r) => r.app === app);
     }
 
-    const isStartupDelayAvailable = selectedApp !== 'com.instagram.android';
-
     return (
         <View style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -150,7 +148,7 @@ export const RuleCreatorScreen: React.FC = () => {
                     <Separator />
                     <Text style={styles.textSmall}>Rule's restrictions will be applied when this switch is on</Text>
                 </View>
-                <View style={[styles.touchable, !isStartupDelayAvailable && styles.disabled]}>
+                <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
                         <Text style={styles.text}>
                             Delay Startup
@@ -161,11 +159,10 @@ export const RuleCreatorScreen: React.FC = () => {
                             value={isStartupDelayEnabled}
                             onValueChange={(value) => setIsStartupDelayEnabled(value)}
                             style={styles.switch}
-                            disabled={!isStartupDelayAvailable}
                         />
                     </View>
                     <Separator />
-                    <Text style={styles.textSmall}>{isStartupDelayAvailable ? "Delay the opening of the app by 10 seconds" : "This feature is not available for this app"}</Text>
+                    <Text style={styles.textSmall}>{"Delay the opening of the app by 10 seconds"}</Text>
                 </View>
                 <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                     <View style={styles.touchable}>

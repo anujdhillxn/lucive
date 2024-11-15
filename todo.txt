@@ -5,3 +5,4 @@
 - UI components refactor for buttons and texts to use a single component
 - buttons that show loader when they do something
 - screentime calc optimizations
+- improve custom time picker

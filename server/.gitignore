@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+words.json
 env/
 venv/
 ENV/

@@ -1,0 +1,1 @@
+from .admin_views import WordAdmin

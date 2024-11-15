@@ -112,6 +112,11 @@ public class EventManager {
             newEvent.setCumulatedScreentime(eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ? lastEvent.getCumulatedScreentime() : lastEvent.getCumulatedScreentime() + timestamp - lastEvent.getTimeStamp());
         }
         packageEvents.add(newEvent);
+        //clear events older than a day
+        final long twentyFourHoursBefore = AppUtils.get24HoursBefore();
+        while (!packageEvents.isEmpty() && packageEvents.get(0).getTimeStamp() < twentyFourHoursBefore) {
+            packageEvents.remove(0);
+        }
     }
 
 

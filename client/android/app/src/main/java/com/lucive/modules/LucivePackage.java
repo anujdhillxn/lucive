@@ -17,6 +17,7 @@ public class LucivePackage implements ReactPackage {
         modules.add(new InstalledAppsModule(reactContext));
         modules.add(new UsageTrackerModule(reactContext));
         modules.add(new PermissionsModule(reactContext));
+        modules.add(new LocalStorageModule(reactContext));
         return modules;
     }
 

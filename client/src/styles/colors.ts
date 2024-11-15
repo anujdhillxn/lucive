@@ -127,4 +127,6 @@ enum Colors18 {
     Danger = "#ff7f7f", // Danger color
 }
 
-export default Colors18;
+const Colors = Colors18;
+
+export default Colors;

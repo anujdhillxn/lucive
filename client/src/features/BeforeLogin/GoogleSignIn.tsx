@@ -5,6 +5,7 @@ import { useApi } from '../../hooks/useApi';
 import { useNotification } from '../../contexts/NotificationContext';
 import Colors from '../../styles/colors';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { CustomButton } from '../../components/CustomButton';
 
 export const GoogleLoginButton = () => {
 
@@ -24,10 +25,10 @@ export const GoogleLoginButton = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.customButton} onPress={signIn}>
+            <CustomButton style={styles.customButton} onPress={signIn}>
                 <Icon name="google" size={20} color={Colors.Text1} style={styles.icon} />
                 <Text style={styles.buttonText}>Sign in with Google</Text>
-            </TouchableOpacity>
+            </CustomButton>
         </View>
     );
 };

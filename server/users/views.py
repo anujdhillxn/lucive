@@ -106,3 +106,10 @@ class ChangeUsernameView(APIView):
             user.save()
             return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SetFCMTokenView(APIView):
+    def put(self, request):
+        user = request.user
+        user.fcm_token = request.data.get('fcm_token')
+        user.save()
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)

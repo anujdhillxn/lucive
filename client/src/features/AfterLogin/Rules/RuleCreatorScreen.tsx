@@ -18,6 +18,7 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Separator from '../../../components/Separator';
 import Colors from '../../../styles/colors'
+import { CustomTextButton } from '../../../components/CustomButton';
 // const AppItem: React.FC<AppInfo> = ({ displayName, packageName, icon }) => (
 //     <View style={styles.appItem}>
 //         <Image source={{ uri: icon }} style={styles.appIcon} />
@@ -235,7 +236,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 />
             </ScrollView>
             <View style={styles.saveButtonContainer}>
-                <Button color={Colors.Primary1} title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} disabled={selectedApp === '' || (rule && !hasAChange(getNewRule(), rule))} onPress={confirm} />
+                <CustomTextButton backgroundColor={Colors.Primary1} title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} isDisabled={selectedApp === '' || (rule && !hasAChange(getNewRule(), rule))} onPress={confirm} />
             </View>
         </View>
     );

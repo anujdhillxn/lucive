@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import Colors from '../styles/colors';
+import { CustomButton } from '../components/CustomButton';
 interface ConfirmModalContextProps {
     showModal: (message: string, onConfirm: () => void) => void;
     hideModal: () => void;
@@ -41,11 +42,11 @@ export const ConfirmModalProvider: React.FC<{ children: ReactNode }> = ({ childr
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>{message}</Text>
                         <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={styles.button} onPress={handleConfirm}>
-                                <Text style={styles.buttonText}>Yes</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.button} onPress={hideModal}>
-                                <Text style={styles.buttonText}>No</Text>
+                            <CustomButton style={[styles.button, styles.yesButton]} onPress={handleConfirm}>
+                                <Text style={[styles.buttonText, styles.yesText]}>Yes</Text>
+                            </CustomButton>
+                            <TouchableOpacity style={[styles.button, styles.noButton]} onPress={hideModal}>
+                                <Text style={[styles.buttonText, styles.noText]}>No</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -72,8 +73,7 @@ const styles = StyleSheet.create({
     },
     modalView: {
         width: 300,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 15,
+        backgroundColor: Colors.Background1,
         padding: 25,
         alignItems: 'center',
     },
@@ -81,6 +81,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 20,
         textAlign: 'center',
+        color: Colors.Text3,
+
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -88,15 +90,26 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     button: {
-        backgroundColor: Colors.Accent1,
         padding: 10,
-        borderRadius: 5,
         marginHorizontal: 10,
         flex: 1,
         alignItems: 'center',
     },
     buttonText: {
-        color: Colors.Text1,
         fontSize: 16,
     },
+    yesButton: {
+        backgroundColor: Colors.Accent1,
+    },
+    yesText: {
+        color: Colors.Text1
+    },
+    noButton: {
+        borderWidth: 1,
+        borderColor: Colors.Accent2,
+        backgroundColor: Colors.Background2,
+    },
+    noText: {
+        color: Colors.Text3,
+    }
 });

@@ -11,6 +11,7 @@ import Colors from '../../../styles/colors';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useActions } from '../../../hooks/useActions';
 import { useUserKnowledgeActions } from '../../../hooks/useUserKnowledge';
+import { CustomButton } from '../../../components/CustomButton';
 export const AllRulesView: React.FC = () => {
 
     const { rules } = useAppContext();
@@ -48,10 +49,10 @@ const CreateRuleButton: React.FC = () => {
     };
     const { rememberHasTriedToCreateARule } = useUserKnowledgeActions();
     return (
-        <TouchableOpacity style={styles.createButton} onPress={navigateToRuleCreator}>
+        <CustomButton style={styles.createButton} onPress={navigateToRuleCreator}>
             <Text style={styles.createButtonText}>Create New Rule</Text>
             <Icon name="add" size={20} color={Colors.Text1} />
-        </TouchableOpacity>
+        </CustomButton>
     );
 }
 

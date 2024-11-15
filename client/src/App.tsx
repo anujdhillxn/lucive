@@ -20,9 +20,9 @@ export default function App() {
     return (
         <MenuProvider>
             <NavigationContainer>
-                <NotificationProvider>
-                    <ConfirmModalProvider>
-                        <ApiProvider>
+                <ApiProvider>
+                    <NotificationProvider>
+                        <ConfirmModalProvider>
                             <AppContextProvider>
                                 <NativeContextProvider>
                                     <UserKnowledgeProvider>
@@ -31,9 +31,9 @@ export default function App() {
                                     <StatusBar backgroundColor={Colors.Primary2} barStyle="light-content" />
                                 </NativeContextProvider>
                             </AppContextProvider>
-                        </ApiProvider>
-                    </ConfirmModalProvider>
-                </NotificationProvider>
+                        </ConfirmModalProvider>
+                    </NotificationProvider>
+                </ApiProvider>
             </NavigationContainer>
         </MenuProvider>
     );

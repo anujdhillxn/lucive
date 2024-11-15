@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import json
 import os
 from pathlib import Path
 from decouple import config
 import dj_database_url
+from firebase_admin import credentials, initialize_app
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -157,3 +159,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+service_account_info = json.loads(config('FIREBASE_SERVICE_ACCOUNT'))
+cred = credentials.Certificate(service_account_info)
+firebase_app = initialize_app(cred)

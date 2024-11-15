@@ -27,5 +27,17 @@ export const createUserApi = (remote: Remote) => {
         return put("users/change-username", { new_username: newUsername });
     };
 
-    return { register, login, googleLogin, getUser, logout, changeUsername };
+    const setFCMToken = (token: string) => {
+        return put("users/set-fcm-token", { fcm_token: token });
+    };
+
+    return {
+        register,
+        login,
+        googleLogin,
+        getUser,
+        logout,
+        changeUsername,
+        setFCMToken,
+    };
 };

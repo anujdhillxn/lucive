@@ -10,6 +10,7 @@ import { useNotification } from '../../../contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../../../config';
 import Colors from '../../../styles/colors'
+import { CustomButton } from '../../../components/CustomButton';
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
     const { setMyDuo } = useActions();
@@ -66,9 +67,9 @@ export const NoDuoFoundView: React.FC = () => {
         <View>
             <View>
                 <Text style={styles.noDuoText1}>You have not formed a Duo</Text>
-                <TouchableOpacity style={styles.button} onPress={handleShare}>
+                <CustomButton style={styles.button} onPress={handleShare}>
                     <Text style={styles.buttonText}>Invite a Friend</Text>
-                </TouchableOpacity>
+                </CustomButton>
             </View>
             <AnimatedSequence>
                 <Text style={styles.noDuoText2}>You can start your digital detox journey after forming a Duo</Text>

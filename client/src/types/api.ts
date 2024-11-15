@@ -1,3 +1,4 @@
+import { createContentApi } from "../api/contentApi";
 import { createDuoApi } from "../api/duoApi";
 import { createRuleApi } from "../api/ruleApi";
 import { createUserApi } from "../api/userApi";
@@ -25,6 +26,7 @@ export interface IApi {
     userApi: ReturnType<typeof createUserApi>;
     duoApi: ReturnType<typeof createDuoApi>;
     ruleApi: ReturnType<typeof createRuleApi>;
+    contentApi: ReturnType<typeof createContentApi>;
 }
 
 export interface IRegisterArgs {

@@ -8,6 +8,8 @@ import { config } from '../../../config';
 import { User } from '../../../types/state';
 import Colors from '../../../styles/colors';
 import { useAppContext } from '../../../hooks/useAppContext';
+import { CustomTextButton } from '../../../components/CustomButton';
+import { useConfirm } from '../../../hooks/useConfirm';
 
 export const UserDetails: React.FC = () => {
 
@@ -40,10 +42,13 @@ export const UserDetails: React.FC = () => {
             showNotification("Failed to change username", "failure");
         });
     };
+
+    const { confirm } = useConfirm(handleChangeUsername, `Are you sure you want to change your username to ${newUsername}?`);
+
     return (
         <View>
             <Text style={styles.text}>{`Hi ${user?.username}`}</Text>
-            <Button color={Colors.Primary1} title="Change Username" onPress={() => setIsChangingUsername(true)} />
+            <CustomTextButton backgroundColor={Colors.Primary1} title="CHANGE USERNAME" onPress={() => setIsChangingUsername(true)} />
 
             {isChangingUsername && (
                 <View style={styles.changeUsernameContainer}>
@@ -54,7 +59,7 @@ export const UserDetails: React.FC = () => {
                         onChangeText={setNewUsername}
                         placeholderTextColor={Colors.Text3}
                     />
-                    <Button color={Colors.Primary1} title="Change" onPress={handleChangeUsername} />
+                    <CustomTextButton backgroundColor={Colors.Primary1} title="Change" onPress={confirm} />
                 </View>
             )}
 

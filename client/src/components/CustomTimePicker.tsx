@@ -3,6 +3,7 @@ import { View, Text, Button, Modal, StyleSheet, TouchableOpacity } from 'react-n
 import { Picker } from '@react-native-picker/picker'; // Using React Native Picker
 import ModalPicker from 'react-native-modal';
 import Colors from '../styles/colors';
+import CustomText from './CustomText';
 
 export type CustomTimePickerProps = {
     hideHours?: boolean;
@@ -46,7 +47,7 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
             >
                 <View style={styles.pickerContainer}>
                     {/* Hours Picker */}
-                    <View style={styles.pickersContainer}>
+                    <View style={styles.selectorLabel}>
                         {!Boolean(props.hideHours) && <Picker
                             selectedValue={selectedHour}
                             style={styles.picker}
@@ -61,8 +62,10 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
                                 <Picker.Item key={hour} label={hour} value={hour} />
                             ))}
                         </Picker>}
-
-                        {/* Minutes Picker */}
+                        <Text style={styles.labelText}>H</Text>
+                    </View>
+                    {/* Minutes Picker */}
+                    <View style={styles.selectorLabel}>
                         {!Boolean(props.hideMinutes) && <Picker
                             selectedValue={selectedMinute}
                             style={styles.picker}
@@ -72,10 +75,11 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
                                 <Picker.Item key={minute} label={minute} value={minute} />
                             ))}
                         </Picker>}
+                        <Text style={styles.labelText}>M</Text>
                     </View>
                     {/* Confirm Button */}
                     <TouchableOpacity onPress={handleConfirm} style={styles.confirmButton}>
-                        <Text style={styles.confirmText}>Confirm</Text>
+                        <CustomText style={styles.confirmText}>Confirm</CustomText>
                     </TouchableOpacity>
                 </View>
             </ModalPicker>
@@ -93,11 +97,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 10,
         padding: 20,
-    },
-    pickersContainer: {
-
-        flexDirection: 'row',
-        justifyContent: 'space-between',
     },
     picker: {
         width: 100,
@@ -118,6 +117,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         alignSelf: 'center',
     },
+    selectorLabel: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginVertical: 10,
+    },
+    labelText: {
+        fontSize: 18,
+    }
 });
 
 export default CustomTimePicker;

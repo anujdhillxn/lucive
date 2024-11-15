@@ -8,6 +8,7 @@ import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../../../styles/colors';
+import { CustomButton } from '../../../components/CustomButton';
 
 const MyDuo: React.FC = () => {
     const myDuo = useAppContext().myDuo!;
@@ -46,7 +47,10 @@ const MyDuo: React.FC = () => {
                 <Text style={{ fontStyle: 'italic' }}>{new Date(myDuo.createdAt!).toLocaleDateString()}</Text>
             </Text>
             <View style={styles.buttonContainer}>
-                <Button title="Delete Duo" onPress={confirm} color={Colors.Danger} /></View>
+                <CustomButton style={styles.deleteButton} onPress={confirm}>
+                    <Text style={styles.buttonText}>Delete Duo</Text>
+                </CustomButton>
+            </View>
         </View>
     );
 };
@@ -63,6 +67,17 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         marginTop: 20,
+    },
+    deleteButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        backgroundColor: Colors.Danger,
+    },
+    buttonText: {
+        color: Colors.Text1,
+        fontSize: 16,
     }
 });
 

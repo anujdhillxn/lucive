@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+
+from lucive.push_notifications import send_push_notification
 from .models import Rule, RuleModificationRequest
 from rest_framework import status
 from .serializers import RuleSerializer, CreateRuleModificationRequestSerializer, RuleModificationRequestSerializer, UpdateRuleSerializer, CreateRuleSerializer, DeleteRuleSerializer
@@ -84,6 +86,13 @@ class UpdateRuleView(APIView):
             mod_data = RuleModificationRequestSerializer(mod_request, context={'request': request}).data
             resp = RuleSerializer(rule, context={'request': request}).data
             resp['modificationData'] = mod_data
+            push_notification_data = {
+                'title': 'Rule modification request',
+                'body': f'{user.username} has requested a rule modification',
+            }
+            partner = duo.user1 if duo.user2 == user else duo.user2
+            print(partner.fcm_token)
+            send_push_notification(partner.fcm_token, **push_notification_data)
             return Response(resp, status=status.HTTP_201_CREATED)
         return Response(update_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -120,6 +129,11 @@ class ApproveRuleModificationRequestView(APIView):
         rule.is_startup_delay_enabled = rule_mod_request.is_startup_delay_enabled
         rule.save()
         rule_mod_request.delete()
+        push_notification_data = {
+            'title': 'Rule modification request approved',
+            'body': f'{user.username} has approved your rule modification request',
+        }
+        send_push_notification(other_user.fcm_token, **push_notification_data)
         return Response(RuleSerializer(rule, context={'request': request}).data , status=status.HTTP_200_OK)
     
 class DeleteRuleModificationRequestView(DestroyAPIView):

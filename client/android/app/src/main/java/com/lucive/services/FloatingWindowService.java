@@ -1,7 +1,5 @@
 package com.lucive.services;
 
-import static android.content.Intent.getIntent;
-
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -12,6 +10,8 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.lucive.R;
+import com.lucive.managers.LocalStorageManager;
+import com.lucive.models.Word;
 
 public class FloatingWindowService extends Service {
     private WindowManager windowManager;
@@ -35,6 +35,20 @@ public class FloatingWindowService extends Service {
                 floatingView = LayoutInflater.from(this).inflate(R.layout.modal_layout, null);
                 TextView modalMessage = floatingView.findViewById(R.id.modal_message);
                 modalMessage.setText(message != null ? message : "Screen Time Exceeded!");
+
+                // Fetch a random word from LocalStorageManager
+                LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getApplicationContext());
+                Word randomWord = localStorageManager.getRandomWord();
+
+                if (randomWord != null) {
+                    TextView wordTextView = floatingView.findViewById(R.id.word_text);
+                    TextView meaningTextView = floatingView.findViewById(R.id.meaning_text);
+                    TextView usageTextView = floatingView.findViewById(R.id.usage_text);
+
+                    wordTextView.setText(randomWord.word());
+                    meaningTextView.setText(randomWord.meaning());
+                    usageTextView.setText(String.format("'%s'", randomWord.usage()));
+                }
 
                 WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                         WindowManager.LayoutParams.MATCH_PARENT,

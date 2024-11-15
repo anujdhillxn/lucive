@@ -8,6 +8,7 @@ from .responses import CustomSchemeRedirect
 from .models import Duo
 from .serializers import CreateDuoSerializer, DeleteDuoSerializer, DuoInfoSerializer
 from django.db.models import Q
+from lucive.push_notifications import send_push_notification
 class GetDuoView(generics.ListAPIView):
     serializer_class = DuoInfoSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -28,6 +29,11 @@ class CreateDuoView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         duo = serializer.save()
+        push_notification_data = {
+            'title': 'Duo Invitation accepted',
+            'body': f'{duo.user1.username} has accepted your Duo invitation',
+        }
+        send_push_notification(duo.user2.fcm_token, **push_notification_data)
         response_serializer = DuoInfoSerializer(duo)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 class DeleteDuoView(generics.DestroyAPIView):

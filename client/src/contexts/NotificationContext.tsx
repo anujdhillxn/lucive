@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, Alert } from 'react-native';
 import Colors from '../styles/colors';
+import messaging from '@react-native-firebase/messaging';
+import { useApi } from '../hooks/useApi';
 interface Notification {
     message: string;
     type: 'success' | 'failure';
@@ -16,7 +18,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
     const [slideAnim] = useState(new Animated.Value(300)); // Initial position off the screen to the right
-
+    const { requestToken } = useApi();
     useEffect(() => {
         if (notifications.length > 0 && !currentNotification) {
             setCurrentNotification(notifications[0]);
@@ -48,6 +50,20 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     const showNotification = (message: string, type: 'success' | 'failure') => {
         setNotifications((prev) => [...prev, { message, type }]);
     };
+    const { api } = useApi();
+
+    useEffect(() => {
+        messaging().getToken().then(api.userApi.setFCMToken);
+        const unsubscribe = messaging().onTokenRefresh(api.userApi.setFCMToken);
+        return unsubscribe;
+    }, [requestToken]);
+
+    useEffect(() => {
+        const unsubscribe = messaging().onMessage(async remoteMessage => {
+            showNotification(remoteMessage.notification?.body || 'New notification', 'success');
+        });
+        return unsubscribe;
+    }, []);
 
     return (
         <NotificationContext.Provider value={{ showNotification }}>

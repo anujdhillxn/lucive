@@ -13,7 +13,7 @@ import Colors from './styles/colors';
 import { UserKnowledgeProvider } from './contexts/UserKnowledgeContext';
 
 GoogleSignin.configure({
-    webClientId: '517721570590-tt54mso1lts163bib4j3ibrrseibr347.apps.googleusercontent.com',
+    webClientId: '961671637836-in67eg2cnfcs5ctag0ef6okfd8j6j9hb.apps.googleusercontent.com',
 });
 
 export default function App() {

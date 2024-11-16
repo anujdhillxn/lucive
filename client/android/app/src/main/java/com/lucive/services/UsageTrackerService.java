@@ -82,7 +82,7 @@ public class UsageTrackerService extends Service {
     private Notification createNotification() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID, "App Usage Tracking", NotificationManager.IMPORTANCE_LOW
+                    CHANNEL_ID, "App Usage Tracking", NotificationManager.IMPORTANCE_MIN
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel);

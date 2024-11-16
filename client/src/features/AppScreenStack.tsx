@@ -56,8 +56,10 @@ export const AppScreenStack: React.FC = () => {
         </SafeAreaView>
     }
 
+    const hasCreatedRule = useAppContext().rules.filter(rule => rule.isMyRule).length > 0;
+
     return <View style={styles.container}>
-        <Stack.Navigator initialRouteName={user && myDuo ? "Home" : "User"}
+        <Stack.Navigator initialRouteName={user && myDuo ? (hasCreatedRule ? "Home" : "RuleCreator") : "User"}
             screenOptions={{
                 cardStyle: { backgroundColor: Colors.Background1 }, // Set the background color of the card during transition
                 ...TransitionPresets.SlideFromRightIOS, // Use a transition preset
@@ -104,7 +106,7 @@ export const AppScreenStack: React.FC = () => {
             } />
             <Stack.Screen name="RuleCreator" component={RuleCreatorScreen} options={
                 ({ route }) => ({
-                    title: route.params ? `Edit ${(route.params as Rule).appDisplayName}'s rule` : 'Create Rule', headerStyle: {
+                    title: route.params ? `Edit ${(route.params as Rule).appDisplayName}'s rule` : (hasCreatedRule ? 'Create New Rule' : 'Create Your First Rule'), headerStyle: {
                         backgroundColor: Colors.Primary2,
                     },
                     headerTintColor: Colors.Text1,

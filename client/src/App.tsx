@@ -11,9 +11,10 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { StatusBar } from 'react-native';
 import Colors from './styles/colors';
 import { UserKnowledgeProvider } from './contexts/UserKnowledgeContext';
+import { config } from './config';
 
 GoogleSignin.configure({
-    webClientId: '961671637836-in67eg2cnfcs5ctag0ef6okfd8j6j9hb.apps.googleusercontent.com',
+    webClientId: config.googleWebClientId,
 });
 
 export default function App() {

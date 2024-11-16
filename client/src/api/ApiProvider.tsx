@@ -3,7 +3,7 @@ import { ApiContext } from "../hooks/useApi";
 import { createApi } from "./createApi";
 import useRemote from "../hooks/useRemote";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { config } from "../config";
+import { config } from "../../config";
 
 export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [requestToken, setRequestToken] = React.useState<string | null>(null);

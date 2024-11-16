@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 
+config.ts
 # Expo
 .expo/
 dist/
@@ -74,5 +75,3 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli
-
-src/config.ts

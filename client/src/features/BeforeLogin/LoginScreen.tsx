@@ -5,7 +5,7 @@ import { useApi } from '../../hooks/useApi';
 import { RootStackParamList } from '../AppScreenStack';
 import { GoogleLoginButton } from './GoogleSignIn';
 import { useNotification } from '../../contexts/NotificationContext';
-import { config } from '../../config';
+import { config } from '../../../config';
 import Colors from '../../styles/colors';
 import FooterText from '../../components/FooterText';
 const screenWidth = Dimensions.get('window').width;

@@ -11,7 +11,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { StatusBar } from 'react-native';
 import Colors from './styles/colors';
 import { UserKnowledgeProvider } from './contexts/UserKnowledgeContext';
-import { config } from './config';
+import { config } from '../config';
 
 GoogleSignin.configure({
     webClientId: config.googleWebClientId,

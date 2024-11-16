@@ -4,7 +4,7 @@ import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { config } from '../../../config';
+import { config } from '../../../../config';
 import { User } from '../../../types/state';
 import Colors from '../../../styles/colors';
 import { useAppContext } from '../../../hooks/useAppContext';

@@ -16,3 +16,4 @@ local.properties
 *.jsbundle
 
 app/google-services.json
+app/my-upload-key.keystore

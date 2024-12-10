@@ -2,7 +2,7 @@ from django.urls import path
 from .views import ApproveRuleModificationRequestView, DeleteRuleModificationRequestView, UserRulesView, UpdateRuleView, CreateRuleView, DeleteRuleView
 
 urlpatterns = [
-    path('user-rules/', UserRulesView.as_view(), name='user-rules'),
+    path('user-rules', UserRulesView.as_view(), name='user-rules'),
     path('update-rule', UpdateRuleView.as_view(), name='update-rule'),
     path('create-rule', CreateRuleView.as_view(), name='create-rule'),
     path('delete-rule', DeleteRuleView.as_view(), name='delete-rule'),

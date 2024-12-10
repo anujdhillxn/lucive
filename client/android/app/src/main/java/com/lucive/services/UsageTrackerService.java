@@ -1,5 +1,6 @@
 package com.lucive.services;
 
+import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,6 +16,7 @@ import android.os.Looper;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import com.lucive.managers.EventManager;
+import com.lucive.managers.RulesManager;
 import com.lucive.models.Event;
 import com.lucive.models.Rule;
 import com.lucive.utils.AppUtils;
@@ -23,20 +25,19 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class UsageTrackerService extends Service {
-    private final Map<String, Rule> ruleMap = new ConcurrentHashMap<>();
     private UsageStatsManager usageStatsManager;
     private final String TAG = "UsageTrackerService";
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable trackingRunnable;
-    private static final long INTERVAL = 300;
+    private static final long INTERVAL = 200;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
     private long lastTimestamp = AppUtils.get24HoursBefore();
     private EventManager eventManager;
+    private RulesManager rulesManager;
 
     public class LocalBinder extends Binder {
         public UsageTrackerService getService() {
@@ -55,6 +56,7 @@ public class UsageTrackerService extends Service {
         super.onCreate();
         usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         eventManager = new EventManager();
+        rulesManager = RulesManager.getInstance(this);
         Log.i(TAG, "Service created");
         startForeground(1, createNotification());
         startTracking();
@@ -106,6 +108,13 @@ public class UsageTrackerService extends Service {
     }
 
     private void checkScreenUsages() {
+        // if usage stats permission is not granted, return
+        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(), getPackageName());
+        if (mode != AppOpsManager.MODE_ALLOWED) {
+            return;
+        }
         final long endTime = System.currentTimeMillis();
         long startTime = lastTimestamp + 1;
         long totalDuration = endTime - startTime;
@@ -135,7 +144,7 @@ public class UsageTrackerService extends Service {
 
         long currentStart = startTime;
         int eventIndex = 0;
-        String currentApp = "Unknown";
+        String currentApp = AppUtils.UNKNOWN_PACKAGE;
         for (int i = 0; i < numFullChunks; i++) {
             // For the first `additionalRemainder` chunks, add an extra 1 millisecond
             List<Event> chunkEvents = new ArrayList<>();
@@ -146,21 +155,22 @@ public class UsageTrackerService extends Service {
             }
             currentApp = eventManager.processEventsChunk(chunkEvents);
             currentStart = currentEnd;
+            
         }
-        if (!currentApp.equals("Unknown")) {
+        if (!currentApp.equals(AppUtils.UNKNOWN_PACKAGE)) {
             handleModal(currentApp);
         }
     }
 
     private void handleModal (final String currentApp) {
         if (isHourlyLimitExceeded(currentApp)) {
-            String message = "Hourly screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).hourlyMaxSeconds()) + " exceeded!";
+            String message = "Hourly screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).hourlyMaxSeconds()) + " exceeded!";
             sendModalIntent(message);
         } else if (isDailyLimitExceeded(currentApp)) {
-            String message = "Daily screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).dailyMaxSeconds()) + " exceeded!";
+            String message = "Daily screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).dailyMaxSeconds()) + " exceeded!";
             sendModalIntent(message);
         } else if (isSessionLimitExceeded(currentApp)) {
-            String message = "Session screen time limit of " + AppUtils.formatTime(ruleMap.get(currentApp).sessionMaxSeconds()) + " exceeded!";
+            String message = "Session screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).sessionMaxSeconds()) + " exceeded!";
             sendModalIntent(message);
         } else if (delayStartup(currentApp)) {
             String message = "App starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(currentApp)) / 1000 + " seconds!";
@@ -183,7 +193,7 @@ public class UsageTrackerService extends Service {
     }
 
     public int getDailyScreentime(final String packageName) {
-        final Rule rule = ruleMap.get(packageName);
+        final Rule rule = rulesManager.getRule(packageName);
         if (rule == null) {
             return 0;
         }
@@ -198,7 +208,7 @@ public class UsageTrackerService extends Service {
     }
 
     public boolean isHourlyLimitExceeded(final String packageName) {
-        Rule rule = ruleMap.get(packageName);
+        Rule rule = rulesManager.getRule(packageName);
         if (rule == null || !rule.isActive() || !rule.isHourlyMaxSecondsEnforced()) {
             return false;
         }
@@ -207,7 +217,7 @@ public class UsageTrackerService extends Service {
     }
 
     public boolean isDailyLimitExceeded(final String packageName) {
-        Rule rule = ruleMap.get(packageName);
+        Rule rule = rulesManager.getRule(packageName);
         if (rule == null || !rule.isActive() || !rule.isDailyMaxSecondsEnforced()) {
             return false;
         }
@@ -216,7 +226,7 @@ public class UsageTrackerService extends Service {
     }
 
     public boolean isSessionLimitExceeded(final String packageName) {
-        Rule rule = ruleMap.get(packageName);
+        Rule rule = rulesManager.getRule(packageName);
         if (rule == null || !rule.isActive() || !rule.isSessionMaxSecondsEnforced()) {
             return false;
         }
@@ -225,16 +235,11 @@ public class UsageTrackerService extends Service {
     }
 
     public boolean delayStartup(final String packageName) {
-        Rule rule = ruleMap.get(packageName);
+        Rule rule = rulesManager.getRule(packageName);
         if (rule == null || !rule.isActive() || !rule.isStartupDelayEnabled()) {
             return false;
         }
         return eventManager.getSessionTime(packageName) < STARTUP_DELAY;
-    }
-
-    public void updateRules(final Map<String, Rule> newRules) {
-        ruleMap.clear();
-        ruleMap.putAll(newRules);
     }
 
     private void sendModalIntent(String message) {

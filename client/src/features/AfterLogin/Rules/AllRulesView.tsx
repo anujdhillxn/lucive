@@ -14,11 +14,11 @@ import { useUserKnowledgeActions } from '../../../hooks/useUserKnowledge';
 import { CustomButton } from '../../../components/CustomButton';
 export const AllRulesView: React.FC = () => {
 
-    const { rules } = useAppContext();
+    const { rules, user, myDuo } = useAppContext();
+    const partner = user?.username === myDuo?.user1 ? myDuo?.user2 : myDuo?.user1;
     const MyRuleComponents = rules.filter(rule => rule.isMyRule).map((rule) => {
         return () => <RuleCardContainer rule={rule} />;
     });
-
     const PartnerRuleComponents = rules.filter(rule => !rule.isMyRule).map((rule) => {
         return () => <RuleCardContainer rule={rule} />;
     });
@@ -32,10 +32,12 @@ export const AllRulesView: React.FC = () => {
                 openedInitially
                 Header={MyRulesHeaderRenderer}
                 Components={MyRuleComponents}
+                title={'My Rules'}
             />
             <HideableView
                 Header={PartnerRulesHeaderRenderer}
                 Components={PartnerRuleComponents}
+                title={`${partner}'s Rules`}
             />
         </ScrollView>
     );

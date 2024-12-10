@@ -14,7 +14,7 @@ import { CustomButton } from '../../../components/CustomButton';
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
     const { setMyDuo } = useActions();
-    const appUrl = config.apiUrl + 'duos/deeplink/' + user?.invitationToken + '/';
+    const appUrl = config.apiUrl + 'duos/deeplink/' + user?.invitationToken;
     const handleShare = async () => {
         try {
             await Share.share({
@@ -33,11 +33,9 @@ export const NoDuoFoundView: React.FC = () => {
         const url = event.url;
         const params = new URLSearchParams(url.split('?')[1]);
         const invitationToken = params.get('invitationToken');
-        console.log(url);
         if (invitationToken) {
             api.duoApi.createDuo(invitationToken).then((duo) => {
                 setMyDuo(duo);
-                AsyncStorage.setItem('myDuo', JSON.stringify(duo));
                 navigation.navigate('Home');
                 showNotification('Duo created successfully', 'success');
             }).catch((error) => {

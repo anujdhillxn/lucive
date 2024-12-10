@@ -22,7 +22,8 @@ public class EventManager {
     private final String TAG = "EventManager";
     private int lastEventChunkSize = 0;
     private boolean currentlyOpenedAppMightChange = false;
-    private String currentApp = "Unknown";
+    private String currentApp = AppUtils.UNKNOWN_PACKAGE;
+
     public String processEventsChunk (final List<Event> events) {
         for (Event event : events) {
             processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getActivity());
@@ -30,10 +31,10 @@ public class EventManager {
         if (!events.isEmpty()) {
             currentlyOpenedAppMightChange = true;
             lastEventChunkSize = events.size();
-            return "Unknown";
+            return AppUtils.UNKNOWN_PACKAGE;
         }
         currentApp = currentlyOpenedAppMightChange ? getCurrentlyOpenedApp() : currentApp;
-        if (currentApp.equals("Unknown") && isScreenOn && !eventsMap.isEmpty() && lastEventChunkSize > 0) {
+        if (currentApp.equals(AppUtils.UNKNOWN_PACKAGE) && isScreenOn && !eventsMap.isEmpty() && lastEventChunkSize > 0) {
             long latestTimestamp = 0;
             for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
                 List<Event> packageEvents = entry.getValue();
@@ -47,7 +48,7 @@ public class EventManager {
                     }
                 }
             }
-            if (!currentApp.equals("Unknown")) {
+            if (!currentApp.equals(AppUtils.UNKNOWN_PACKAGE)) {
                 final List<Event> packageEvents = eventsMap.get(currentApp);
                 packageEvents.remove(packageEvents.size() - 1);
                 Log.d(TAG, "Session continued for " + currentApp);
@@ -123,7 +124,7 @@ public class EventManager {
 
     public String getCurrentlyOpenedApp() {
         currentlyOpenedAppMightChange = false;
-        String currentApp = "Unknown";
+        String currentApp = AppUtils.UNKNOWN_PACKAGE;
         long latestTimestamp = 0;
 
         for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {

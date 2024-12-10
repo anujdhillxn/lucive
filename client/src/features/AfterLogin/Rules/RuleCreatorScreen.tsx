@@ -36,7 +36,7 @@ export const RuleCreatorScreen: React.FC = () => {
     const route = useRoute<RuleEditorRouteProp>();
     const rule = route.params;
     const { api } = useApi();
-    const { rules } = useAppContext();
+    const { rules, myDuo, user } = useAppContext();
     const { setRules } = useActions();
 
     const [selectedApp, setSelectedApp] = useState<string>(rule?.app || '');
@@ -54,7 +54,7 @@ export const RuleCreatorScreen: React.FC = () => {
     const { installedApps } = useNativeContext();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { showNotification } = useNotification();
-
+    const partner = myDuo?.user1 === user?.username ? myDuo?.user2 : myDuo?.user1;
     const showDatePicker = () => {
         setDatePickerVisibility(true);
     };
@@ -92,8 +92,7 @@ export const RuleCreatorScreen: React.FC = () => {
             api.ruleApi.updateRule(newRule).then((updatedRule) => {
                 const newRules = rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r);
                 setRules(newRules);
-                AsyncStorage.setItem('rules', JSON.stringify(newRules));
-                showNotification('Rule updated successfully', 'success');
+                showNotification(!isApprovalRequired(getNewRule(), rule) ? 'Rule updated successfully' : 'Awaiting approval', 'success');
                 navigation.navigate('Home');
             }).catch((e) => {
                 console.error(e);
@@ -104,7 +103,6 @@ export const RuleCreatorScreen: React.FC = () => {
             api.ruleApi.createRule(newRule).then((createdRule) => {
                 const newRules = [...rules, createdRule];
                 setRules(newRules);
-                AsyncStorage.setItem('rules', JSON.stringify(newRules));
                 showNotification('Rule created successfully', 'success');
                 navigation.navigate('Home');
             }).catch((e) => {
@@ -114,7 +112,7 @@ export const RuleCreatorScreen: React.FC = () => {
         }
     }
 
-    const { confirm } = useConfirm(handleSave, "Are you sure you want to save this rule? Once saved, you cannot relax it's restrictions or disable it without partner's approval");
+    const { confirm } = useConfirm(handleSave, `Are you sure you want to save this rule? Once saved, you cannot relax it's restrictions or disable it without ${partner}'s approval`);
 
     const doesNotHaveRule = (app: string) => {
         return !rules.filter(curr => curr.isMyRule).some((r) => r.app === app);

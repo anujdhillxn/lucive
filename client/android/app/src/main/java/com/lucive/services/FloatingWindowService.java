@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.lucive.R;
+import com.lucive.managers.ContentManager;
 import com.lucive.managers.LocalStorageManager;
 import com.lucive.models.Word;
 
@@ -37,8 +38,8 @@ public class FloatingWindowService extends Service {
                 modalMessage.setText(message != null ? message : "Screen Time Exceeded!");
 
                 // Fetch a random word from LocalStorageManager
-                LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getApplicationContext());
-                Word randomWord = localStorageManager.getRandomWord();
+                final ContentManager contentManager = ContentManager.getInstance(getApplicationContext());
+                final Word randomWord = contentManager.getRandomWord();
 
                 if (randomWord != null) {
                     TextView wordTextView = floatingView.findViewById(R.id.word_text);

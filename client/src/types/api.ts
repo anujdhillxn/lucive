@@ -19,7 +19,9 @@ export interface IApiResponse<T> {
 export type ApiContextType = {
     api: IApi;
     requestToken: string | null;
-    setRequestToken: React.Dispatch<React.SetStateAction<string | null>>;
+    setRequestToken: React.Dispatch<
+        React.SetStateAction<string | null | undefined>
+    >;
 };
 
 export interface IApi {

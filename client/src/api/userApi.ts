@@ -16,7 +16,7 @@ export const createUserApi = (remote: Remote) => {
     };
 
     const getUser = () => {
-        return get("users/me/");
+        return get("users/me");
     };
 
     const logout = () => {

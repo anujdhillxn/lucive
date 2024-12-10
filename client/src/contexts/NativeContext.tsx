@@ -5,7 +5,8 @@ import { AppInfo, NativeContextType, Permissions } from "../types/native";
 import { useApi } from "../hooks/useApi";
 import messaging from '@react-native-firebase/messaging';
 
-const { UsageTracker, InstalledApps, PermissionsModule, LocalStorageModule } = NativeModules;
+const { InstalledApps, PermissionsModule, LocalStorageModule } = NativeModules;
+const { requestUsageStatsPermission, requestOverlayPermission } = PermissionsModule;
 type NativeStateHandlerProps = {
     children: React.ReactNode;
 };
@@ -15,6 +16,7 @@ export const NativeContext = React.createContext<NativeContextType | undefined>(
 );
 
 import { PermissionsAndroid, Platform } from 'react-native';
+import { useActions } from "../hooks/useActions";
 
 async function requestNotificationPermission() {
     if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -49,12 +51,12 @@ async function checkNotificationPermission() {
 }
 
 export const NativeContextProvider = (props: NativeStateHandlerProps) => {
+
+    const [installedApps, setInstalledApps] = React.useState<Record<string, AppInfo>>({});
+    const [permissions, setPermissions] = React.useState<Permissions>({});
     const { requestToken } = useApi();
     const { rules } = useAppContext();
-    const { requestUsageStatsPermission, requestOverlayPermission } = PermissionsModule;
-    const setRules = () => {
-        UsageTracker.setRules(rules?.filter(rule => rule.isMyRule));
-    }
+    const { setRules } = useActions();
     const { api } = useApi();
 
     const setWords = async () => {
@@ -66,14 +68,6 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
             console.log(e);
         }
     }
-
-    const [installedApps, setInstalledApps] = React.useState<Record<string, AppInfo>>({});
-    const [permissions, setPermissions] = React.useState<Permissions>({});
-
-    React.useEffect(() => {
-        fetchInstalledApps();
-        checkPermissions();
-    }, []);
 
     const fetchInstalledApps = async () => {
         try {
@@ -103,12 +97,17 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
     };
 
     React.useEffect(() => {
+        fetchInstalledApps();
+        checkPermissions();
+    }, []);
+
+    React.useEffect(() => {
         setWords();
     }, [requestToken]);
 
     React.useEffect(() => {
-        setRules();
-    }, [rules]);
+        LocalStorageModule.setRules(rules);
+    }, [rules])
 
     return <NativeContext.Provider value={{ installedApps, permissions, requestUsageStatsPermission, requestOverlayPermission, checkPermissions }}>{props.children}</NativeContext.Provider>;
 }

@@ -8,7 +8,10 @@ interface RequestOptions {
     body?: any;
 }
 
-const useRemote = (requestToken: string | null, baseUrl: string): Remote => {
+const useRemote = (
+    requestToken: string | null | undefined,
+    baseUrl: string
+): Remote => {
     const request = useCallback(
         async (endpoint: string, options: RequestOptions) => {
             const headers = new Headers(options.headers);

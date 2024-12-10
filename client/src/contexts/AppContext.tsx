@@ -1,8 +1,10 @@
 import * as React from 'react';
+import { NativeModules } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApi } from '../hooks/useApi';
 import { Duo, Rule, User } from '../types/state';
-
+import LoadingScreen from '../features/LoadingScreen';
+const { LocalStorageModule } = NativeModules;
 export type AppContextProps = {
     user: User | null;
     myDuo: Duo | null;
@@ -30,21 +32,78 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
     const [rules, setRules] = React.useState<Rule[]>([]);
 
-    const { api, requestToken, setRequestToken } = useApi();
+    const [localStorageLoaded, setLocalStorageLoaded] = React.useState(false);
+
+    const { api, requestToken } = useApi();
 
     const [appLoading, setAppLoading] = React.useState(true);
 
     const fetchData = async () => {
         setAppLoading(true);
         if (requestToken) {
-            await fetchAndSetUser();
-            await fetchAndSetDuo();
-            await fetchAndSetRules();
+            await Promise.all([fetchAndSetUser(), fetchAndSetDuo(), fetchAndSetRules()]);
         }
         setAppLoading(false);
     };
 
     const fetchAndSetUser = async () => {
+        try {
+            const userResp = await api.userApi.getUser();
+            setUser(userResp);
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+    const fetchAndSetDuo = async () => {
+        try {
+            const duoResp = await api.duoApi.getDuo();
+            setMyDuo(duoResp);
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+    const fetchAndSetRules = async () => {
+        try {
+            const rulesResp = await api.ruleApi.getRules();
+            setRules(rulesResp);
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+    React.useEffect(() => {
+        fetchAndSetDuo();
+        if (user) {
+            AsyncStorage.setItem('user', JSON.stringify(user));
+        }
+        else {
+            AsyncStorage.removeItem('user');
+        }
+    }, [user]);
+
+    React.useEffect(() => {
+        fetchAndSetRules();
+        if (myDuo) {
+            AsyncStorage.setItem('myDuo', JSON.stringify(myDuo));
+        }
+        else {
+            AsyncStorage.removeItem('myDuo');
+        }
+    }, [myDuo]);
+
+    React.useEffect(() => {
+        fetchData();
+        if (requestToken)
+            AsyncStorage
+                .setItem('requestToken', requestToken);
+    }, [requestToken]);
+
+    const fetchLocalData = async () => {
         try {
             const localResp = await AsyncStorage.getItem('user');
             if (localResp) {
@@ -55,17 +114,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             console.log(e);
         }
         try {
-            const userResp = await api.userApi.getUser();
-            setUser(userResp);
-            AsyncStorage.setItem('user', JSON.stringify(userResp));
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }
-
-    const fetchAndSetDuo = async () => {
-        try {
             const localResp = await AsyncStorage.getItem('myDuo');
             if (localResp) {
                 setMyDuo(JSON.parse(localResp));
@@ -75,46 +123,22 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             console.log(e);
         }
         try {
-            const duoResp = await api.duoApi.getDuo();
-            setMyDuo(duoResp);
-            AsyncStorage.setItem('myDuo', JSON.stringify(duoResp));
+            const localResp = await LocalStorageModule.getRules();
+            setRules(localResp);
         }
         catch (e) {
             console.log(e);
         }
-    }
-
-    const fetchAndSetRules = async () => {
-        try {
-            const localResp = await AsyncStorage.getItem('rules');
-            if (localResp) {
-                setRules(JSON.parse(localResp));
-            }
-        }
-        catch (e) {
-            console.log(e);
-        }
-        try {
-            const rulesResp = await api.ruleApi.getRules();
-            setRules(rulesResp);
-            AsyncStorage.setItem('rules', JSON.stringify(rulesResp));
-        }
-        catch (e) {
-            console.log(e);
-        }
+        setLocalStorageLoaded(true);
     }
 
     React.useEffect(() => {
-        fetchAndSetRules();
-    }, [myDuo]);
+        fetchLocalData();
+    }, []);
 
-    React.useEffect(() => {
-        fetchData();
-        if (requestToken)
-            AsyncStorage
-                .setItem('requestToken', requestToken);
-    }, [requestToken]);
-
+    if (!localStorageLoaded) {
+        return <LoadingScreen />;
+    }
     return <AppContext.Provider value={{ user, myDuo, rules, appLoading }}>
         <AppActions.Provider value={{ setUser, setMyDuo, setRules, fetchData }}>
             {children}

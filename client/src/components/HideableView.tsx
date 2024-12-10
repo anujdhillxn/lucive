@@ -6,15 +6,17 @@ export type HeaderProps = {
     menuVisible: boolean;
     toggleMenu: () => void;
     itemCount: number;
+    title: string;
 };
 
 interface MenuProps {
     Header: (props: HeaderProps) => React.ReactNode;
     Components: (() => React.ReactNode)[];
+    title: string;
     openedInitially?: boolean
 }
 
-export const HideableView: React.FC<MenuProps> = ({ Header, Components, openedInitially }) => {
+export const HideableView: React.FC<MenuProps> = ({ Header, Components, openedInitially, title }) => {
     const [menuVisible, setMenuVisible] = useState(openedInitially || false);
 
     // Ensure animations array always reflects the number of Components
@@ -39,7 +41,7 @@ export const HideableView: React.FC<MenuProps> = ({ Header, Components, openedIn
 
     return (
         <View>
-            <Header menuVisible={menuVisible} toggleMenu={toggleMenu} itemCount={Components.length} />
+            <Header menuVisible={menuVisible} toggleMenu={toggleMenu} itemCount={Components.length} title={title} />
             {menuVisible && <View style={styles.menu}>
                 {Components.map((Component, index) => (
                     <Animated.View

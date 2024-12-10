@@ -7,19 +7,11 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.lucive.models.Rule;
 import com.lucive.services.UsageTrackerService;
-import com.lucive.utils.AppUtils;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.ReadableMap;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
 public class UsageTrackerModule extends ReactContextBaseJavaModule {
 
@@ -92,39 +84,5 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
 
         int screenTime = usageTrackerService.getDailyScreentime(packageName);
         promise.resolve(screenTime);
-    }
-
-    @ReactMethod
-    public void setRules(ReadableArray screentimeRules, Promise promise) {
-        final Map<String, Rule> ruleMap = new HashMap<>();
-        for (int i = 0; i < screentimeRules.size(); i++) {
-            final ReadableMap map = screentimeRules.getMap(i);
-            try {
-                final Rule screentimeRule = parseRule(map);
-                ruleMap.put(screentimeRule.app(), screentimeRule);
-            } catch (Exception e) {
-                promise.reject("Error", e.getMessage());
-            }
-        }
-        if (usageTrackerService != null) {
-            usageTrackerService.updateRules(ruleMap);
-            promise.resolve("Rules set");
-        } else {
-            promise.reject("Service Error", "UsageTrackerService not bound");
-        }
-    }
-
-    private Rule parseRule(ReadableMap map) {
-        final boolean isActive = map.getBoolean("isActive");
-        final String app = map.getString("app");
-        final int dailyMaxSeconds = map.getInt("dailyMaxSeconds");
-        final int hourlyMaxSeconds = map.getInt("hourlyMaxSeconds");
-        final int sessionMaxSeconds = map.getInt("sessionMaxSeconds");
-        final boolean isDailyMaxSecondsEnforced = map.getBoolean("isDailyMaxSecondsEnforced");
-        final boolean isHourlyMaxSecondsEnforced = map.getBoolean("isHourlyMaxSecondsEnforced");
-        final boolean isSessionMaxSecondsEnforced = map.getBoolean("isSessionMaxSecondsEnforced");
-        final String dailyStartsAt = map.getString("dailyReset");
-        final boolean isStartupDelayEnabled = map.getBoolean("isStartupDelayEnabled");
-        return new Rule(app, isActive, dailyMaxSeconds, hourlyMaxSeconds, sessionMaxSeconds, dailyStartsAt, isDailyMaxSecondsEnforced, isHourlyMaxSecondsEnforced, isSessionMaxSecondsEnforced, isStartupDelayEnabled);
     }
 }

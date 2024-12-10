@@ -41,11 +41,11 @@ const RuleHeader: React.FC<RuleHeaderProps> = ({ title, menuVisible, toggleMenu,
 }
 
 export const MyRulesHeaderRenderer: React.FC<HeaderProps> = (props: HeaderProps) => (
-    <RuleHeader menuVisible={props.menuVisible} toggleMenu={props.toggleMenu} itemCount={props.itemCount} title="My Rules" />
+    <RuleHeader menuVisible={props.menuVisible} toggleMenu={props.toggleMenu} itemCount={props.itemCount} title={props.title} />
 );
 
 export const PartnerRulesHeaderRenderer: React.FC<HeaderProps> = (props: HeaderProps) => (
-    <RuleHeader menuVisible={props.menuVisible} toggleMenu={props.toggleMenu} itemCount={props.itemCount} title="Your Detox partner's rules" />
+    <RuleHeader menuVisible={props.menuVisible} toggleMenu={props.toggleMenu} itemCount={props.itemCount} title={props.title} />
 );
 
 const styles = StyleSheet.create({

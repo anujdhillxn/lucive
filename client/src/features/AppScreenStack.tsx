@@ -28,6 +28,8 @@ export const AppScreenStack: React.FC = () => {
 
     const { user, myDuo, appLoading } = useAppContext();
     const { fetchData } = useActions();
+    const hasCreatedRule = useAppContext().rules.filter(rule => rule.isMyRule).length > 0;
+
     if (appLoading) {
         return <LoadingScreen />
     }
@@ -55,8 +57,6 @@ export const AppScreenStack: React.FC = () => {
             </Stack.Navigator>
         </SafeAreaView>
     }
-
-    const hasCreatedRule = useAppContext().rules.filter(rule => rule.isMyRule).length > 0;
 
     return <View style={styles.container}>
         <Stack.Navigator initialRouteName={user && myDuo ? (hasCreatedRule ? "Home" : "RuleCreator") : "User"}

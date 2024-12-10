@@ -37,6 +37,8 @@ public class AppUtils {
         "com.linkedin.android", // LinkedIn
     };
 
+    public static final String UNKNOWN_PACKAGE = "Unknown";
+
     public static Calendar parseTimeString(String timeString) {
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();

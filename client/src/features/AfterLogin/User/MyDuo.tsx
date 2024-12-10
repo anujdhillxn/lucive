@@ -22,12 +22,10 @@ const MyDuo: React.FC = () => {
     const handleDeleteDuo = () => {
         duoApi.deleteDuo()
             .then((resp) => {
+                const newUser = { ...user, invitationToken: resp };
                 setMyDuo(null);
                 setRules([]);
-                setUser({ ...user, invitationToken: resp })
-                AsyncStorage.removeItem('myDuo');
-                AsyncStorage.setItem('rules', JSON.stringify([]));
-                AsyncStorage.setItem('user', JSON.stringify({ ...user, invitationToken: resp }));
+                AsyncStorage.setItem('user', JSON.stringify(newUser)).then(() => setUser(newUser));
                 showNotification('Duo deleted successfully', 'success');
             })
             .catch((err) => {

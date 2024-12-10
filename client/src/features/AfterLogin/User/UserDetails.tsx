@@ -3,7 +3,6 @@ import { View, Button, TextInput, StyleSheet, Text } from 'react-native';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../../../../config';
 import { User } from '../../../types/state';
 import Colors from '../../../styles/colors';
@@ -24,7 +23,6 @@ export const UserDetails: React.FC = () => {
         api.userApi.logout().then(() => {
             setUser(null);
             setRequestToken(null);
-            AsyncStorage.removeItem('requestToken');
             showNotification("Logged out successfully", "success");
         }).catch((err: any) => {
             console.log('Error logging out:', err);

@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useCallback, useEffect } from "react";
 import { Remote } from "../types/api";
 

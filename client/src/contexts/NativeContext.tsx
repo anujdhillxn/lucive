@@ -105,9 +105,5 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
         setWords();
     }, [requestToken]);
 
-    React.useEffect(() => {
-        LocalStorageModule.setRules(rules);
-    }, [rules])
-
     return <NativeContext.Provider value={{ installedApps, permissions, requestUsageStatsPermission, requestOverlayPermission, checkPermissions }}>{props.children}</NativeContext.Provider>;
 }

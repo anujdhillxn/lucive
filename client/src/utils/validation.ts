@@ -25,7 +25,7 @@ export const isApprovalRequired = (newRule: Rule, rule: Rule): boolean => {
         rule.isSessionMaxSecondsEnforced &&
         !newRule.isSessionMaxSecondsEnforced;
     const dailyResetChanged = rule.dailyReset !== newRule.dailyReset;
-    const isActiveChanged = rule.isActive !== newRule.isActive;
+    const isDeactivated = rule.isActive && !newRule.isActive;
     const dailyMaxSecondsIncreased =
         rule.isDailyMaxSecondsEnforced &&
         newRule.isDailyMaxSecondsEnforced &&
@@ -45,7 +45,7 @@ export const isApprovalRequired = (newRule: Rule, rule: Rule): boolean => {
         hourlyMaxSecondsRemoved ||
         sessionMaxSecondsRemoved ||
         dailyResetChanged ||
-        isActiveChanged ||
+        isDeactivated ||
         dailyMaxSecondsIncreased ||
         hourlyMaxSecondsIncreased ||
         sessionMaxSecondsIncreased ||

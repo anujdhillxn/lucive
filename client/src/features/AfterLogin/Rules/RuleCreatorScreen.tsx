@@ -15,7 +15,6 @@ import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { hasAChange, isApprovalRequired } from '../../../utils/validation';
 import { useAppContext } from '../../../hooks/useAppContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Separator from '../../../components/Separator';
 import Colors from '../../../styles/colors'
 import { CustomTextButton } from '../../../components/CustomButton';

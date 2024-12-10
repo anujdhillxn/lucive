@@ -7,7 +7,6 @@ import { useAppContext } from '../../../hooks/useAppContext';
 import { useApi } from '../../../hooks/useApi';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../../../../config';
 import Colors from '../../../styles/colors'
 import { CustomButton } from '../../../components/CustomButton';

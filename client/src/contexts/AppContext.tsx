@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApi } from '../hooks/useApi';
 import { Duo, Rule, User } from '../types/state';
 import LoadingScreen from '../features/LoadingScreen';
+import useDeepCompareEffect from '../hooks/useDeepCompareEffect';
 const { LocalStorageModule } = NativeModules;
 export type AppContextProps = {
     user: User | null;
@@ -76,7 +77,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }
 
-    React.useEffect(() => {
+    useDeepCompareEffect(() => {
         fetchAndSetDuo();
         if (user) {
             AsyncStorage.setItem('user', JSON.stringify(user));
@@ -86,7 +87,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, [user]);
 
-    React.useEffect(() => {
+    useDeepCompareEffect(() => {
         fetchAndSetRules();
         if (myDuo) {
             AsyncStorage.setItem('myDuo', JSON.stringify(myDuo));
@@ -96,11 +97,19 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, [myDuo]);
 
+    useDeepCompareEffect(() => {
+        LocalStorageModule.setRules(rules);
+    }, [rules]);
+
     React.useEffect(() => {
         fetchData();
         if (requestToken)
             AsyncStorage
                 .setItem('requestToken', requestToken);
+        else {
+            AsyncStorage
+                .removeItem('requestToken');
+        }
     }, [requestToken]);
 
     const fetchLocalData = async () => {

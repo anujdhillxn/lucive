@@ -47,8 +47,8 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
             >
                 <View style={styles.pickerContainer}>
                     {/* Hours Picker */}
-                    <View style={styles.selectorLabel}>
-                        {!Boolean(props.hideHours) && <Picker
+                    {!Boolean(props.hideHours) && <View style={styles.selectorLabel}>
+                        <Picker
                             selectedValue={selectedHour}
                             style={styles.picker}
                             onValueChange={(itemValue) => {
@@ -61,12 +61,12 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
                             {hours.map((hour) => (
                                 <Picker.Item key={hour} label={hour} value={hour} />
                             ))}
-                        </Picker>}
-                        <Text style={styles.labelText}>H</Text>
-                    </View>
+                        </Picker>
+                        <Text style={styles.labelText}>Hours</Text>
+                    </View>}
                     {/* Minutes Picker */}
-                    <View style={styles.selectorLabel}>
-                        {!Boolean(props.hideMinutes) && <Picker
+                    {!Boolean(props.hideMinutes) && <View style={styles.selectorLabel}>
+                        <Picker
                             selectedValue={selectedMinute}
                             style={styles.picker}
                             onValueChange={(itemValue) => setSelectedMinute(itemValue)}
@@ -74,9 +74,9 @@ const CustomTimePicker = (props: CustomTimePickerProps) => {
                             {(selectedHour === '00' ? minutes.filter(minute => minute !== '00') : minutes).map((minute) => (
                                 <Picker.Item key={minute} label={minute} value={minute} />
                             ))}
-                        </Picker>}
-                        <Text style={styles.labelText}>M</Text>
-                    </View>
+                        </Picker>
+                        <Text style={styles.labelText}>Minutes</Text>
+                    </View>}
                     {/* Confirm Button */}
                     <TouchableOpacity onPress={handleConfirm} style={styles.confirmButton}>
                         <CustomText style={styles.confirmText}>Confirm</CustomText>

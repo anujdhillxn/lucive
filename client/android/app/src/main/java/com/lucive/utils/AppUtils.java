@@ -35,6 +35,7 @@ public class AppUtils {
         "co.hinge.app", // Hinge
         "com.google.android.youtube", //Youtube
         "com.linkedin.android", // LinkedIn
+        "com.reddit.frontpage", // Reddit
     };
 
     public static final String UNKNOWN_PACKAGE = "Unknown";

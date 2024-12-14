@@ -15,10 +15,14 @@ import android.os.IBinder;
 import android.os.Looper;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
+import android.util.Pair;
+
 import com.lucive.managers.EventManager;
+import com.lucive.managers.LocalStorageManager;
 import com.lucive.managers.RulesManager;
 import com.lucive.models.Event;
 import com.lucive.models.Rule;
+import com.lucive.models.UsageTrackerHeartbeat;
 import com.lucive.utils.AppUtils;
 
 import java.util.ArrayList;
@@ -32,7 +36,9 @@ public class UsageTrackerService extends Service {
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable trackingRunnable;
-    private static final long INTERVAL = 200;
+    private Runnable heartBeatRunnable;
+    private static final long TRACKING_INTERVAL = 200;
+    private static final long HEARTBEAT_INTERVAL = 30 * 1000;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
     private long lastTimestamp = AppUtils.get24HoursBefore();
@@ -77,6 +83,7 @@ public class UsageTrackerService extends Service {
     @Override
     public void onDestroy() {
         handler.removeCallbacks(trackingRunnable);
+        handler.removeCallbacks(heartBeatRunnable);
         Log.i(TAG, "Service destroyed");
         super.onDestroy();
     }
@@ -101,10 +108,22 @@ public class UsageTrackerService extends Service {
             @Override
             public void run() {
                 checkScreenUsages();
-                handler.postDelayed(this, INTERVAL);
+                handler.postDelayed(this, TRACKING_INTERVAL);
+            }
+        };
+        heartBeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                saveHeartbeat();
+                handler.postDelayed(this, HEARTBEAT_INTERVAL);
             }
         };
         handler.post(trackingRunnable);
+    }
+
+    private void saveHeartbeat() {
+        final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
+        localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(System.currentTimeMillis() / 1000, rulesManager.calculateHeartbeatPoints()));
     }
 
     private void checkScreenUsages() {
@@ -118,7 +137,7 @@ public class UsageTrackerService extends Service {
         final long endTime = System.currentTimeMillis();
         long startTime = lastTimestamp + 1;
         long totalDuration = endTime - startTime;
-        if (totalDuration < INTERVAL) {
+        if (totalDuration < TRACKING_INTERVAL) {
             return;
         }
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
@@ -135,8 +154,8 @@ public class UsageTrackerService extends Service {
                 lastTimestamp = usageEvent.getTimeStamp();
             }
         }
-        int numFullChunks = (int) (totalDuration / INTERVAL);
-        long remainder = totalDuration % INTERVAL;
+        int numFullChunks = (int) (totalDuration / TRACKING_INTERVAL);
+        long remainder = totalDuration % TRACKING_INTERVAL;
 
         // Distribute the remainder evenly across chunks, with leftover distributed to last chunks
         long extraPerChunk = remainder / numFullChunks;
@@ -146,16 +165,17 @@ public class UsageTrackerService extends Service {
         int eventIndex = 0;
         String currentApp = AppUtils.UNKNOWN_PACKAGE;
         for (int i = 0; i < numFullChunks; i++) {
+
             // For the first `additionalRemainder` chunks, add an extra 1 millisecond
             List<Event> chunkEvents = new ArrayList<>();
-            long currentEnd = currentStart + INTERVAL + extraPerChunk + (i < additionalRemainder ? 1 : 0);
+            long currentEnd = currentStart + TRACKING_INTERVAL + extraPerChunk + (i < additionalRemainder ? 1 : 0);
             while (eventIndex < allEvents.size() && allEvents.get(eventIndex).getTimeStamp() < currentEnd) {
                 chunkEvents.add(allEvents.get(eventIndex));
                 eventIndex++;
             }
             currentApp = eventManager.processEventsChunk(chunkEvents);
             currentStart = currentEnd;
-            
+
         }
         if (!currentApp.equals(AppUtils.UNKNOWN_PACKAGE)) {
             handleModal(currentApp);
@@ -173,7 +193,7 @@ public class UsageTrackerService extends Service {
             String message = "Session screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).sessionMaxSeconds()) + " exceeded!";
             sendModalIntent(message);
         } else if (delayStartup(currentApp)) {
-            String message = "App starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(currentApp)) / 1000 + " seconds!";
+            String message = currentApp + " starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(currentApp)) / 1000 + " seconds!";
             sendModalIntent(message);
         } else {
             Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
@@ -240,6 +260,29 @@ public class UsageTrackerService extends Service {
             return false;
         }
         return eventManager.getSessionTime(packageName) < STARTUP_DELAY;
+    }
+
+    public Pair<Double, Boolean> calculateUsageTrackingPoints(final String date) {
+        final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
+        final List<UsageTrackerHeartbeat> heartbeats = localStorageManager.getHeartbeats(date);
+        double points = 0;
+        final long startOfDay = AppUtils.getDayStartNDaysBefore(0) / 1000;
+        final long endOfDay = AppUtils.getDayStartNDaysBefore(-1) / 1000;
+        int heartbeatIndex = 0;
+        boolean uninterruptedTracking = true;
+        for (long minuteStart = startOfDay; minuteStart < endOfDay && heartbeatIndex < heartbeats.size(); minuteStart += 60) {
+            final long minuteEnd = minuteStart + 60;
+            while (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteStart) {
+                heartbeatIndex++;
+            }
+            if (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteEnd) {
+                points += heartbeats.get(heartbeatIndex).points();
+            }
+            else {
+                uninterruptedTracking = false;
+            }
+        }
+        return new Pair<>(points*points / 10000, uninterruptedTracking);
     }
 
     private void sendModalIntent(String message) {

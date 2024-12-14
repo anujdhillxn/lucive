@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.Pair;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.lucive.services.UsageTrackerService;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -84,5 +87,19 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
 
         int screenTime = usageTrackerService.getDailyScreentime(packageName);
         promise.resolve(screenTime);
+    }
+
+    @ReactMethod
+    public void getUsageTrackingPoints(final String date, Promise promise) {
+        if (!isBound) {
+            promise.reject("Service Error", "UsageTrackerService not bound");
+            return;
+        }
+
+        final Pair<Double, Boolean> score = usageTrackerService.calculateUsageTrackingPoints(date);
+        final WritableMap result = Arguments.createMap();
+        result.putDouble("points", score.first);
+        result.putBoolean("uninterruptedTracking", score.second);
+        promise.resolve(score);
     }
 }

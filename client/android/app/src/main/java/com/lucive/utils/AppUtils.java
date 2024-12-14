@@ -40,6 +40,8 @@ public class AppUtils {
 
     public static final String UNKNOWN_PACKAGE = "Unknown";
 
+    public static final long MINUTES_IN_A_DAY = 1440;
+
     public static Calendar parseTimeString(String timeString) {
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
@@ -57,12 +59,13 @@ public class AppUtils {
         return calendar;
     }
 
-    public static long getDayStart() {
+    public static long getDayStartNDaysBefore(final int n) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_MONTH, -n);
         return calendar.getTimeInMillis();
     }
 
@@ -141,5 +144,17 @@ public class AppUtils {
 
         // Format the Date object into a readable string
         return sdf.format(date);
+    }
+
+    public static Calendar parseDate(String dateString) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Calendar calendar = Calendar.getInstance();
+        try {
+            calendar.setTime(dateFormat.parse(dateString));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return calendar;
     }
 }

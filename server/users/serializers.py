@@ -1,3 +1,4 @@
+import time
 import re
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -38,14 +39,16 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'invitation_token']
+        fields = ['id', 'username', 'email', 'invitation_token', 'date_joined']
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+        date_joined_seconds = str(time.mktime(instance.date_joined.timetuple()))
         return {
             'username': ret['username'],
             'email': ret['email'],
             'invitationToken': ret['invitation_token'],
+            'dateJoinedSeconds': date_joined_seconds
         }
 
 class LoginSerializer(serializers.Serializer):

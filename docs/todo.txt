@@ -1,1 +1,2 @@
-- points rewarded by time lucive service was running in the background, with penalties as per breaking limits
+- dont fetch scores for dates less than registration
+- handle streaks when device is off

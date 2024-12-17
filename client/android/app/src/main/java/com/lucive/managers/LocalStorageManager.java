@@ -2,10 +2,13 @@ package com.lucive.managers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lucive.models.Rule;
 import com.lucive.models.UsageTrackerHeartbeat;
+import com.lucive.models.User;
 import com.lucive.models.Word;
 import com.lucive.utils.AppUtils;
 
@@ -26,6 +29,7 @@ public class LocalStorageManager {
     public static final String WORDS_KEY = "words";
     public static final String RULES_KEY = "rules";
     public static final String HEARTBEATS_KEY = "heartbeats";
+    public static final String USER_KEY = "user";
 
     private LocalStorageManager(Context context) {
         this.sharedPreferences = context.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
@@ -100,19 +104,16 @@ public class LocalStorageManager {
         editor.apply();
     }
 
-    private List<UsageTrackerHeartbeat> getHeartbeats() {
-        String json = sharedPreferences.getString(HEARTBEATS_KEY, null);
-        if (json != null) {
-            Type type = new TypeToken<List<UsageTrackerHeartbeat>>() {}.getType();
-            return gson.fromJson(json, type);
-        } else {
-            return new ArrayList<>();
-        }
+    public List<UsageTrackerHeartbeat> getHeartbeats() {
+        String json = sharedPreferences.getString(HEARTBEATS_KEY, "[]");
+        Type type = new TypeToken<List<UsageTrackerHeartbeat>>() {}.getType();
+        return gson.fromJson(json, type);
     }
 
     public List<UsageTrackerHeartbeat> getHeartbeats(final String date) {
         final Calendar calendar = AppUtils.parseDate(date);
         final List<UsageTrackerHeartbeat> heartbeats = getHeartbeats();
+        Log.i("LocalStorageManager", calendar.getTime().toString());
         final long startOfDay = calendar.getTimeInMillis() / 1000;
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         final long endOfDay = calendar.getTimeInMillis() / 1000;
@@ -127,7 +128,7 @@ public class LocalStorageManager {
     }
 
     private void cleanOldHeartbeats(List<UsageTrackerHeartbeat> heartbeats) {
-        long cutoffTimeSeconds = AppUtils.getDayStartNDaysBefore(1) / 1000;
+        long cutoffTimeSeconds = AppUtils.getDayStartNDaysBefore(10) / 1000;
         Iterator<UsageTrackerHeartbeat> iterator = heartbeats.iterator();
         while (iterator.hasNext()) {
             if (iterator.next().timestamp() < cutoffTimeSeconds) {
@@ -136,5 +137,29 @@ public class LocalStorageManager {
                 break;
             }
         }
+    }
+
+    public void setUser(final User user) {
+        String json = gson.toJson(user);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(USER_KEY, json);
+        editor.apply();
+        notifyObservers();
+    }
+
+    public User getUser() {
+        String json = sharedPreferences.getString(USER_KEY, null);
+        if (json != null) {
+            return gson.fromJson(json, User.class);
+        } else {
+            return null;
+        }
+    }
+
+    public void clearUser() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(USER_KEY);
+        editor.apply();
+        notifyObservers();
     }
 }

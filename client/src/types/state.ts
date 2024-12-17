@@ -1,9 +1,8 @@
-import React from "react";
-
 export type User = {
     username: string;
     email: string;
     invitationToken: string;
+    dateJoinedSeconds: string;
 };
 
 export type Duo = {
@@ -44,3 +43,25 @@ export type Rule = {
     modificationData?: RuleModificationData;
     isStartupDelayEnabled: boolean;
 };
+
+export type Score = {
+    date: string;
+    points: number;
+    uninterruptedTracking: boolean;
+};
+
+export type IntervalScore = {
+    minuteOfDay: number;
+    points: number;
+    serviceRunning: boolean;
+    deviceRunning: boolean;
+};
+
+export interface IScoreDataAgg {
+    currentStreak: number;
+    longestStreak: number;
+}
+
+export interface IScoreData extends IScoreDataAgg {
+    scoresByDate: Record<string, Score>;
+}

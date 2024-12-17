@@ -1,5 +1,7 @@
 package com.lucive.services;
 
+import static com.lucive.utils.AppUtils.SCALING_FACTOR;
+
 import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -23,6 +25,7 @@ import com.lucive.managers.RulesManager;
 import com.lucive.models.Event;
 import com.lucive.models.Rule;
 import com.lucive.models.UsageTrackerHeartbeat;
+import com.lucive.models.UsageTrackerIntervalScore;
 import com.lucive.utils.AppUtils;
 
 import java.util.ArrayList;
@@ -119,6 +122,7 @@ public class UsageTrackerService extends Service {
             }
         };
         handler.post(trackingRunnable);
+        handler.post(heartBeatRunnable);
     }
 
     private void saveHeartbeat() {
@@ -263,26 +267,24 @@ public class UsageTrackerService extends Service {
     }
 
     public Pair<Double, Boolean> calculateUsageTrackingPoints(final String date) {
-        final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
-        final List<UsageTrackerHeartbeat> heartbeats = localStorageManager.getHeartbeats(date);
+        final List<UsageTrackerIntervalScore> intervalScores = getIntervalScores(date);
         double points = 0;
-        final long startOfDay = AppUtils.getDayStartNDaysBefore(0) / 1000;
-        final long endOfDay = AppUtils.getDayStartNDaysBefore(-1) / 1000;
-        int heartbeatIndex = 0;
         boolean uninterruptedTracking = true;
-        for (long minuteStart = startOfDay; minuteStart < endOfDay && heartbeatIndex < heartbeats.size(); minuteStart += 60) {
-            final long minuteEnd = minuteStart + 60;
-            while (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteStart) {
-                heartbeatIndex++;
+        for (UsageTrackerIntervalScore intervalScore : intervalScores) {
+            if (!intervalScore.deviceRunning()) {
+                continue;
             }
-            if (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteEnd) {
-                points += heartbeats.get(heartbeatIndex).points();
-            }
-            else {
+            points += intervalScore.points();
+            if (!intervalScore.serviceRunning()) {
                 uninterruptedTracking = false;
             }
         }
-        return new Pair<>(points*points / 10000, uninterruptedTracking);
+        return new Pair<>(points / SCALING_FACTOR, uninterruptedTracking);
+    }
+
+    public List<UsageTrackerIntervalScore> getIntervalScores(final String date) {
+        final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
+        return getIntervalScores(localStorageManager.getHeartbeats(date), (long) Double.parseDouble(localStorageManager.getUser().dateJoinedSeconds()));
     }
 
     private void sendModalIntent(String message) {
@@ -290,5 +292,41 @@ public class UsageTrackerService extends Service {
         showScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", true);
         showScreenTimeExceeded.putExtra("EXTRA_MODAL_MESSAGE", message);
         startService(showScreenTimeExceeded);
+    }
+
+    private List<UsageTrackerIntervalScore> getIntervalScores(final List<UsageTrackerHeartbeat> heartbeats, final long userDateJoinedSeconds) {
+        Log.i(TAG, heartbeats.size() + " heartbeats found");
+        if (heartbeats.isEmpty()) {
+            throw new IllegalArgumentException("No heartbeats found");
+        }
+        List<UsageTrackerIntervalScore> intervalScores = new ArrayList<>();
+        double lastPoint = 0;
+        final long startOfDay = AppUtils.getDayStartNDaysBefore(0) / 1000;
+        final long endOfDay = AppUtils.getDayStartNDaysBefore(-1) / 1000;
+        int heartbeatIndex = 0;
+        final long currentTime = System.currentTimeMillis() / 1000;
+        for (long minuteStart = startOfDay; minuteStart < endOfDay && heartbeatIndex < heartbeats.size(); minuteStart += 60) {
+            final long minuteEnd = minuteStart + 60;
+            final int minuteOfDay = (int) ((minuteStart - startOfDay) / 60);
+            if (minuteStart <= userDateJoinedSeconds || minuteEnd > currentTime) {
+                intervalScores.add(new UsageTrackerIntervalScore(minuteOfDay, false, false, 0));
+                continue;
+            }
+            double currentPoint = 0;
+            boolean serviceRunning = true;
+            while (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteStart) {
+                heartbeatIndex++;
+            }
+            if (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteEnd) {
+                currentPoint = lastPoint + heartbeats.get(heartbeatIndex).points();
+            }
+            else {
+                serviceRunning = false;
+            }
+            intervalScores.add(new UsageTrackerIntervalScore(minuteOfDay, true, serviceRunning, currentPoint));
+            lastPoint = currentPoint;
+        }
+        Log.i(TAG, intervalScores.size() + " interval scores generated");
+        return intervalScores;
     }
 }

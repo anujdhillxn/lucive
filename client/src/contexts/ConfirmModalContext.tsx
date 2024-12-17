@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from 'react
 import Colors from '../styles/colors';
 import { CustomButton } from '../components/CustomButton';
 interface ConfirmModalContextProps {
-    showModal: (message: string, onConfirm: () => void) => void;
+    showModal: (message: string, onConfirm: () => void, hideNoButton?: boolean, yesButtonText?: string) => void;
     hideModal: () => void;
 }
 
@@ -12,12 +12,20 @@ const ConfirmModalContext = createContext<ConfirmModalContextProps | undefined>(
 export const ConfirmModalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [message, setMessage] = useState('');
+    const [yesButtonText, setYesButtonText] = useState('Yes');
+    const [hideNoButton, sethideNoButton] = useState(false);
     const [onConfirm, setOnConfirm] = useState<() => void>(() => { });
 
-    const showModal = (message: string, onConfirm: () => void) => {
+    const showModal = (message: string, onConfirm: () => void, hideNoButton?: boolean, yesButtonText?: string) => {
         setMessage(message);
         setOnConfirm(() => onConfirm);
         setModalVisible(true);
+        if (hideNoButton !== undefined) {
+            sethideNoButton(hideNoButton);
+        }
+        if (yesButtonText) {
+            setYesButtonText(yesButtonText);
+        }
     };
 
     const hideModal = () => {
@@ -43,11 +51,11 @@ export const ConfirmModalProvider: React.FC<{ children: ReactNode }> = ({ childr
                         <Text style={styles.modalText}>{message}</Text>
                         <View style={styles.buttonContainer}>
                             <CustomButton style={[styles.button, styles.yesButton]} onPress={handleConfirm}>
-                                <Text style={[styles.buttonText, styles.yesText]}>Yes</Text>
+                                <Text style={[styles.buttonText, styles.yesText]}>{yesButtonText}</Text>
                             </CustomButton>
-                            <TouchableOpacity style={[styles.button, styles.noButton]} onPress={hideModal}>
+                            {!hideNoButton && <TouchableOpacity style={[styles.button, styles.noButton]} onPress={hideModal}>
                                 <Text style={[styles.buttonText, styles.noText]}>No</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity>}
                         </View>
                     </View>
                 </View>

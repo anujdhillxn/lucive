@@ -55,8 +55,6 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
     const [installedApps, setInstalledApps] = React.useState<Record<string, AppInfo>>({});
     const [permissions, setPermissions] = React.useState<Permissions>({});
     const { requestToken } = useApi();
-    const { rules } = useAppContext();
-    const { setRules } = useActions();
     const { api } = useApi();
 
     const setWords = async () => {
@@ -102,7 +100,9 @@ export const NativeContextProvider = (props: NativeStateHandlerProps) => {
     }, []);
 
     React.useEffect(() => {
-        setWords();
+        if (requestToken) {
+            setWords();
+        }
     }, [requestToken]);
 
     return <NativeContext.Provider value={{ installedApps, permissions, requestUsageStatsPermission, requestOverlayPermission, checkPermissions }}>{props.children}</NativeContext.Provider>;

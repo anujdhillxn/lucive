@@ -1,16 +1,15 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { AllRulesView } from './Rules/AllRulesView';
-import { NoDuoFoundView } from './User/NoDuoFoundView';
-import { useAppContext } from '../../hooks/useAppContext';
+import { AllRulesView } from './AllRulesView';
+import { NoDuoFoundView } from '../User/NoDuoFoundView';
+import { useAppContext } from '../../../hooks/useAppContext';
 import { NativeModules } from 'react-native';
-import { PermissionsScreen } from './PermissionsScreen';
-import { useNativeContext } from '../../hooks/useNativeContext';
-import { useActions } from '../../hooks/useActions';
-import UserScreen from './User/UserScreen';
+import { PermissionsScreen } from '../PermissionsScreen';
+import { useNativeContext } from '../../../hooks/useNativeContext';
+import { useActions } from '../../../hooks/useActions';
+import UserScreen from '../User/UserScreen';
 
-const HomeScreen: React.FC = () => {
-    const { myDuo } = useAppContext();
+const RulesScreen: React.FC = () => {
     const { fetchData } = useActions();
     const { permissions } = useNativeContext();
     const [refreshing, setRefreshing] = React.useState(false);
@@ -22,6 +21,6 @@ const HomeScreen: React.FC = () => {
         await fetchData();
         setRefreshing(false);
     };
-    return myDuo ? <AllRulesView /> : <UserScreen />
+    return <AllRulesView />
 }
-export default HomeScreen;
+export default RulesScreen;

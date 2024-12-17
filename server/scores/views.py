@@ -27,22 +27,29 @@ class RetrieveScoreView(APIView):
             return Response({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
         scores = Score.objects.filter(user=user, date__range=[start_date, end_date])
         serializer = ScoreSerializer(scores, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_data = {}
+        for score in serializer.data:
+            date_str = score.get('date')
+            response_data[date_str] = score
+        return Response(response_data, status=status.HTTP_200_OK)
 
 class UpdateScoreView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
-        scores_data = request.data.get('scores')
-        if not scores_data:
+        scores_data = request.data
+        if scores_data is None:
             return Response({'error': 'Scores data is required'}, status=status.HTTP_400_BAD_REQUEST)
         confirmed_duo = Duo.objects.filter(
             (Q(user1=user) | Q(user2=user))
         ).first()
         if not confirmed_duo:
             return Response({'error': 'User is not part of a confirmed duo'}, status=status.HTTP_403_FORBIDDEN)
-        response_data = []
+        response_data = {
+                'currentStreak': 0,
+                'longestStreak': 0
+            }
         for score_data in scores_data:
             date_str = score_data.get('date')
             value = score_data.get('value')
@@ -52,15 +59,10 @@ class UpdateScoreView(APIView):
             date = parse_date(date_str)
             if not date:
                 return Response({'error': f'Invalid date format for date: {date_str}'}, status=status.HTTP_400_BAD_REQUEST)
-            #if score with date already exists, update the value
+            #update only when data doesn't exist
             score = Score.objects.filter(user=user, date=date).first()
-            if score:
-                score.value = value
-                score.uninterrupted_tracking = uninterrupepted_tracking
-                score.save()
-            else:
+            if not score:
                 score = Score.objects.create(user=user, date=date, value=value, uninterrupted_tracking=uninterrupepted_tracking)
             serializer = ScoreSerializer(score)
-            response_data.append(serializer.data)
         
         return Response(response_data, status=status.HTTP_200_OK)

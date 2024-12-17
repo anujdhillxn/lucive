@@ -13,6 +13,7 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.lucive.managers.LocalStorageManager;
 import com.lucive.models.Rule;
+import com.lucive.models.User;
 import com.lucive.models.Word;
 
 import java.util.ArrayList;
@@ -97,6 +98,39 @@ public class LocalStorageModule extends ReactContextBaseJavaModule {
         final boolean isStartupDelayEnabled = map.getBoolean("isStartupDelayEnabled");
         final boolean isMyRule = map.getBoolean("isMyRule");
         return new Rule(app, appDisplayName, isActive, dailyMaxSeconds, hourlyMaxSeconds, sessionMaxSeconds, dailyStartsAt, isDailyMaxSecondsEnforced, isHourlyMaxSecondsEnforced, isSessionMaxSecondsEnforced, isStartupDelayEnabled, isMyRule);
+    }
+    @ReactMethod
+    public void setUser(ReadableMap userMap, Promise promise) {
+        LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getReactApplicationContext());
+        final User user = new User(
+                userMap.getString("username"),
+                userMap.getString("email"),
+                userMap.getString("invitationToken"),
+                userMap.getString("dateJoinedSeconds")
+        );
+        localStorageManager.setUser(user);
+        promise.resolve(true);
+    }
+    @ReactMethod
+    public void getUser(Promise promise) {
+        LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getReactApplicationContext());
+        final User user = localStorageManager.getUser();
+        if (user == null) {
+            promise.reject("Error", "User not found");
+            return;
+        }
+        WritableMap userMap = Arguments.createMap();
+        userMap.putString("username", user.username());
+        userMap.putString("email", user.email());
+        userMap.putString("invitationToken", user.invitationToken());
+        userMap.putString("dateJoinedSeconds", String.valueOf(user.dateJoinedSeconds()));
+        promise.resolve(userMap);
+    }
+    @ReactMethod
+    public void clearUser(Promise promise) {
+        LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getReactApplicationContext());
+        localStorageManager.clearUser();
+        promise.resolve(true);
     }
 
     @NonNull

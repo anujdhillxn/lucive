@@ -35,7 +35,7 @@ export const NoDuoFoundView: React.FC = () => {
         if (invitationToken) {
             api.duoApi.createDuo(invitationToken).then((duo) => {
                 setMyDuo(duo);
-                navigation.navigate('Home');
+                navigation.navigate('Rules');
                 showNotification('Duo created successfully', 'success');
             }).catch((error) => {
                 console.error('Error creating duo', error);

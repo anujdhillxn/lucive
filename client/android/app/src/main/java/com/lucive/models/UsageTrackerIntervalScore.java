@@ -1,2 +1,4 @@
-package com.lucive.models;public class UsageTrackerIntervalScore {
+package com.lucive.models;
+
+public record UsageTrackerIntervalScore(int minuteOfDay, boolean deviceRunning, boolean serviceRunning, double points) {
 }

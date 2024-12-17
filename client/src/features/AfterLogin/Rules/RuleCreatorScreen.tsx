@@ -92,7 +92,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 const newRules = rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r);
                 setRules(newRules);
                 showNotification(!isApprovalRequired(getNewRule(), rule) ? 'Rule updated successfully' : 'Awaiting approval', 'success');
-                navigation.navigate('Home');
+                navigation.navigate('Rules');
             }).catch((e) => {
                 console.error(e);
                 showNotification('Failed to update rule', 'failure');
@@ -103,7 +103,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 const newRules = [...rules, createdRule];
                 setRules(newRules);
                 showNotification('Rule created successfully', 'success');
-                navigation.navigate('Home');
+                navigation.navigate('Rules');
             }).catch((e) => {
                 console.error(e);
                 showNotification('Failed to create rule', 'failure');

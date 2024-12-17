@@ -4,6 +4,7 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.lucive.models.Event;
 
@@ -39,9 +40,7 @@ public class AppUtils {
     };
 
     public static final String UNKNOWN_PACKAGE = "Unknown";
-
-    public static final long MINUTES_IN_A_DAY = 1440;
-
+    public static double SCALING_FACTOR = 10000;
     public static Calendar parseTimeString(String timeString) {
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
@@ -61,11 +60,12 @@ public class AppUtils {
 
     public static long getDayStartNDaysBefore(final int n) {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         calendar.add(Calendar.DAY_OF_MONTH, -n);
+        Log.i("AppUtils", "Day start " + n + " days before: " + calendar.getTime());
         return calendar.getTimeInMillis();
     }
 

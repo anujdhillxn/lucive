@@ -1,6 +1,7 @@
 import { createContentApi } from "../api/contentApi";
 import { createDuoApi } from "../api/duoApi";
 import { createRuleApi } from "../api/ruleApi";
+import { createScoresApi } from "../api/scoreApi";
 import { createUserApi } from "../api/userApi";
 import { Duo } from "./state";
 
@@ -29,6 +30,7 @@ export interface IApi {
     duoApi: ReturnType<typeof createDuoApi>;
     ruleApi: ReturnType<typeof createRuleApi>;
     contentApi: ReturnType<typeof createContentApi>;
+    scoresApi: ReturnType<typeof createScoresApi>;
 }
 
 export interface IRegisterArgs {

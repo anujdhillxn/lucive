@@ -1,9 +1,11 @@
 package com.lucive.managers;
 
 import android.app.usage.UsageEvents;
+import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
+import com.lucive.models.DeviceStatus;
 import com.lucive.models.Event;
 import com.lucive.utils.AppUtils;
 
@@ -23,10 +25,33 @@ public class EventManager {
     private int lastEventChunkSize = 0;
     private boolean currentlyOpenedAppMightChange = false;
     private String currentApp = AppUtils.UNKNOWN_PACKAGE;
+    private final LocalStorageManager localStorageManager;
+    private static EventManager instance;
+
+    private EventManager(final Context context) {
+        localStorageManager = LocalStorageManager.getInstance(context);
+    }
+
+    public static synchronized EventManager getInstance(final Context context) {
+        if (instance == null) {
+            instance = new EventManager(context);
+        }
+        return instance;
+    }
 
     public String processEventsChunk (final List<Event> events) {
+        final List<DeviceStatus> deviceStatusEvents = new ArrayList<>();
         for (Event event : events) {
             processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getActivity());
+            if (event.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
+                deviceStatusEvents.add(new DeviceStatus(event.getTimeStamp() / 1000, true));
+            }
+            if (event.getEventType() == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
+                deviceStatusEvents.add(new DeviceStatus(event.getTimeStamp() / 1000, false));
+            }
+        }
+        if (!deviceStatusEvents.isEmpty()) {
+            localStorageManager.saveDeviceStatus(deviceStatusEvents);
         }
         if (!events.isEmpty()) {
             currentlyOpenedAppMightChange = true;

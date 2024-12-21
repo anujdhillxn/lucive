@@ -1,11 +1,5 @@
 package com.lucive.utils;
 
-import android.app.AppOpsManager;
-import android.content.Context;
-import android.content.Intent;
-import android.provider.Settings;
-import android.util.Log;
-
 import com.lucive.models.Event;
 
 import java.text.ParseException;
@@ -65,7 +59,6 @@ public class AppUtils {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         calendar.add(Calendar.DAY_OF_MONTH, -n);
-        Log.i("AppUtils", "Day start " + n + " days before: " + calendar.getTime());
         return calendar.getTimeInMillis();
     }
 

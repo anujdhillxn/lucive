@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lucive.models.DeviceStatus;
 import com.lucive.models.Rule;
 import com.lucive.models.UsageTrackerHeartbeat;
 import com.lucive.models.User;
@@ -30,6 +31,7 @@ public class LocalStorageManager {
     public static final String RULES_KEY = "rules";
     public static final String HEARTBEATS_KEY = "heartbeats";
     public static final String USER_KEY = "user";
+    public static final String DEVICE_STATUS_KEY = "device_status";
 
     private LocalStorageManager(Context context) {
         this.sharedPreferences = context.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
@@ -89,6 +91,59 @@ public class LocalStorageManager {
         }
     }
 
+    public void saveDeviceStatus(final List<DeviceStatus> newDeviceStatuses) {
+        List<DeviceStatus> deviceStatuses = getDeviceStatuses();
+        for (DeviceStatus newDeviceStatus : newDeviceStatuses) {
+            if(deviceStatuses.isEmpty() || deviceStatuses.get(deviceStatuses.size() - 1).timestamp() < newDeviceStatus.timestamp()) {
+                deviceStatuses.add(newDeviceStatus);
+            }
+        }
+        cleanOldDeviceStatuses(deviceStatuses);
+        saveDeviceStatuses(deviceStatuses);
+    }
+
+    private void saveDeviceStatuses(List<DeviceStatus> deviceStatuses) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String json = gson.toJson(deviceStatuses);
+        editor.putString(DEVICE_STATUS_KEY, json);
+        editor.apply();
+    }
+
+    public List<DeviceStatus> getDeviceStatuses() {
+        String json = sharedPreferences.getString(DEVICE_STATUS_KEY, "[]");
+        Type type = new TypeToken<List<DeviceStatus>>() {}.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public List<DeviceStatus> getDeviceStatuses(final String date) {
+        final Calendar calendar = AppUtils.parseDate(date);
+        final List<DeviceStatus> deviceStatuses = getDeviceStatuses();
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        final long startOfDay = calendar.getTimeInMillis() / 1000;
+        calendar.add(Calendar.DAY_OF_MONTH, 2);
+        final long endOfDay = calendar.getTimeInMillis() / 1000;
+        List<DeviceStatus> filteredDeviceStatuses = new ArrayList<>();
+        for (DeviceStatus deviceStatus : deviceStatuses) {
+            if (deviceStatus.timestamp() >= startOfDay && deviceStatus.timestamp() < endOfDay) {
+                filteredDeviceStatuses.add(deviceStatus);
+            }
+        }
+
+        return filteredDeviceStatuses;
+    }
+
+    private void cleanOldDeviceStatuses(List<DeviceStatus> deviceStatuses) {
+        long cutoffTimeSeconds = AppUtils.getDayStartNDaysBefore(10) / 1000;
+        Iterator<DeviceStatus> iterator = deviceStatuses.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().timestamp() < cutoffTimeSeconds) {
+                iterator.remove();
+            } else {
+                break;
+            }
+        }
+    }
+
 
     public void saveHeartbeat(final UsageTrackerHeartbeat heartbeat) {
         List<UsageTrackerHeartbeat> heartbeats = getHeartbeats();
@@ -113,7 +168,6 @@ public class LocalStorageManager {
     public List<UsageTrackerHeartbeat> getHeartbeats(final String date) {
         final Calendar calendar = AppUtils.parseDate(date);
         final List<UsageTrackerHeartbeat> heartbeats = getHeartbeats();
-        Log.i("LocalStorageManager", calendar.getTime().toString());
         final long startOfDay = calendar.getTimeInMillis() / 1000;
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         final long endOfDay = calendar.getTimeInMillis() / 1000;

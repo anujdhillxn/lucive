@@ -16,6 +16,8 @@ import Colors from '../styles/colors';
 import ScoresScreen from './AfterLogin/Scores/ScoresScreen';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import VerticalSeparator from '../components/VerticalSeparator';
+import { useNativeContext } from '../hooks/useNativeContext';
+import { PermissionsScreen } from './AfterLogin/PermissionsScreen';
 const Stack = createStackNavigator();
 export type RootStackParamList = {
     Login: undefined;
@@ -34,8 +36,12 @@ export const AppScreenStack: React.FC = () => {
     const { fetchData } = useActions();
     const hasCreatedRule = useAppContext().rules.filter(rule => rule.isMyRule).length > 0;
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const { permissions } = useNativeContext();
     if (appLoading) {
         return <LoadingScreen />
+    }
+    if (!permissions.hasUsageStatsPermission || !permissions.hasOverlayPermission) {
+        return <PermissionsScreen />
     }
     if (!user) {
         return <SafeAreaView style={styles.container}>

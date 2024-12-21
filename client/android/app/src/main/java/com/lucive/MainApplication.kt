@@ -1,6 +1,7 @@
 package com.lucive
 
 import android.app.Application
+import android.content.Intent
 import android.content.res.Configuration
 import com.lucive.modules.LucivePackage
 
@@ -12,6 +13,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
+import com.lucive.services.UsageTrackerService
 
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
@@ -49,6 +51,8 @@ class MainApplication : Application(), ReactApplication {
       load()
     }
     ApplicationLifecycleDispatcher.onApplicationCreate(this)
+    val intent = Intent(this, UsageTrackerService::class.java)
+    startService(intent)
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {

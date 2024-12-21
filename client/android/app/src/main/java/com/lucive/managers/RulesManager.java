@@ -30,16 +30,7 @@ public class RulesManager implements LocalStorageObserver {
     }
 
     public double calculateHeartbeatPoints() {
-        double points = 0;
-        for (Rule rule : ruleMap.values()) {
-            if (!rule.isActive()) {
-                continue;
-            }
-            if (rule.isDailyMaxSecondsEnforced() || rule.isHourlyMaxSecondsEnforced() || rule.isSessionMaxSecondsEnforced() || rule.isStartupDelayEnabled()) {
-                points++;
-            }
-        }
-        return points;
+        return 0;
     }
 
     @Override

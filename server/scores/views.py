@@ -6,7 +6,7 @@ from django.utils.dateparse import parse_date
 from django.db.models import Q
 
 from duos.models import Duo
-from .models import Score
+from .models import Score, ScoreAggregates
 from .serializers import ScoreSerializer
 
 class RetrieveScoreView(APIView):
@@ -50,6 +50,12 @@ class UpdateScoreView(APIView):
                 'currentStreak': 0,
                 'longestStreak': 0
             }
+        score_aggregates = ScoreAggregates.objects.filter(user=user).first()
+        if not score_aggregates:
+            score_aggregates = ScoreAggregates.objects.create(user=user)
+        current_streak = score_aggregates.perfect_day_current_streak
+        longest_streak = score_aggregates.perfect_day_longest_streak
+        last_perfect_day = score_aggregates.last_perfect_day
         for score_data in scores_data:
             date_str = score_data.get('date')
             value = score_data.get('value')
@@ -59,10 +65,23 @@ class UpdateScoreView(APIView):
             date = parse_date(date_str)
             if not date:
                 return Response({'error': f'Invalid date format for date: {date_str}'}, status=status.HTTP_400_BAD_REQUEST)
-            #update only when data doesn't exist
             score = Score.objects.filter(user=user, date=date).first()
             if not score:
                 score = Score.objects.create(user=user, date=date, value=value, uninterrupted_tracking=uninterrupepted_tracking)
-            serializer = ScoreSerializer(score)
-        
+                if uninterrupepted_tracking:
+                    if last_perfect_day and (date - last_perfect_day).days == 1:
+                        current_streak += 1
+                    else:
+                        current_streak = 1
+                    if current_streak > longest_streak:
+                        longest_streak = current_streak
+                    last_perfect_day = date
+                    
+        score_aggregates.perfect_day_current_streak = current_streak
+        score_aggregates.perfect_day_longest_streak = longest_streak
+        score_aggregates.last_perfect_day = last_perfect_day
+        score_aggregates.save()
+        response_data['currentStreak'] = current_streak
+        response_data['longestStreak'] = longest_streak
+
         return Response(response_data, status=status.HTTP_200_OK)

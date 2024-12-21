@@ -84,7 +84,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const updateScores = async () => {
         try {
             const scores: Score[] = [];
-            for (let i = 1; i <= 7; i++) {
+            for (let i = 7; i >= 1; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const dateISO = getDateISO(date);

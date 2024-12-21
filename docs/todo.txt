@@ -1,2 +1,0 @@
-- dont fetch scores for dates less than registration
-- handle streaks when device is off

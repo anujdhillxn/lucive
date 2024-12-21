@@ -15,7 +15,7 @@ const { UsageTracker } = NativeModules;
 
 const getBackgroundColor = (score: IntervalScore) => {
     if (!score.deviceRunning) {
-        return 'red';
+        return Colors.Background2;
     }
     if (score.serviceRunning) {
         return Colors.Accent1;
@@ -33,13 +33,15 @@ const ScoresScreen = () => {
     const [loadingScoreAggs, setLoadingScoreAggs] = React.useState(false);
     const [selectedDate, setSelectedDate] = React.useState<string>(getDateISO(new Date()));
     const [intervalScores, setIntervalScores] = React.useState<IntervalScore[]>([]);
-    const totalWidth = Dimensions.get('window').width - 40 //padding;
-    const intervalWidth = totalWidth * 24 / 1440;
+    const totalWidth = Dimensions.get('window').width;
+    const intervalWidth = totalWidth / 1440;
     const getMarkedDates = () => {
         const markedDates: { [date: string]: any } = {};
         if (myScores) {
             for (const date in myScores.scoresByDate) {
-                markedDates[date] = { selected: true, dotColor: Colors.Accent1 };
+                if (myScores.scoresByDate[date].uninterruptedTracking) {
+                    markedDates[date] = { marked: true, dotColor: Colors.Accent1 };
+                }
             }
         }
         return markedDates;
@@ -136,9 +138,7 @@ const ScoresScreen = () => {
             )}
             <View style={styles.trackingHistoryContainer}>
                 <Text style={styles.trackingHistoryTitle}>Lucive Tracking History</Text>
-                {selectedDate && (
-                    <Text style={styles.selectedDateText}>Selected Date: {selectedDate}</Text>
-                )}
+                <Text style={styles.selectedDateText}>{selectedDate}</Text>
                 <View style={styles.intervalScoresContainer}>
                     {intervalScores.map((score, index) => (
                         <View
@@ -151,6 +151,19 @@ const ScoresScreen = () => {
                     ))}
                 </View>
             </View>
+            {/* <View style={styles.lineGraphContainer}>
+                <View style={styles.lineGraph}>
+                    {intervalScores.map((score, index) => (
+                        <View
+                            key={index}
+                            style={[
+                                styles.lineGraphPoint,
+                                { bottom: score.points, left: index * intervalWidth, width: intervalWidth, height: intervalWidth },
+                            ]}
+                        />
+                    ))}
+                </View>
+            </View> */}
         </View>
     );
 };
@@ -209,10 +222,28 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginTop: 10,
         width: '100%',
-        flexWrap: 'wrap',
+        justifyContent: 'center',
+        marginHorizontal: 20, // Add margin to the container of the strip
     },
     intervalScorePoint: {
-        height: 5,
+        height: 10,
+        borderRadius: 5,
+    },
+    lineGraphContainer: {
+        height: 200,
+        marginTop: 20,
+        position: 'relative',
+    },
+    lineGraph: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '100%',
+    },
+    lineGraphPoint: {
+        position: 'absolute',
+        backgroundColor: Colors.Accent1,
     },
 });
 

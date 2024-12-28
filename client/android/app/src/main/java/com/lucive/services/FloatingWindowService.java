@@ -4,11 +4,18 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
 import com.lucive.R;
 import com.lucive.managers.ContentManager;
 import com.lucive.managers.LocalStorageManager;
@@ -51,11 +58,26 @@ public class FloatingWindowService extends Service {
                     usageTextView.setText(String.format("'%s'", randomWord.usage()));
                 }
 
+                AdView adView = floatingView.findViewById(R.id.adView);
+                adView.setAdListener(new AdListener() {
+                    @Override
+                    public void onAdLoaded() {
+                        Log.d("AdView", "Ad successfully loaded.");
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(LoadAdError adError) {
+                        Log.e("AdView", "Ad failed to load: " + adError.getMessage());
+                    }
+                });
+                AdRequest adRequest = new AdRequest.Builder()
+                        .build();
+                adView.loadAd(adRequest);
                 WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                         WindowManager.LayoutParams.MATCH_PARENT,
                         WindowManager.LayoutParams.MATCH_PARENT,
                         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                         PixelFormat.TRANSLUCENT);
 
                 windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);

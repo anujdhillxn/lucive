@@ -60,7 +60,7 @@ class UpdateScoreView(APIView):
             date_str = score_data.get('date')
             value = score_data.get('value')
             uninterrupepted_tracking = score_data.get('uninterrupted_tracking')
-            if not date_str or not value or uninterrupepted_tracking is None:
+            if not date_str or value is None or uninterrupepted_tracking is None:
                 return Response({'error': 'Date, uninterrupted_tracking and value are required for each score entry'}, status=status.HTTP_400_BAD_REQUEST)
             date = parse_date(date_str)
             if not date:
@@ -76,6 +76,8 @@ class UpdateScoreView(APIView):
                     if current_streak > longest_streak:
                         longest_streak = current_streak
                     last_perfect_day = date
+                else:
+                    current_streak = 0
                     
         score_aggregates.perfect_day_current_streak = current_streak
         score_aggregates.perfect_day_longest_streak = longest_streak

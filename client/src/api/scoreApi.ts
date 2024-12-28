@@ -18,7 +18,7 @@ export const createScoresApi = (remote: Remote) => {
             "scores/update-score",
             scores.map((score) => ({
                 date: score.date,
-                points: score.points,
+                value: score.points,
                 uninterrupted_tracking: score.uninterruptedTracking,
             }))
         );

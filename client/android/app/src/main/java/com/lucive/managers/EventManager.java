@@ -40,18 +40,8 @@ public class EventManager {
     }
 
     public String processEventsChunk (final List<Event> events) {
-        final List<DeviceStatus> deviceStatusEvents = new ArrayList<>();
         for (Event event : events) {
             processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getActivity());
-            if (event.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
-                deviceStatusEvents.add(new DeviceStatus(event.getTimeStamp() / 1000, true));
-            }
-            if (event.getEventType() == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
-                deviceStatusEvents.add(new DeviceStatus(event.getTimeStamp() / 1000, false));
-            }
-        }
-        if (!deviceStatusEvents.isEmpty()) {
-            localStorageManager.saveDeviceStatus(deviceStatusEvents);
         }
         if (!events.isEmpty()) {
             currentlyOpenedAppMightChange = true;
@@ -87,11 +77,13 @@ public class EventManager {
         Log.d(TAG, "Processing event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
         if (eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
             isScreenOn = false;
+            localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, false));
             return;
         }
         if (eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
             isScreenOn = true;
             screenOnLastTimestamp = timestamp;
+            localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, true));
             return;
         }
         if (eventType == UsageEvents.Event.ACTIVITY_STOPPED) {

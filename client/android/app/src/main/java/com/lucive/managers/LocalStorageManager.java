@@ -23,19 +23,22 @@ import java.util.Set;
 
 public class LocalStorageManager {
     private static LocalStorageManager instance;
+
     private final SharedPreferences sharedPreferences;
     private final Gson gson;
     private final Set<LocalStorageObserver> observers = new HashSet<>();
+    private final HeartbeatDAO heartbeatDAO;
+    private final DeviceStatusDAO deviceStatusDAO;
 
     public static final String WORDS_KEY = "words";
     public static final String RULES_KEY = "rules";
-    public static final String HEARTBEATS_KEY = "heartbeats";
     public static final String USER_KEY = "user";
-    public static final String DEVICE_STATUS_KEY = "device_status";
 
     private LocalStorageManager(Context context) {
         this.sharedPreferences = context.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
         this.gson = new Gson();
+        this.heartbeatDAO = new HeartbeatDAO(context);
+        this.deviceStatusDAO = new DeviceStatusDAO(context);
     }
 
     public static synchronized LocalStorageManager getInstance(Context context) {
@@ -91,28 +94,21 @@ public class LocalStorageManager {
         }
     }
 
-    public void saveDeviceStatus(final List<DeviceStatus> newDeviceStatuses) {
-        List<DeviceStatus> deviceStatuses = getDeviceStatuses();
-        for (DeviceStatus newDeviceStatus : newDeviceStatuses) {
-            if(deviceStatuses.isEmpty() || deviceStatuses.get(deviceStatuses.size() - 1).timestamp() < newDeviceStatus.timestamp()) {
-                deviceStatuses.add(newDeviceStatus);
-            }
+    public void saveDeviceStatus(final DeviceStatus newDeviceStatus) {
+        DeviceStatus lastDeviceStatus = deviceStatusDAO.getLastDeviceStatus();
+        if (lastDeviceStatus == null || newDeviceStatus.timestamp() > lastDeviceStatus.timestamp()) {
+            deviceStatusDAO.addDeviceStatus(newDeviceStatus);
+            cleanOldDeviceStatuses();
         }
-        cleanOldDeviceStatuses(deviceStatuses);
-        saveDeviceStatuses(deviceStatuses);
-    }
-
-    private void saveDeviceStatuses(List<DeviceStatus> deviceStatuses) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        String json = gson.toJson(deviceStatuses);
-        editor.putString(DEVICE_STATUS_KEY, json);
-        editor.apply();
     }
 
     public List<DeviceStatus> getDeviceStatuses() {
-        String json = sharedPreferences.getString(DEVICE_STATUS_KEY, "[]");
-        Type type = new TypeToken<List<DeviceStatus>>() {}.getType();
-        return gson.fromJson(json, type);
+        return deviceStatusDAO.getDeviceStatuses();
+    }
+
+    private void cleanOldDeviceStatuses() {
+        long cutoffTimeSeconds = AppUtils.getDayStartNDaysBefore(10) / 1000;
+        deviceStatusDAO.deleteOldDeviceStatuses(cutoffTimeSeconds);
     }
 
     public List<DeviceStatus> getDeviceStatuses(final String date) {
@@ -132,37 +128,14 @@ public class LocalStorageManager {
         return filteredDeviceStatuses;
     }
 
-    private void cleanOldDeviceStatuses(List<DeviceStatus> deviceStatuses) {
-        long cutoffTimeSeconds = AppUtils.getDayStartNDaysBefore(10) / 1000;
-        Iterator<DeviceStatus> iterator = deviceStatuses.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().timestamp() < cutoffTimeSeconds) {
-                iterator.remove();
-            } else {
-                break;
-            }
-        }
-    }
-
 
     public void saveHeartbeat(final UsageTrackerHeartbeat heartbeat) {
-        List<UsageTrackerHeartbeat> heartbeats = getHeartbeats();
-        heartbeats.add(heartbeat);
-        cleanOldHeartbeats(heartbeats);
-        saveHeartbeats(heartbeats);
-    }
-
-    private void saveHeartbeats(List<UsageTrackerHeartbeat> heartbeats) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        String json = gson.toJson(heartbeats);
-        editor.putString(HEARTBEATS_KEY, json);
-        editor.apply();
+        heartbeatDAO.addHeartbeat(heartbeat);
+        cleanOldHeartbeats();
     }
 
     public List<UsageTrackerHeartbeat> getHeartbeats() {
-        String json = sharedPreferences.getString(HEARTBEATS_KEY, "[]");
-        Type type = new TypeToken<List<UsageTrackerHeartbeat>>() {}.getType();
-        return gson.fromJson(json, type);
+        return heartbeatDAO.getHeartbeats();
     }
 
     public List<UsageTrackerHeartbeat> getHeartbeats(final String date) {
@@ -181,16 +154,9 @@ public class LocalStorageManager {
         return filteredHeartbeats;
     }
 
-    private void cleanOldHeartbeats(List<UsageTrackerHeartbeat> heartbeats) {
+    private void cleanOldHeartbeats() {
         long cutoffTimeSeconds = AppUtils.getDayStartNDaysBefore(10) / 1000;
-        Iterator<UsageTrackerHeartbeat> iterator = heartbeats.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().timestamp() < cutoffTimeSeconds) {
-                iterator.remove();
-            } else {
-                break;
-            }
-        }
+        heartbeatDAO.deleteOldHeartbeats(cutoffTimeSeconds);
     }
 
     public void setUser(final User user) {

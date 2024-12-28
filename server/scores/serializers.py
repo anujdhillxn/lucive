@@ -11,6 +11,6 @@ class ScoreSerializer(serializers.ModelSerializer):
         res = {
             'value': ret['value'],
             'date': ret['date'],
-            'uninterrupted_tracking': ret['uninterrupted_tracking']
+            'uninterruptedTracking': ret['uninterrupted_tracking']
         }
         return res

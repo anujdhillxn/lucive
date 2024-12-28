@@ -11,6 +11,7 @@ import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { IntervalScore } from '../../../types/state';
 import { NativeModules } from "react-native";
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 const { UsageTracker } = NativeModules;
 
 const getBackgroundColor = (score: IntervalScore) => {
@@ -57,9 +58,18 @@ const ScoresScreen = () => {
         if (monthStart > endDate) {
             return;
         }
+        await fetchScoresData(getDateISO(monthStart), getDateISO(endDate));
+    }
+
+    const handleDayPress = (event: any) => {
+        const date = event.dateString;
+        setSelectedDate(date);
+    };
+
+    const fetchScoresData = async (startDate: string, endDate: string) => {
         setLoadingScoreAggs(true);
         try {
-            const resp = await api.scoresApi.getScoresData(getDateISO(monthStart), getDateISO(endDate));
+            const resp = await api.scoresApi.getScoresData(startDate, endDate);
             setMyScores(curr => ({ ...curr, scoresByDate: { ...curr.scoresByDate, ...resp } }));
         }
         catch (e) {
@@ -69,11 +79,6 @@ const ScoresScreen = () => {
             setLoadingScoreAggs(false);
         }
     }
-
-    const handleDayPress = (event: any) => {
-        const date = event.dateString;
-        setSelectedDate(date);
-    };
 
     const fetchIntervalScores = async () => {
         try {
@@ -85,6 +90,12 @@ const ScoresScreen = () => {
             console.log(e);
         }
     }
+
+    React.useEffect(() => {
+        const today = new Date();
+        const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        fetchScoresData(getDateISO(monthStart), getDateISO(today));
+    }, []);
 
     React.useEffect(() => {
         fetchIntervalScores();

@@ -91,7 +91,6 @@ class UpdateRuleView(APIView):
                 'body': f'{user.username} has requested a rule modification',
             }
             partner = duo.user1 if duo.user2 == user else duo.user2
-            print(partner.fcm_token)
             send_push_notification(partner.fcm_token, **push_notification_data)
             return Response(resp, status=status.HTTP_201_CREATED)
         return Response(update_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

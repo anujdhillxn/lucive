@@ -104,7 +104,7 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
             final WritableMap result = Arguments.createMap();
             result.putDouble("points", score.first);
             result.putBoolean("uninterruptedTracking", score.second);
-            promise.resolve(score);
+            promise.resolve(result);
         }
         catch (Exception e) {
             promise.reject("Error", e.getMessage());

@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import android.util.Pair;
 
+import com.google.android.gms.ads.MobileAds;
 import com.lucive.managers.EventManager;
 import com.lucive.managers.LocalStorageManager;
 import com.lucive.managers.RulesManager;
@@ -66,6 +67,7 @@ public class UsageTrackerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        MobileAds.initialize(this, initializationStatus -> Log.d("AdMob", "AdMob Initialized " + initializationStatus));
         usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         eventManager = EventManager.getInstance(this);
         rulesManager = RulesManager.getInstance(this);

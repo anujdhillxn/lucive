@@ -186,9 +186,11 @@ dependencies {
     implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.google.firebase:firebase-bom:33.5.1'
+    implementation 'com.google.android.gms:play-services-ads:23.6.0'
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";
+
 
     if (isGifEnabled) {
         // For animated gif support

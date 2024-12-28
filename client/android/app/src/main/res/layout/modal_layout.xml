@@ -62,11 +62,11 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/adView"
+        <FrameLayout
+            android:id="@+id/ad_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            ads:adSize="BANNER" />
+            android:layout_gravity="bottom">
+        </FrameLayout>
     </FrameLayout>
 </LinearLayout>

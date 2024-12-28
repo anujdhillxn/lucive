@@ -101,7 +101,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
         catch (e) {
             console.log(e);
-            showNotification('Error updating scores. Please reopen the app.', 'failure');
+            showNotification('Error updating scores. Retrying.', 'failure');
+            setTimeout(updateScores, 5000);
         }
     }
 

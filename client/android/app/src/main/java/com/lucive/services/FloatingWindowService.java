@@ -16,6 +16,7 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.lucive.BuildConfig;
 import com.lucive.R;
 import com.lucive.managers.ContentManager;
 import com.lucive.managers.LocalStorageManager;
@@ -59,6 +60,7 @@ public class FloatingWindowService extends Service {
                 }
 
                 AdView adView = floatingView.findViewById(R.id.adView);
+                adView.setAdUnitId(BuildConfig.AD_UNIT_ID);
                 adView.setAdListener(new AdListener() {
                     @Override
                     public void onAdLoaded() {

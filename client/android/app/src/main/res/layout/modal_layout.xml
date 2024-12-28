@@ -67,7 +67,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            ads:adSize="BANNER"
-            ads:adUnitId="ca-app-pub-3940256099942544/9214589741"/>
+            ads:adSize="BANNER" />
     </FrameLayout>
 </LinearLayout>

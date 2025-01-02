@@ -33,7 +33,6 @@ import com.lucive.utils.AppUtils;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UsageTrackerService extends Service {
@@ -44,13 +43,13 @@ public class UsageTrackerService extends Service {
     private Runnable trackingRunnable;
     private Runnable heartBeatRunnable;
     private static final long TRACKING_INTERVAL = 200;
-    private static final long HEARTBEAT_INTERVAL = 30 * 1000;
+    private static final long HEARTBEAT_INTERVAL = 55 * 1000;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
     private long lastTimestamp = AppUtils.getDayStartNDaysBefore(1);
     private EventManager eventManager;
     private RulesManager rulesManager;
-    private AtomicBoolean pastEventsProcessed = new AtomicBoolean(false);
+    private final AtomicBoolean pastEventsProcessed = new AtomicBoolean(false);
 
     public class LocalBinder extends Binder {
         public UsageTrackerService getService() {
@@ -132,7 +131,9 @@ public class UsageTrackerService extends Service {
 
     private void saveHeartbeat() {
         final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
-        localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(System.currentTimeMillis() / 1000, rulesManager.calculateHeartbeatPoints()));
+        if (eventManager.isScreenOn()) {
+            localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(System.currentTimeMillis() / 1000, rulesManager.calculateHeartbeatPoints()));
+        }
     }
 
     private void checkScreenUsages() {
@@ -309,11 +310,13 @@ public class UsageTrackerService extends Service {
         double lastPoint = 0;
         // consider device to be off if no info of the previous day is available
         DeviceStatus lastDeviceStatus = new DeviceStatus(0, false);
-        final long startOfDay = AppUtils.getDayStartNDaysBefore(0) / 1000;
-        final long endOfDay = AppUtils.getDayStartNDaysBefore(-1) / 1000;
+        final Calendar calendar = AppUtils.parseDate(date);
+        final long startOfDay = calendar.getTimeInMillis() / 1000;
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        final long endOfDay = calendar.getTimeInMillis() / 1000;
         int heartbeatIndex = 0, deviceStatusIndex = 0;
         final long currentTime = System.currentTimeMillis() / 1000;
-        for (long minuteStart = startOfDay; minuteStart < endOfDay && heartbeatIndex < heartbeats.size(); minuteStart += 60) {
+        for (long minuteStart = startOfDay; minuteStart < endOfDay; minuteStart += 60) {
             final long minuteEnd = minuteStart + 60;
             final int minuteOfDay = (int) ((minuteStart - startOfDay) / 60);
             while (deviceStatusIndex < deviceStatuses.size() && deviceStatuses.get(deviceStatusIndex).timestamp() < minuteEnd) {

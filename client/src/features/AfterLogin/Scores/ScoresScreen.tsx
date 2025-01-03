@@ -11,15 +11,14 @@ import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { IntervalScore } from '../../../types/state';
 import { NativeModules } from "react-native";
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 const { UsageTracker } = NativeModules;
 
 const getBackgroundColor = (score: IntervalScore) => {
-    if (!score.deviceRunning) {
-        return Colors.Background2;
-    }
     if (score.serviceRunning) {
         return Colors.Accent1;
+    }
+    if (!score.deviceRunning) {
+        return Colors.Background2;
     }
     return Colors.Danger;
 }

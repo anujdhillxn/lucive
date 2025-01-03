@@ -30,8 +30,8 @@ public class LocalStorageManager {
     private final Set<LocalStorageObserver> observers = new HashSet<>();
     private final HeartbeatDAO heartbeatDAO;
     private final DeviceStatusDAO deviceStatusDAO;
-    private final AtomicLong lastHeartbeatCleanup = new AtomicLong(0);
-    private final AtomicLong lastDeviceStatusCleanup = new AtomicLong(0);
+    private final AtomicLong lastHeartbeatCleanup = new AtomicLong(System.currentTimeMillis() / 1000);
+    private final AtomicLong lastDeviceStatusCleanup = new AtomicLong(System.currentTimeMillis() / 1000);
 
     public static final String WORDS_KEY = "words";
     public static final String RULES_KEY = "rules";

@@ -323,12 +323,9 @@ public class UsageTrackerService extends Service {
                 lastDeviceStatus = deviceStatuses.get(deviceStatusIndex);
                 deviceStatusIndex++;
             }
-            if (minuteEnd > currentTime || !lastDeviceStatus.isScreenOn() || minuteEnd < userJoinSeconds) {
-                intervalScores.add(new UsageTrackerIntervalScore(minuteOfDay, false, false, lastPoint));
-                continue;
-            }
             double currentPoint = 0;
             boolean serviceRunning = true;
+            boolean deviceRunning = minuteEnd <= currentTime && lastDeviceStatus.isScreenOn() && minuteEnd >= userJoinSeconds;
             while (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteStart) {
                 heartbeatIndex++;
             }
@@ -338,7 +335,7 @@ public class UsageTrackerService extends Service {
             else {
                 serviceRunning = false;
             }
-            intervalScores.add(new UsageTrackerIntervalScore(minuteOfDay, true, serviceRunning, currentPoint));
+            intervalScores.add(new UsageTrackerIntervalScore(minuteOfDay, deviceRunning, serviceRunning, currentPoint));
             lastPoint = currentPoint;
         }
         return intervalScores;

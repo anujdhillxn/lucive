@@ -34,7 +34,7 @@ const ScoresScreen = () => {
     const [selectedDate, setSelectedDate] = React.useState<string>(getDateISO(new Date()));
     const [intervalScores, setIntervalScores] = React.useState<IntervalScore[]>([]);
     const totalWidth = Dimensions.get('window').width;
-    const intervalWidth = totalWidth / 1440;
+    const intervalWidth = totalWidth * 5 / 1440;
     const getMarkedDates = () => {
         const markedDates: { [date: string]: any } = {};
         if (myScores) {

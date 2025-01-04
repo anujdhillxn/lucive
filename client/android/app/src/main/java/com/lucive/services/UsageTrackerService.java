@@ -43,7 +43,7 @@ public class UsageTrackerService extends Service {
     private Runnable trackingRunnable;
     private Runnable heartBeatRunnable;
     private static final long TRACKING_INTERVAL = 200;
-    private static final long HEARTBEAT_INTERVAL = 55 * 1000;
+    private static final long HEARTBEAT_INTERVAL = 90 * 1000;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
     private long lastTimestamp = AppUtils.getDayStartNDaysBefore(1);
@@ -131,9 +131,7 @@ public class UsageTrackerService extends Service {
 
     private void saveHeartbeat() {
         final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
-        if (eventManager.isScreenOn()) {
-            localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(System.currentTimeMillis() / 1000, rulesManager.calculateHeartbeatPoints()));
-        }
+        localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(System.currentTimeMillis() / 1000, rulesManager.calculateHeartbeatPoints()));
     }
 
     private void checkScreenUsages() {
@@ -316,8 +314,8 @@ public class UsageTrackerService extends Service {
         final long endOfDay = calendar.getTimeInMillis() / 1000;
         int heartbeatIndex = 0, deviceStatusIndex = 0;
         final long currentTime = System.currentTimeMillis() / 1000;
-        for (long minuteStart = startOfDay; minuteStart < endOfDay; minuteStart += 60) {
-            final long minuteEnd = minuteStart + 60;
+        for (long minuteStart = startOfDay; minuteStart < endOfDay; minuteStart += 5 * 60) {
+            final long minuteEnd = minuteStart + 5 * 60;
             final int minuteOfDay = (int) ((minuteStart - startOfDay) / 60);
             while (deviceStatusIndex < deviceStatuses.size() && deviceStatuses.get(deviceStatusIndex).timestamp() < minuteEnd) {
                 lastDeviceStatus = deviceStatuses.get(deviceStatusIndex);

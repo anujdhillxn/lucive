@@ -11,6 +11,13 @@ export const getTodayMidnight = (): Date => {
     return date;
 };
 
+export const getDateISO = (date: Date): string => {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+};
+
 export const formatTime = (totalSeconds: number): string => {
     const hours = Math.floor(totalSeconds / 3600);
     const secondsLeft = totalSeconds % 3600;
@@ -38,3 +45,5 @@ export const formatTime = (totalSeconds: number): string => {
 
     return formattedTime || "0 seconds";
 };
+
+export const doNothing = () => {};

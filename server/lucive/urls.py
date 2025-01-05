@@ -7,4 +7,5 @@ urlpatterns = [
     path('api/duos/', include('duos.urls')),
     path('api/rules/', include('rules.urls')),
     path('api/content/', include('content.urls')),
+    path('api/scores/', include('scores.urls')),
 ]

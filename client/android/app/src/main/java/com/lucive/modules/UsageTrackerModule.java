@@ -6,12 +6,19 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.Pair;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.lucive.models.UsageTrackerIntervalScore;
 import com.lucive.services.UsageTrackerService;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+
+import java.util.List;
 
 public class UsageTrackerModule extends ReactContextBaseJavaModule {
 
@@ -84,5 +91,47 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
 
         int screenTime = usageTrackerService.getDailyScreentime(packageName);
         promise.resolve(screenTime);
+    }
+
+    @ReactMethod
+    public void getUsageTrackingPoints(final String date, Promise promise) {
+        if (!isBound) {
+            promise.reject("Service Error", "UsageTrackerService not bound");
+            return;
+        }
+        try {
+            final Pair<Double, Boolean> score = usageTrackerService.calculateUsageTrackingPoints(date);
+            final WritableMap result = Arguments.createMap();
+            result.putDouble("points", score.first);
+            result.putBoolean("uninterruptedTracking", score.second);
+            promise.resolve(result);
+        }
+        catch (Exception e) {
+            promise.reject("Error", e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void getIntervalScores(final String date, Promise promise) {
+        if (!isBound) {
+            promise.reject("Service Error", "UsageTrackerService not bound");
+            return;
+        }
+        try {
+            final List<UsageTrackerIntervalScore> scores = usageTrackerService.getIntervalScores(date);
+            final WritableArray result = Arguments.createArray();
+            for (UsageTrackerIntervalScore score : scores) {
+                final WritableMap scoreMap = Arguments.createMap();
+                scoreMap.putInt("minuteOfDay", score.minuteOfDay());
+                scoreMap.putDouble("points", score.points());
+                scoreMap.putBoolean("serviceRunning", score.serviceRunning());
+                scoreMap.putBoolean("deviceRunning", score.deviceRunning());
+                result.pushMap(scoreMap);
+            }
+            promise.resolve(result);
+        }
+        catch (Exception e) {
+            promise.reject("Error", e.getMessage());
+        }
     }
 }

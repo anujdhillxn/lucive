@@ -10,7 +10,6 @@ class WordTests(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.add_words_url = reverse('word-add-words')
         self.random_words_url = reverse('word-random-words')
         self.superuser = User.objects.create_superuser('admin', 'admin@example.com', 'password')
         self.user = User.objects.create_user('user', 'user@example.com', 'password')

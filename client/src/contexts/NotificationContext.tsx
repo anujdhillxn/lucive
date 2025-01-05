@@ -53,6 +53,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     const { api } = useApi();
 
     useEffect(() => {
+        if (!requestToken) return;
         messaging().getToken().then(api.userApi.setFCMToken);
         const unsubscribe = messaging().onTokenRefresh(api.userApi.setFCMToken);
         return unsubscribe;

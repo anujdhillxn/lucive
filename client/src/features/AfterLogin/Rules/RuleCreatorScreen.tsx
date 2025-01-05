@@ -92,7 +92,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 const newRules = rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r);
                 setRules(newRules);
                 showNotification(!isApprovalRequired(getNewRule(), rule) ? 'Rule updated successfully' : 'Awaiting approval', 'success');
-                navigation.navigate('Home');
+                navigation.navigate('Rules');
             }).catch((e) => {
                 console.error(e);
                 showNotification('Failed to update rule', 'failure');
@@ -103,7 +103,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 const newRules = [...rules, createdRule];
                 setRules(newRules);
                 showNotification('Rule created successfully', 'success');
-                navigation.navigate('Home');
+                navigation.navigate('Rules');
             }).catch((e) => {
                 console.error(e);
                 showNotification('Failed to create rule', 'failure');
@@ -146,10 +146,10 @@ export const RuleCreatorScreen: React.FC = () => {
                     <Separator />
                     <Text style={styles.textSmall}>Rule's restrictions will be applied when this switch is on</Text>
                 </View>
-                <View style={styles.touchable}>
+                {/* <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
                         <Text style={styles.text}>
-                            Delay Startup
+                            Delay Startup (Beta)
                         </Text>
                         <Switch
                             thumbColor={isStartupDelayEnabled ? Colors.Accent1 : Colors.Text3}
@@ -160,8 +160,8 @@ export const RuleCreatorScreen: React.FC = () => {
                         />
                     </View>
                     <Separator />
-                    <Text style={styles.textSmall}>{"Delay the opening of the app by 10 seconds"}</Text>
-                </View>
+                    <Text style={styles.textSmall}>{"Delay the opening of the app by 10 seconds (this feature may not work correctly for some apps)"}</Text>
+                </View> */}
                 <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                     <View style={styles.touchable}>
                         <View style={styles.switchContainer}>

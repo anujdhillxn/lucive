@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'duos',
     'rules',
     'content',
+    'scores'
 ]
 
 MIDDLEWARE = [

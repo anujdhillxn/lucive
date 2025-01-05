@@ -115,8 +115,8 @@ android {
         applicationId 'com.lucive'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.0.3"
+        versionCode 9
+        versionName "1.1.4"
         resValue "string", "app_name", "Lucive"
     }
     signingConfigs {
@@ -138,6 +138,8 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            buildConfigField "String", "AD_UNIT_ID", '"ca-app-pub-3940256099942544/9214589741"' // test ad unit id
+            buildConfigField "String", "API_URL", '"http://localhost:8000/api/"'
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -148,6 +150,14 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
             resValue "string", "app_name", "Lucive"
+            buildConfigField "String", "AD_UNIT_ID", '"ca-app-pub-4977756299119278/8290376997"' // Release Ad Unit ID
+            buildConfigField "String", "API_URL", '"https://api-lucive.onrender.com/api/"'
+        }
+        staging {
+            initWith release
+            matchingFallbacks = ['release']
+            buildConfigField "String", "AD_UNIT_ID", '"ca-app-pub-3940256099942544/9214589741"' // test ad unit id
+            buildConfigField "String", "API_URL", '"https://api-lucive-uat.onrender.com/api/"'
         }
     }
     packagingOptions {
@@ -186,9 +196,11 @@ dependencies {
     implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.google.firebase:firebase-bom:33.5.1'
+    implementation 'com.google.android.gms:play-services-ads:23.6.0'
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";
+
 
     if (isGifEnabled) {
         // For animated gif support

@@ -1,9 +1,11 @@
 package com.lucive.managers;
 
 import android.app.usage.UsageEvents;
+import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
+import com.lucive.models.DeviceStatus;
 import com.lucive.models.Event;
 import com.lucive.utils.AppUtils;
 
@@ -13,16 +15,30 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventManager {
     private final Map<String, List<Event>> eventsMap = new ConcurrentHashMap<>();
     private final Map<String, List<String>> activityMap = new ConcurrentHashMap<>();
-    private boolean isScreenOn = true;
+    private AtomicBoolean isScreenOn = new AtomicBoolean(true);
     private long screenOnLastTimestamp = AppUtils.get24HoursBefore();
     private final String TAG = "EventManager";
     private int lastEventChunkSize = 0;
     private boolean currentlyOpenedAppMightChange = false;
     private String currentApp = AppUtils.UNKNOWN_PACKAGE;
+    private final LocalStorageManager localStorageManager;
+    private static EventManager instance;
+
+    private EventManager(final Context context) {
+        localStorageManager = LocalStorageManager.getInstance(context);
+    }
+
+    public static synchronized EventManager getInstance(final Context context) {
+        if (instance == null) {
+            instance = new EventManager(context);
+        }
+        return instance;
+    }
 
     public String processEventsChunk (final List<Event> events) {
         for (Event event : events) {
@@ -34,7 +50,7 @@ public class EventManager {
             return AppUtils.UNKNOWN_PACKAGE;
         }
         currentApp = currentlyOpenedAppMightChange ? getCurrentlyOpenedApp() : currentApp;
-        if (currentApp.equals(AppUtils.UNKNOWN_PACKAGE) && isScreenOn && !eventsMap.isEmpty() && lastEventChunkSize > 0) {
+        if (currentApp.equals(AppUtils.UNKNOWN_PACKAGE) && isScreenOn.get() && !eventsMap.isEmpty() && lastEventChunkSize > 0) {
             long latestTimestamp = 0;
             for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
                 List<Event> packageEvents = entry.getValue();
@@ -61,12 +77,14 @@ public class EventManager {
     public void processEvent(final String packageName, final long timestamp, int eventType, final String activity) {
         Log.d(TAG, "Processing event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
         if (eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
-            isScreenOn = false;
+            isScreenOn.set(false);
+            localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, false));
             return;
         }
         if (eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
-            isScreenOn = true;
+            isScreenOn.set(true);
             screenOnLastTimestamp = timestamp;
+            localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, true));
             return;
         }
         if (eventType == UsageEvents.Event.ACTIVITY_STOPPED) {
@@ -190,4 +208,7 @@ public class EventManager {
         return new ArrayList<>();
     }
 
+    public boolean isScreenOn() {
+        return isScreenOn.get();
+    }
 }

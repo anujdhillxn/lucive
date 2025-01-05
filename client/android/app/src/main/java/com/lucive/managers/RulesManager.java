@@ -29,6 +29,10 @@ public class RulesManager implements LocalStorageObserver {
         return ruleMap.get(app);
     }
 
+    public double calculateHeartbeatPoints() {
+        return 0;
+    }
+
     @Override
     public void onLocalStorageUpdated() {
         ruleMap.clear();

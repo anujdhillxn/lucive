@@ -2,15 +2,18 @@ import * as React from 'react';
 import { NativeModules } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApi } from '../hooks/useApi';
-import { Duo, Rule, User } from '../types/state';
+import { Duo, IScoreData, Rule, Score, User } from '../types/state';
 import LoadingScreen from '../features/LoadingScreen';
 import useDeepCompareEffect from '../hooks/useDeepCompareEffect';
-const { LocalStorageModule } = NativeModules;
+import { getDateISO } from '../utils/time';
+import { useNotification } from './NotificationContext';
+const { LocalStorageModule, UsageTracker } = NativeModules;
 export type AppContextProps = {
     user: User | null;
     myDuo: Duo | null;
     rules: Rule[];
     appLoading: boolean;
+    myScores: IScoreData;
 };
 
 export type AppActionsProps = {
@@ -18,6 +21,7 @@ export type AppActionsProps = {
     setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
     setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
     fetchData: () => Promise<void>;
+    setMyScores: React.Dispatch<React.SetStateAction<IScoreData>>;
 };
 
 export const AppContext = React.createContext<AppContextProps | undefined>(
@@ -32,13 +36,13 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [user, setUser] = React.useState<User | null>(null);
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
     const [rules, setRules] = React.useState<Rule[]>([]);
-
+    const [myScores, setMyScores] = React.useState<IScoreData>({ scoresByDate: {}, currentStreak: 0, longestStreak: 0 });
     const [localStorageLoaded, setLocalStorageLoaded] = React.useState(false);
 
     const { api, requestToken } = useApi();
 
     const [appLoading, setAppLoading] = React.useState(true);
-
+    const { showNotification } = useNotification();
     const fetchData = async () => {
         setAppLoading(true);
         if (requestToken) {
@@ -77,19 +81,45 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }
 
+    const updateScores = async () => {
+        try {
+            const scores: Score[] = [];
+            for (let i = 7; i >= 1; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateISO = getDateISO(date);
+                try {
+                    const { points, uninterruptedTracking } = await UsageTracker.getUsageTrackingPoints(dateISO);
+                    scores.push({ date: dateISO, points, uninterruptedTracking });
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+            const resp = await api.scoresApi.updateScores(scores);
+            setMyScores(curr => ({ ...curr, longestStreak: resp.longestStreak, currentStreak: resp.currentStreak, scoresByDate: { ...curr?.scoresByDate, ...resp.scoresByDate } }));
+        }
+        catch (e) {
+            console.log(e);
+            showNotification('Error updating scores. Retrying.', 'failure');
+            setTimeout(updateScores, 5000);
+        }
+    }
+
     useDeepCompareEffect(() => {
-        fetchAndSetDuo();
         if (user) {
-            AsyncStorage.setItem('user', JSON.stringify(user));
+            fetchAndSetDuo();
+            LocalStorageModule.setUser(user);
         }
         else {
-            AsyncStorage.removeItem('user');
+            LocalStorageModule.clearUser();
         }
     }, [user]);
 
     useDeepCompareEffect(() => {
-        fetchAndSetRules();
         if (myDuo) {
+            fetchAndSetRules();
+            updateScores();
             AsyncStorage.setItem('myDuo', JSON.stringify(myDuo));
         }
         else {
@@ -100,6 +130,15 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     useDeepCompareEffect(() => {
         LocalStorageModule.setRules(rules);
     }, [rules]);
+
+    useDeepCompareEffect(() => {
+        if (myScores) {
+            AsyncStorage.setItem('myScores', JSON.stringify(myScores));
+        }
+        else {
+            AsyncStorage.removeItem('myScores');
+        }
+    }, [myScores]);
 
     React.useEffect(() => {
         fetchData();
@@ -114,9 +153,16 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const fetchLocalData = async () => {
         try {
-            const localResp = await AsyncStorage.getItem('user');
+            const localResp = await LocalStorageModule.getRules();
+            setRules(localResp);
+        }
+        catch (e) {
+            console.log(e);
+        }
+        try {
+            const localResp = await AsyncStorage.getItem('myScores');
             if (localResp) {
-                setUser(JSON.parse(localResp));
+                setMyScores(JSON.parse(localResp));
             }
         }
         catch (e) {
@@ -132,8 +178,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             console.log(e);
         }
         try {
-            const localResp = await LocalStorageModule.getRules();
-            setRules(localResp);
+            const localResp = await LocalStorageModule.getUser();
+            setUser(localResp)
         }
         catch (e) {
             console.log(e);
@@ -148,8 +194,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!localStorageLoaded) {
         return <LoadingScreen />;
     }
-    return <AppContext.Provider value={{ user, myDuo, rules, appLoading }}>
-        <AppActions.Provider value={{ setUser, setMyDuo, setRules, fetchData }}>
+    return <AppContext.Provider value={{ user, myDuo, rules, appLoading, myScores }}>
+        <AppActions.Provider value={{ setUser, setMyDuo, setRules, fetchData, setMyScores }}>
             {children}
         </AppActions.Provider>
     </AppContext.Provider>

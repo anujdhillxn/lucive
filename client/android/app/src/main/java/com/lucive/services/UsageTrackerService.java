@@ -41,12 +41,12 @@ public class UsageTrackerService extends Service {
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable trackingRunnable;
-    private Runnable heartBeatRunnable;
-    private static final long TRACKING_INTERVAL = 200;
-    private static final long HEARTBEAT_INTERVAL = 90 * 1000;
+    private static final long TRACKING_INTERVAL = 300;
+    private static final long HEARTBEAT_INTERVAL = 2 * 60 * 1000;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
     private long lastTimestamp = AppUtils.getDayStartNDaysBefore(1);
+    private long lastHeartbeatTime = 0;
     private EventManager eventManager;
     private RulesManager rulesManager;
     private final AtomicBoolean pastEventsProcessed = new AtomicBoolean(false);
@@ -89,9 +89,20 @@ public class UsageTrackerService extends Service {
 
     @Override
     public void onDestroy() {
-        handler.removeCallbacks(trackingRunnable);
-        handler.removeCallbacks(heartBeatRunnable);
-        Log.i(TAG, "Service destroyed");
+        // Remove callbacks and nullify references to the handler and runnable
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
+        }
+        trackingRunnable = null;
+
+        // Nullify or clean up resource-heavy objects
+        usageStatsManager = null;
+        eventManager = null;
+        rulesManager = null;
+
+        // Log and finalize
+        Log.i(TAG, "Service destroyed and resources cleaned up");
         super.onDestroy();
     }
 
@@ -118,34 +129,33 @@ public class UsageTrackerService extends Service {
                 handler.postDelayed(this, TRACKING_INTERVAL);
             }
         };
-        heartBeatRunnable = new Runnable() {
-            @Override
-            public void run() {
-                saveHeartbeat();
-                handler.postDelayed(this, HEARTBEAT_INTERVAL);
-            }
-        };
         handler.post(trackingRunnable);
-        handler.post(heartBeatRunnable);
     }
 
-    private void saveHeartbeat() {
-        final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
-        localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(System.currentTimeMillis() / 1000, rulesManager.calculateHeartbeatPoints()));
+    private void saveHeartbeat(final long currentTime) {
+        long currentInterval = getStartOfHeartbeatInterval(currentTime);
+        if (lastHeartbeatTime < currentInterval) {
+            final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
+            localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(currentTime / 1000, rulesManager.calculateHeartbeatPoints()));
+            lastHeartbeatTime = currentTime;
+            Calendar calendar = Calendar.getInstance();
+            Log.i(TAG, "Heartbeat saved at " + calendar.getTime());
+        }
     }
 
     private void checkScreenUsages() {
+        final long endTime = System.currentTimeMillis();
+        long startTime = lastTimestamp + 1;
+        saveHeartbeat(endTime);
+        long totalDuration = endTime - startTime;
+        if (totalDuration < TRACKING_INTERVAL) {
+            return;
+        }
         // if usage stats permission is not granted, return
         AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
                 android.os.Process.myUid(), getPackageName());
         if (mode != AppOpsManager.MODE_ALLOWED) {
-            return;
-        }
-        final long endTime = System.currentTimeMillis();
-        long startTime = lastTimestamp + 1;
-        long totalDuration = endTime - startTime;
-        if (totalDuration < TRACKING_INTERVAL) {
             return;
         }
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
@@ -314,16 +324,20 @@ public class UsageTrackerService extends Service {
         final long endOfDay = calendar.getTimeInMillis() / 1000;
         int heartbeatIndex = 0, deviceStatusIndex = 0;
         final long currentTime = System.currentTimeMillis() / 1000;
-        for (long minuteStart = startOfDay; minuteStart < endOfDay; minuteStart += 5 * 60) {
-            final long minuteEnd = minuteStart + 5 * 60;
+        for (long minuteStart = startOfDay; minuteStart < endOfDay; minuteStart += HEARTBEAT_INTERVAL / 1000) {
+            final long minuteEnd = minuteStart + HEARTBEAT_INTERVAL / 1000;
             final int minuteOfDay = (int) ((minuteStart - startOfDay) / 60);
+            boolean deviceStatusChanged = false;
             while (deviceStatusIndex < deviceStatuses.size() && deviceStatuses.get(deviceStatusIndex).timestamp() < minuteEnd) {
                 lastDeviceStatus = deviceStatuses.get(deviceStatusIndex);
+                if (lastDeviceStatus.timestamp() >= minuteStart) {
+                    deviceStatusChanged = true;
+                }
                 deviceStatusIndex++;
             }
             double currentPoint = 0;
             boolean serviceRunning = true;
-            boolean deviceRunning = minuteEnd <= currentTime && lastDeviceStatus.isScreenOn() && minuteEnd >= userJoinSeconds;
+            boolean deviceRunning = minuteEnd <= currentTime && lastDeviceStatus.isScreenOn() && minuteEnd >= userJoinSeconds && !deviceStatusChanged;
             while (heartbeatIndex < heartbeats.size() && heartbeats.get(heartbeatIndex).timestamp() < minuteStart) {
                 heartbeatIndex++;
             }
@@ -344,5 +358,9 @@ public class UsageTrackerService extends Service {
         showScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", true);
         showScreenTimeExceeded.putExtra("EXTRA_MODAL_MESSAGE", message);
         startService(showScreenTimeExceeded);
+    }
+
+    private long getStartOfHeartbeatInterval(long currentTime) {
+        return currentTime - (currentTime % HEARTBEAT_INTERVAL);
     }
 }

@@ -18,6 +18,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import VerticalSeparator from '../components/VerticalSeparator';
 import { useNativeContext } from '../hooks/useNativeContext';
 import { PermissionsScreen } from './AfterLogin/PermissionsScreen';
+import { useApi } from '../hooks/useApi';
 const Stack = createStackNavigator();
 export type RootStackParamList = {
     Login: undefined;
@@ -34,16 +35,15 @@ export const AppScreenStack: React.FC = () => {
 
     const { user, myDuo, appLoading } = useAppContext();
     const { fetchData } = useActions();
+    const { requestToken } = useApi();
     const hasCreatedRule = useAppContext().rules.filter(rule => rule.isMyRule).length > 0;
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { permissions } = useNativeContext();
     if (appLoading) {
         return <LoadingScreen />
     }
-    if (!permissions.hasUsageStatsPermission || !permissions.hasOverlayPermission) {
-        return <PermissionsScreen />
-    }
-    if (!user) {
+
+    if (!user || !requestToken) {
         return <SafeAreaView style={styles.container}>
             <Stack.Navigator initialRouteName={"Login"} >
                 <Stack.Screen name="Login" component={LoginScreen} options={
@@ -68,19 +68,28 @@ export const AppScreenStack: React.FC = () => {
         </SafeAreaView>
     }
 
+    if (!permissions.hasUsageStatsPermission || !permissions.hasOverlayPermission) {
+        return <PermissionsScreen />
+    }
+
     if (!myDuo) {
         return <SafeAreaView style={styles.container}>
             <Stack.Navigator initialRouteName={"User"} >
-                <Stack.Screen name="User" component={UserScreen} options={
-                    () => (
-                        {
-                            title: 'Lucive', headerStyle: {
-                                backgroundColor: Colors.Primary2,
-                            },
-                            headerTintColor: Colors.Text1,
-                        }
-                    )
-                } />
+                <Stack.Screen name="User" component={UserScreen} options={() => ({
+                    title: 'Lucive',
+                    headerRight: () => (
+                        <View style={{ flexDirection: 'row' }}>
+                            <TouchableOpacity onPress={fetchData}>
+                                <Icon name="sync" size={24} solid={false} color={Colors.Text1} style={{ marginRight: 20 }} />
+                            </TouchableOpacity>
+                        </View>
+                    ),
+                    headerStyle: {
+                        backgroundColor: Colors.Primary2,
+                    },
+                    headerTintColor: Colors.Text1,
+
+                })} />
             </Stack.Navigator>
         </SafeAreaView>
     }

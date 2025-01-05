@@ -9,6 +9,9 @@ interface RequestOptions {
 
 const useRemote = (
     requestToken: string | null | undefined,
+    setRequestToken: React.Dispatch<
+        React.SetStateAction<string | null | undefined>
+    >,
     baseUrl: string
 ): Remote => {
     const request = useCallback(
@@ -23,6 +26,10 @@ const useRemote = (
                     ...options,
                     headers,
                 });
+                if (response.status === 401) {
+                    setRequestToken(null);
+                    throw new Error("Unauthorized! Token has been reset.");
+                }
                 if (!response.ok) {
                     throw new Error(
                         `HTTP error! status: ${response.status} ${response.statusText}`

@@ -23,7 +23,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, []);
 
     // Always call hooks unconditionally
-    const remote = useRemote(requestToken, baseUrl);
+    const remote = useRemote(requestToken, setRequestToken, baseUrl);
     const api = createApi(remote);
 
     if (requestToken === undefined || baseUrl === "") {

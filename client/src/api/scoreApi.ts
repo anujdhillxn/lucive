@@ -4,16 +4,11 @@ import { IScoreData, Score } from "../types/state";
 export const createScoresApi = (remote: Remote) => {
     const { get, post } = remote;
 
-    const getScoresData = (
-        startDate: string,
-        endDate: string
-    ): Promise<Record<string, Score>> => {
-        return get(
-            `scores/retrieve-score?start_date=${startDate}&end_date=${endDate}`
-        );
+    const getScoresData = (): Promise<Score[]> => {
+        return get(`scores/retrieve-score`);
     };
 
-    const updateScores = (scores: Score[]): Promise<IScoreData> => {
+    const updateScores = (scores: Score[]): Promise<void> => {
         return post(
             "scores/update-score",
             scores.map((score) => ({

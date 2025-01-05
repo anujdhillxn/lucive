@@ -9,8 +9,9 @@ import { useApi } from '../../../hooks/useApi';
 import { doNothing, getDateISO } from '../../../utils/time';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
-import { IntervalScore } from '../../../types/state';
+import { IntervalScore, Score } from '../../../types/state';
 import { NativeModules } from "react-native";
+import { getStreaks } from '../../../utils/score';
 const { UsageTracker } = NativeModules;
 
 const getBackgroundColor = (score: IntervalScore) => {
@@ -24,12 +25,9 @@ const getBackgroundColor = (score: IntervalScore) => {
 }
 
 const ScoresScreen = () => {
-    const { myScores } = useAppContext();
-    const { setMyScores } = useActions();
     const { api } = useApi();
     const { showNotification } = useNotification();
-    const currentStreak = myScores?.currentStreak || 0;
-    const longestStreak = myScores?.longestStreak || 0;
+    const [scores, setScores] = React.useState<Score[]>([]);
     const [loadingScoreAggs, setLoadingScoreAggs] = React.useState(false);
     const [selectedDate, setSelectedDate] = React.useState<string>(getDateISO(new Date()));
     const [intervalScores, setIntervalScores] = React.useState<IntervalScore[]>([]);
@@ -37,27 +35,10 @@ const ScoresScreen = () => {
     const intervalWidth = totalWidth / 720;
     const getMarkedDates = () => {
         const markedDates: { [date: string]: any } = {};
-        if (myScores) {
-            for (const date in myScores.scoresByDate) {
-                if (myScores.scoresByDate[date].uninterruptedTracking) {
-                    markedDates[date] = { marked: true, dotColor: Colors.Accent1 };
-                }
-            }
-        }
+        scores.forEach((score) => {
+            markedDates[score.date] = { marked: true, dotColor: Colors.Accent1 };
+        });
         return markedDates;
-    }
-
-    const handleMonthChange = async (event: any) => {
-        const month = event.month - 1;
-        const year = event.year;
-        const monthStart = new Date(year, month, 1);
-        const monthEnd = new Date(year, month + 1, 0);
-        const today = new Date();
-        const endDate = today < monthEnd ? today : monthEnd;
-        if (monthStart > endDate) {
-            return;
-        }
-        await fetchScoresData(getDateISO(monthStart), getDateISO(endDate));
     }
 
     const handleDayPress = (event: any) => {
@@ -65,11 +46,11 @@ const ScoresScreen = () => {
         setSelectedDate(date);
     };
 
-    const fetchScoresData = async (startDate: string, endDate: string) => {
+    const fetchScoresData = async () => {
         setLoadingScoreAggs(true);
         try {
-            const resp = await api.scoresApi.getScoresData(startDate, endDate);
-            setMyScores(curr => ({ ...curr, scoresByDate: { ...curr.scoresByDate, ...resp } }));
+            const resp = await api.scoresApi.getScoresData();
+            setScores(resp);
         }
         catch (e) {
             showNotification("Failed to fetch scores", 'failure');
@@ -91,14 +72,14 @@ const ScoresScreen = () => {
     }
 
     React.useEffect(() => {
-        const today = new Date();
-        const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        fetchScoresData(getDateISO(monthStart), getDateISO(today));
+        fetchScoresData();
     }, []);
 
     React.useEffect(() => {
         fetchIntervalScores();
     }, [selectedDate]);
+
+    const { currentStreak, longestStreak } = React.useMemo(() => getStreaks(scores), [scores]);
 
     const { confirm } = useConfirm(doNothing, "A day will be added to your streak if Lucive background service runs throughout the day with atleast one active rule.\n If you miss a day, your streak will reset to 0.\n Streaks are updated when Lucive is opened and it must be done once in a week to not lose any progress.", true, "Got it");
 
@@ -117,7 +98,6 @@ const ScoresScreen = () => {
                     ...getMarkedDates(),
                     [selectedDate]: { selected: true, selectedColor: Colors.Accent1 },
                 }}
-                onMonthChange={handleMonthChange}
                 onDayPress={handleDayPress}
                 theme={{
                     calendarBackground: Colors.Background1,

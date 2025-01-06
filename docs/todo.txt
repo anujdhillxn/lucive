@@ -1,0 +1,5 @@
+- check if requests coming from unmodified original app
+- streak saving from service
+- by default all limits on
+- server enhancements
+- temporary rule relaxations

@@ -35,7 +35,7 @@ const ScoresScreen = () => {
     const intervalWidth = totalWidth / 720;
     const getMarkedDates = () => {
         const markedDates: { [date: string]: any } = {};
-        scores.forEach((score) => {
+        scores.filter(score => score.uninterruptedTracking).forEach((score) => {
             markedDates[score.date] = { marked: true, dotColor: Colors.Accent1 };
         });
         return markedDates;

@@ -20,6 +20,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.google.android.gms.ads.MobileAds;
+import com.lucive.managers.AdManager;
 import com.lucive.managers.EventManager;
 import com.lucive.managers.LocalStorageManager;
 import com.lucive.managers.RulesManager;
@@ -41,12 +42,17 @@ public class UsageTrackerService extends Service {
     private final IBinder binder = new LocalBinder();
     private Handler handler;
     private Runnable trackingRunnable;
-    private static final long TRACKING_INTERVAL = 300;
+    private Runnable heartbeatRunnable;
+    private static final long TRACKING_INTERVAL = 1000;
     private static final long HEARTBEAT_INTERVAL = 2 * 60 * 1000;
+    private static final long HEARTBEAT_RUNNABLE_INTERVAL = 90 * 1000;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
+
     private long lastTimestamp = AppUtils.getDayStartNDaysBefore(1);
     private long lastHeartbeatTime = 0;
+    private String currentApp = AppUtils.UNKNOWN_PACKAGE;
+
     private EventManager eventManager;
     private RulesManager rulesManager;
     private final AtomicBoolean pastEventsProcessed = new AtomicBoolean(false);
@@ -95,6 +101,7 @@ public class UsageTrackerService extends Service {
             handler = null;
         }
         trackingRunnable = null;
+        heartbeatRunnable = null;
 
         // Nullify or clean up resource-heavy objects
         usageStatsManager = null;
@@ -129,12 +136,22 @@ public class UsageTrackerService extends Service {
                 handler.postDelayed(this, TRACKING_INTERVAL);
             }
         };
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                saveHeartbeat(System.currentTimeMillis());
+                handler.postDelayed(this, HEARTBEAT_RUNNABLE_INTERVAL);
+            }
+        };
         handler.post(trackingRunnable);
+        handler.post(heartbeatRunnable);
     }
 
     private void saveHeartbeat(final long currentTime) {
         long currentInterval = getStartOfHeartbeatInterval(currentTime);
-        if (lastHeartbeatTime < currentInterval) {
+        if (lastHeartbeatTime < currentInterval && eventManager.isScreenOn()) {
+            final AdManager adManager = AdManager.getInstance(this);
+            adManager.loadNewAd();
             final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
             localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(currentTime / 1000, rulesManager.calculateHeartbeatPoints()));
             lastHeartbeatTime = currentTime;
@@ -146,21 +163,13 @@ public class UsageTrackerService extends Service {
     private void checkScreenUsages() {
         final long endTime = System.currentTimeMillis();
         long startTime = lastTimestamp + 1;
-        saveHeartbeat(endTime);
         long totalDuration = endTime - startTime;
         if (totalDuration < TRACKING_INTERVAL) {
             return;
         }
-        // if usage stats permission is not granted, return
-        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
-                android.os.Process.myUid(), getPackageName());
-        if (mode != AppOpsManager.MODE_ALLOWED) {
-            return;
-        }
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
         UsageEvents.Event usageEvent = new UsageEvents.Event();
-        List<Event> allEvents = new ArrayList<>();
+        boolean processedEvents = false;
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(usageEvent);
             if (usageEvent.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
@@ -168,83 +177,62 @@ public class UsageTrackerService extends Service {
                     || usageEvent.getEventType() == UsageEvents.Event.ACTIVITY_STOPPED
                     || usageEvent.getEventType() == UsageEvents.Event.SCREEN_NON_INTERACTIVE
                     || usageEvent.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
-                allEvents.add(new Event(usageEvent.getPackageName(), usageEvent.getEventType(), usageEvent.getTimeStamp(), usageEvent.getClassName()));
+                eventManager.processEvent(usageEvent.getPackageName(), usageEvent.getTimeStamp(), usageEvent.getEventType(), usageEvent.getClassName());
                 lastTimestamp = usageEvent.getTimeStamp();
+                processedEvents = true;
             }
         }
-        int numFullChunks = (int) (totalDuration / TRACKING_INTERVAL);
-        long remainder = totalDuration % TRACKING_INTERVAL;
-
-        // Distribute the remainder evenly across chunks, with leftover distributed to last chunks
-        long extraPerChunk = remainder / numFullChunks;
-        long additionalRemainder = remainder % numFullChunks;
-
-        long currentStart = startTime;
-        int eventIndex = 0;
-        String currentApp = AppUtils.UNKNOWN_PACKAGE;
-        for (int i = 0; i < numFullChunks; i++) {
-
-            // For the first `additionalRemainder` chunks, add an extra 1 millisecond
-            List<Event> chunkEvents = new ArrayList<>();
-            long currentEnd = currentStart + TRACKING_INTERVAL + extraPerChunk + (i < additionalRemainder ? 1 : 0);
-            while (eventIndex < allEvents.size() && allEvents.get(eventIndex).getTimeStamp() < currentEnd) {
-                chunkEvents.add(allEvents.get(eventIndex));
-                eventIndex++;
-            }
-            currentApp = eventManager.processEventsChunk(chunkEvents);
-            currentStart = currentEnd;
-
+        if (!pastEventsProcessed.get()) {
+            pastEventsProcessed.set(true);
+        }
+        if (processedEvents) {
+            currentApp = eventManager.getCurrentlyOpenedApp();
         }
         if (!currentApp.equals(AppUtils.UNKNOWN_PACKAGE)) {
             handleModal(currentApp);
         }
-        pastEventsProcessed.set(true);
     }
 
     private void handleModal (final String currentApp) {
         final Rule rule = rulesManager.getRule(currentApp);
-        if (rule != null && rule.isActive()) {
-            if (isHourlyLimitExceeded(rule)) {
+        final List<Event> events = eventManager.getEvents(currentApp);
+        if (rule != null && rule.isActive() && !events.isEmpty()) {
+            if (isHourlyLimitExceeded(rule, events)) {
                 String message = "Hourly screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).hourlyMaxSeconds()) + " exceeded!";
                 sendModalIntent(message);
                 return;
             }
-            if (isDailyLimitExceeded(rule)) {
+            if (isDailyLimitExceeded(rule, events)) {
                 String message = "Daily screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).dailyMaxSeconds()) + " exceeded!";
                 sendModalIntent(message);
                 return;
             }
-            if (isSessionLimitExceeded(rule)) {
+            if (isSessionLimitExceeded(rule, events)) {
                 String message = "Session screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).sessionMaxSeconds()) + " exceeded!";
                 sendModalIntent(message);
                 return;
             }
-            if (delayStartup(rule)) {
-                String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  eventManager.getSessionTime(currentApp)) / 1000 + " seconds...";
-                sendModalIntent(message);
-                return;
-            }
+    //            if (delayStartup(rule, events)) {
+    //                String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  getSessionTime(events)) / 1000 + " seconds...";
+    //                sendModalIntent(message);
+    //                return;
+    //            }
         }
         Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
         hideScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", false);
         startService(hideScreenTimeExceeded);
     }
 
-    public int getHourlyScreentime(final String packageName) {
-        long currentTime = System.currentTimeMillis();
+    public int getHourlyScreentime(final List<Event> events) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         long startOfCurrentHour = calendar.getTimeInMillis();
-        return (int) (eventManager.getScreentime(startOfCurrentHour, currentTime, packageName) / 1000);
+        return (int) getScreentimeFrom(startOfCurrentHour, events) / 1000;
     }
 
-    public int getDailyScreentime(final String packageName) {
-        final Rule rule = rulesManager.getRule(packageName);
-        if (rule == null) {
-            return 0;
-        }
+    public int getDailyScreentime(final Rule rule, final List<Event> events) {
         final Calendar dailyReset = AppUtils.parseTimeString(rule.dailyStartsAt());
         long resetTime = dailyReset.getTimeInMillis();
         long currentTime = System.currentTimeMillis();
@@ -252,38 +240,61 @@ public class UsageTrackerService extends Service {
             dailyReset.add(Calendar.DAY_OF_MONTH, -1);
         }
         long startTime = dailyReset.getTimeInMillis();
-        return (int) (eventManager.getScreentime(startTime, currentTime, packageName) / 1000);
+        return (int) getScreentimeFrom(startTime, events) / 1000;
     }
 
-    public boolean isHourlyLimitExceeded(final Rule rule) {
-        if (rule == null || !rule.isActive() || !rule.isHourlyMaxSecondsEnforced()) {
+    public long getScreentimeFrom(final long startTime, final List<Event> packageEvents) {
+        final Event lastEvent = packageEvents.get(packageEvents.size() - 1);
+        long screentime = lastEvent.getCumulatedScreentime();
+        if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+            screentime += System.currentTimeMillis() - lastEvent.getTimeStamp();
+        }
+        Event lastEventBeforeStart = AppUtils.getLastEventBefore(packageEvents, startTime);
+        if (lastEventBeforeStart != null) {
+            screentime -= lastEventBeforeStart.getCumulatedScreentime();
+            if (lastEventBeforeStart.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                screentime -= startTime - lastEventBeforeStart.getTimeStamp();
+            }
+        }
+        return screentime;
+    }
+
+    public int getSessionTime(final List<Event> events) {
+        if (events.get(events.size() - 1).getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
+            return (int) (System.currentTimeMillis() - events.get(events.size() - 1).getTimeStamp()) / 1000;
+        }
+        return 0;
+    }
+
+    public boolean isHourlyLimitExceeded(final Rule rule, final List<Event> events) {
+        if (!rule.isHourlyMaxSecondsEnforced()) {
             return false;
         }
-        final int hourlyUsage = getHourlyScreentime(rule.app());
+        final int hourlyUsage = getHourlyScreentime(events);
         return hourlyUsage >= rule.hourlyMaxSeconds();
     }
 
-    public boolean isDailyLimitExceeded(final Rule rule) {
+    public boolean isDailyLimitExceeded(final Rule rule, final List<Event> events) {
         if (!rule.isDailyMaxSecondsEnforced()) {
             return false;
         }
-        final int dailyUsage = getDailyScreentime(rule.app());
+        final int dailyUsage = getDailyScreentime(rule, events);
         return dailyUsage >= rule.dailyMaxSeconds();
     }
 
-    public boolean isSessionLimitExceeded(final Rule rule) {
+    public boolean isSessionLimitExceeded(final Rule rule, final List<Event> events) {
         if (!rule.isSessionMaxSecondsEnforced()) {
             return false;
         }
-        final int sessionDuration = (int) eventManager.getSessionTime(rule.app()) / 1000;
+        final int sessionDuration = getSessionTime(events);
         return sessionDuration >= rule.sessionMaxSeconds();
     }
 
-    public boolean delayStartup(final Rule rule) {
+    public boolean delayStartup(final Rule rule, final List<Event> events) {
         if (!rule.isStartupDelayEnabled()) {
             return false;
         }
-        return eventManager.getSessionTime(rule.app()) < STARTUP_DELAY;
+        return getSessionTime(events) < STARTUP_DELAY;
     }
 
     public Pair<Double, Boolean> calculateUsageTrackingPoints(final String date) {

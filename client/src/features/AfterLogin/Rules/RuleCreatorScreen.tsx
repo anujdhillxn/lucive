@@ -41,10 +41,10 @@ export const RuleCreatorScreen: React.FC = () => {
     const [selectedApp, setSelectedApp] = useState<string>(rule?.app || '');
     const [dailyMaxMinutes, setDailyMaxMinutes] = useState(rule?.dailyMaxSeconds ? Math.floor(rule.dailyMaxSeconds / 60) : 30);
     const [hourlyMaxMinutes, setHourlyMaxMinutes] = useState(rule?.hourlyMaxSeconds ? Math.floor(rule.hourlyMaxSeconds / 60) : 5);
-    const [sessionMaxMinutes, setSessionMaxMinutes] = useState(rule?.sessionMaxSeconds ? Math.floor(rule.sessionMaxSeconds / 60) : 5);
+    const [sessionMaxMinutes, setSessionMaxMinutes] = useState(rule?.sessionMaxSeconds ? Math.floor(rule.sessionMaxSeconds / 60) : 2);
     const [isDailyMaxSecondsEnforced, setIsDailyMaxSecondsEnforced] = useState(rule?.isDailyMaxSecondsEnforced ?? true);
-    const [isHourlyMaxSecondsEnforced, setIsHourlyMaxSecondsEnforced] = useState(rule?.isHourlyMaxSecondsEnforced ?? false);
-    const [isSessionMaxSecondsEnforced, setIsSessionMaxSecondsEnforced] = useState(rule?.isSessionMaxSecondsEnforced ?? false);
+    const [isHourlyMaxSecondsEnforced, setIsHourlyMaxSecondsEnforced] = useState(rule?.isHourlyMaxSecondsEnforced ?? true);
+    const [isSessionMaxSecondsEnforced, setIsSessionMaxSecondsEnforced] = useState(rule?.isSessionMaxSecondsEnforced ?? true);
     const [dailyReset, setDailyReset] = useState<Date>(rule?.dailyReset ? convertHHMMSSToDate(rule.dailyReset) : getTodayMidnight());
     const [isRuleActive, setIsRuleActive] = useState(rule?.isActive ?? true);
     const [isStartupDelayEnabled, setIsStartupDelayEnabled] = useState(rule?.isStartupDelayEnabled ?? false);

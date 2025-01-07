@@ -11,6 +11,9 @@ import android.util.Pair;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.lucive.managers.EventManager;
+import com.lucive.managers.RulesManager;
+import com.lucive.models.Event;
 import com.lucive.models.UsageTrackerIntervalScore;
 import com.lucive.services.UsageTrackerService;
 import com.facebook.react.bridge.Promise;
@@ -77,8 +80,9 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
             promise.reject("Service Error", "UsageTrackerService not bound");
             return;
         }
-
-        int screenTime = usageTrackerService.getHourlyScreentime(packageName);
+        final EventManager eventManager = EventManager.getInstance(getReactApplicationContext());
+        final List<Event> events = eventManager.getEvents(packageName);
+        int screenTime = events.isEmpty() ? 0 : usageTrackerService.getHourlyScreentime(events);
         promise.resolve(screenTime);
     }
 
@@ -88,8 +92,10 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
             promise.reject("Service Error", "UsageTrackerService not bound");
             return;
         }
-
-        int screenTime = usageTrackerService.getDailyScreentime(packageName);
+        final EventManager eventManager = EventManager.getInstance(getReactApplicationContext());
+        final RulesManager rulesManager = RulesManager.getInstance(getReactApplicationContext());
+        final List<Event> events = eventManager.getEvents(packageName);
+        int screenTime = events.isEmpty() ? 0 : usageTrackerService.getDailyScreentime(rulesManager.getRule(packageName), events);
         promise.resolve(screenTime);
     }
 

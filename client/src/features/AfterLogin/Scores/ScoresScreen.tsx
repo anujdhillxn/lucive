@@ -81,7 +81,7 @@ const ScoresScreen = () => {
 
     const { currentStreak, longestStreak } = React.useMemo(() => getStreaks(scores), [scores]);
 
-    const { confirm } = useConfirm(doNothing, "A day will be added to your streak if Lucive background service runs throughout the day with atleast one active rule.\n If you miss a day, your streak will reset to 0.\n Streaks are updated when Lucive is opened and it must be done once in a week to not lose any progress.", true, "Got it");
+    const { confirm } = useConfirm(doNothing, "A day will be added to your streak if Lucive background service runs throughout the day with atleast one active rule.\n\n If you miss a day, your streak will reset to 0.", true, "Got it");
 
     return (
         <View style={styles.container}>

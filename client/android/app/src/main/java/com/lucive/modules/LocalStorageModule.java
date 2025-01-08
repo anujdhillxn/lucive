@@ -133,6 +133,26 @@ public class LocalStorageModule extends ReactContextBaseJavaModule {
         promise.resolve(true);
     }
 
+    @ReactMethod
+    public void getRequestToken(Promise promise) {
+        LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getReactApplicationContext());
+        promise.resolve(localStorageManager.getRequestToken());
+    }
+
+    @ReactMethod
+    public void setRequestToken(String requestToken, Promise promise) {
+        LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getReactApplicationContext());
+        localStorageManager.setRequestToken(requestToken);
+        promise.resolve(true);
+    }
+
+    @ReactMethod
+    public void clearRequestToken(Promise promise) {
+        LocalStorageManager localStorageManager = LocalStorageManager.getInstance(getReactApplicationContext());
+        localStorageManager.clearRequestToken();
+        promise.resolve(true);
+    }
+
     @NonNull
     @Override
     public String getName() {

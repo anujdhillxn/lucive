@@ -36,6 +36,7 @@ public class LocalStorageManager {
     public static final String WORDS_KEY = "words";
     public static final String RULES_KEY = "rules";
     public static final String USER_KEY = "user";
+    public static final String REQUEST_TOKEN_KEY = "requestToken";
     public static final String LAST_HEARTBEAT_CLEANUP_KEY = "last_heartbeat_cleanup";
     public static final String LAST_DEVICE_STATUS_CLEANUP_KEY = "last_device_status_cleanup";
     public static final long DAYS_10 = 10 * 24 * 60 * 60;
@@ -199,6 +200,24 @@ public class LocalStorageManager {
     public void clearUser() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(USER_KEY);
+        editor.apply();
+        notifyObservers();
+    }
+
+    public void setRequestToken(final String requestToken) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(REQUEST_TOKEN_KEY, requestToken);
+        editor.apply();
+        notifyObservers();
+    }
+
+    public String getRequestToken() {
+        return sharedPreferences.getString(REQUEST_TOKEN_KEY, null);
+    }
+
+    public void clearRequestToken() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(REQUEST_TOKEN_KEY);
         editor.apply();
         notifyObservers();
     }

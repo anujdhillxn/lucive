@@ -52,6 +52,11 @@ public class AppUtils {
         return calendar;
     }
 
+    public static String parseToYYYYMMDD(final Calendar calendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return dateFormat.format(calendar.getTime());
+    }
+
     public static long getDayStartNDaysBefore(final int n) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);

@@ -78,30 +78,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }
 
-    const updateScores = async () => {
-        try {
-            const scores: Score[] = [];
-            for (let i = 7; i >= 1; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateISO = getDateISO(date);
-                try {
-                    const { points, uninterruptedTracking } = await UsageTracker.getUsageTrackingPoints(dateISO);
-                    scores.push({ date: dateISO, points, uninterruptedTracking });
-                }
-                catch (e) {
-                    console.log(e);
-                }
-            }
-            await api.scoresApi.updateScores(scores);
-        }
-        catch (e) {
-            console.log(e);
-            showNotification('Error updating scores. Retrying.', 'failure');
-            setTimeout(updateScores, 5000);
-        }
-    }
-
     useDeepCompareEffect(() => {
         if (user) {
             fetchAndSetDuo();
@@ -115,7 +91,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     useDeepCompareEffect(() => {
         if (myDuo) {
             fetchAndSetRules();
-            updateScores();
             AsyncStorage.setItem('myDuo', JSON.stringify(myDuo));
         }
         else {
@@ -130,11 +105,9 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     React.useEffect(() => {
         fetchData();
         if (requestToken)
-            AsyncStorage
-                .setItem('requestToken', requestToken);
+            LocalStorageModule.setRequestToken(requestToken);
         else {
-            AsyncStorage
-                .removeItem('requestToken');
+            LocalStorageModule.clearRequestToken();
         }
     }, [requestToken]);
 

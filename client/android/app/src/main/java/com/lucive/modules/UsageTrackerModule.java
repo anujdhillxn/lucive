@@ -100,24 +100,6 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getUsageTrackingPoints(final String date, Promise promise) {
-        if (!isBound) {
-            promise.reject("Service Error", "UsageTrackerService not bound");
-            return;
-        }
-        try {
-            final Pair<Double, Boolean> score = usageTrackerService.calculateUsageTrackingPoints(date);
-            final WritableMap result = Arguments.createMap();
-            result.putDouble("points", score.first);
-            result.putBoolean("uninterruptedTracking", score.second);
-            promise.resolve(result);
-        }
-        catch (Exception e) {
-            promise.reject("Error", e.getMessage());
-        }
-    }
-
-    @ReactMethod
     public void getIntervalScores(final String date, Promise promise) {
         if (!isBound) {
             promise.reject("Service Error", "UsageTrackerService not bound");

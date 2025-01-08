@@ -94,7 +94,7 @@ export const AppScreenStack: React.FC = () => {
         </SafeAreaView>
     }
     return <View style={styles.container}>
-        <Stack.Navigator initialRouteName={hasCreatedRule ? "Rules" : "RuleCreator"}
+        <Stack.Navigator initialRouteName={"Rules"}
             screenOptions={{
                 cardStyle: { backgroundColor: Colors.Background1 }, // Set the background color of the card during transition
                 ...TransitionPresets.SlideFromRightIOS, // Use a transition preset

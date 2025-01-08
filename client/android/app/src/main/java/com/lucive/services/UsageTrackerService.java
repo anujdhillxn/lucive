@@ -21,14 +21,17 @@ import android.util.Pair;
 
 import com.google.android.gms.ads.MobileAds;
 import com.lucive.managers.AdManager;
+import com.lucive.managers.ApiRequestManager;
 import com.lucive.managers.EventManager;
 import com.lucive.managers.LocalStorageManager;
 import com.lucive.managers.RulesManager;
 import com.lucive.models.DeviceStatus;
 import com.lucive.models.Event;
 import com.lucive.models.Rule;
+import com.lucive.models.UsageTrackerDailyScore;
 import com.lucive.models.UsageTrackerHeartbeat;
 import com.lucive.models.UsageTrackerIntervalScore;
+import com.lucive.models.User;
 import com.lucive.utils.AppUtils;
 
 import java.util.ArrayList;
@@ -43,9 +46,11 @@ public class UsageTrackerService extends Service {
     private Handler handler;
     private Runnable trackingRunnable;
     private Runnable heartbeatRunnable;
+    private Runnable scoreSaverRunnable;
     private static final long TRACKING_INTERVAL = 1000;
     private static final long HEARTBEAT_INTERVAL = 2 * 60 * 1000;
     private static final long HEARTBEAT_RUNNABLE_INTERVAL = 90 * 1000;
+    private static final long SCORE_SAVE_INTERVAL = 12 * 60 * 60 * 1000;
     private static final long STARTUP_DELAY = 10 * 1000;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
 
@@ -55,6 +60,7 @@ public class UsageTrackerService extends Service {
 
     private EventManager eventManager;
     private RulesManager rulesManager;
+    private ApiRequestManager apiRequestManager;
     private final AtomicBoolean pastEventsProcessed = new AtomicBoolean(false);
 
     public class LocalBinder extends Binder {
@@ -76,6 +82,7 @@ public class UsageTrackerService extends Service {
         usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         eventManager = EventManager.getInstance(this);
         rulesManager = RulesManager.getInstance(this);
+        apiRequestManager = ApiRequestManager.getInstance(this);
         Log.i(TAG, "Service created");
         startForeground(1, createNotification());
         startTracking();
@@ -102,12 +109,13 @@ public class UsageTrackerService extends Service {
         }
         trackingRunnable = null;
         heartbeatRunnable = null;
+        scoreSaverRunnable = null;
 
         // Nullify or clean up resource-heavy objects
         usageStatsManager = null;
         eventManager = null;
         rulesManager = null;
-
+        apiRequestManager = null;
         // Log and finalize
         Log.i(TAG, "Service destroyed and resources cleaned up");
         super.onDestroy();
@@ -143,8 +151,35 @@ public class UsageTrackerService extends Service {
                 handler.postDelayed(this, HEARTBEAT_RUNNABLE_INTERVAL);
             }
         };
+        scoreSaverRunnable = new Runnable() {
+            @Override
+            public void run() {
+                saveScores();
+                handler.postDelayed(this, SCORE_SAVE_INTERVAL);
+            }
+        };
         handler.post(trackingRunnable);
         handler.post(heartbeatRunnable);
+    }
+
+    private void saveScores() {
+        if (!pastEventsProcessed.get()) {
+            return;
+        }
+        final List<UsageTrackerDailyScore> dailyScores = new ArrayList<>();
+        final Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        for (int i = 0; i < 7; i++) {
+            String date = AppUtils.parseToYYYYMMDD(calendar);
+            try {
+                dailyScores.add(calculateUsageTrackingScore(date));
+            }
+            catch (Exception e) {
+                Log.e(TAG, "Error calculating score for date: " + date, e);
+            }
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
+        }
+        apiRequestManager.updateScores(dailyScores);
     }
 
     private void saveHeartbeat(final long currentTime) {
@@ -297,7 +332,7 @@ public class UsageTrackerService extends Service {
         return getSessionTime(events) < STARTUP_DELAY;
     }
 
-    public Pair<Double, Boolean> calculateUsageTrackingPoints(final String date) {
+    public UsageTrackerDailyScore calculateUsageTrackingScore(final String date) {
         final List<UsageTrackerIntervalScore> intervalScores = getIntervalScores(date);
         double points = 0;
         boolean uninterruptedTracking = true;
@@ -310,13 +345,10 @@ public class UsageTrackerService extends Service {
                 uninterruptedTracking = false;
             }
         }
-        return new Pair<>(points / SCALING_FACTOR, uninterruptedTracking);
+        return new UsageTrackerDailyScore(date, points, uninterruptedTracking);
     }
 
     public List<UsageTrackerIntervalScore> getIntervalScores(final String date) {
-        if (!pastEventsProcessed.get()) {
-            throw new IllegalArgumentException("Past events not processed");
-        }
         final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
         final long userJoinSecondsUTC = Long.parseLong(localStorageManager.getUser().dateJoinedSeconds());
         final long userJoinSeconds = userJoinSecondsUTC + Calendar.getInstance().getTimeZone().getOffset(userJoinSecondsUTC * 1000) / 1000; // convert to local time

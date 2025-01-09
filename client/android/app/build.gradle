@@ -115,8 +115,8 @@ android {
         applicationId 'com.lucive'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 13
-        versionName "1.2.0"
+        versionCode 14
+        versionName "1.2.1"
         resValue "string", "app_name", "Lucive"
     }
     signingConfigs {

@@ -2,7 +2,6 @@ package com.lucive.services;
 
 import static com.lucive.utils.AppUtils.SCALING_FACTOR;
 
-import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,7 +16,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
-import android.util.Pair;
 
 import com.google.android.gms.ads.MobileAds;
 import com.lucive.managers.AdManager;
@@ -31,7 +29,6 @@ import com.lucive.models.Rule;
 import com.lucive.models.UsageTrackerDailyScore;
 import com.lucive.models.UsageTrackerHeartbeat;
 import com.lucive.models.UsageTrackerIntervalScore;
-import com.lucive.models.User;
 import com.lucive.utils.AppUtils;
 
 import java.util.ArrayList;
@@ -160,6 +157,7 @@ public class UsageTrackerService extends Service {
         };
         handler.post(trackingRunnable);
         handler.post(heartbeatRunnable);
+        handler.post(scoreSaverRunnable);
     }
 
     private void saveScores() {

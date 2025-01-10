@@ -183,8 +183,6 @@ public class UsageTrackerService extends Service {
     private void saveHeartbeat(final long currentTime) {
         long currentInterval = getStartOfHeartbeatInterval(currentTime);
         if (lastHeartbeatTime < currentInterval && eventManager.isScreenOn()) {
-            final AdManager adManager = AdManager.getInstance(this);
-            adManager.loadNewAd();
             final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
             localStorageManager.saveHeartbeat(new UsageTrackerHeartbeat(currentTime / 1000, rulesManager.calculateHeartbeatPoints()));
             lastHeartbeatTime = currentTime;

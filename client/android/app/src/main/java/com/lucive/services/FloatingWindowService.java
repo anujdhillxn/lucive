@@ -64,7 +64,7 @@ public class FloatingWindowService extends Service {
                         FrameLayout.LayoutParams.WRAP_CONTENT
                 );
                 adParams.gravity = android.view.Gravity.BOTTOM;
-
+                adManager.loadNewAd();
                 // Add pre-loaded AdView to the layout if loaded
                 adContainer = floatingView.findViewById(R.id.ad_container);
                 adContainer.addView(adManager.getAdView(), adParams);

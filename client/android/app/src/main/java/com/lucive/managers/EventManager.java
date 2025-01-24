@@ -12,16 +12,19 @@ import com.lucive.utils.AppUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventManager {
     private final Map<String, List<Event>> eventsMap = new ConcurrentHashMap<>();
     private final Map<String, List<String>> activityMap = new ConcurrentHashMap<>();
     private final AtomicBoolean isScreenOn = new AtomicBoolean(true);
-//    private long screenOnLastTimestamp = AppUtils.get24HoursBefore();
+    private final Deque<Event> allEvents = new ConcurrentLinkedDeque<>();
+    private long screenOnLastTimestamp = AppUtils.get24HoursBefore();
     private final String TAG = "EventManager";
 //    private int lastEventChunkSize = 0;
 //    private boolean currentlyOpenedAppMightChange = false;
@@ -82,7 +85,7 @@ public class EventManager {
         }
         if (eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
             isScreenOn.set(true);
-//            screenOnLastTimestamp = timestamp;
+            screenOnLastTimestamp = timestamp;
             localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, true));
             return;
         }
@@ -123,19 +126,35 @@ public class EventManager {
             if (lastEvent.getEventType() == eventType) {
                 return;
             }
-            if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_BACKGROUND && eventType == UsageEvents.Event.MOVE_TO_FOREGROUND && timestamp - lastEvent.getTimeStamp() <= 1000) {
-                packageEvents.remove(packageEvents.size() - 1); // continue the session
-                return;
-            }
             newEvent.setCumulatedScreentime(eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ? lastEvent.getCumulatedScreentime() : lastEvent.getCumulatedScreentime() + timestamp - lastEvent.getTimeStamp());
         }
+        if (checkSessionContinuation(packageEvents, newEvent)) {
+            return;
+        }
         packageEvents.add(newEvent);
-        
+        allEvents.add(newEvent);
         //clear events older than a day
         final long twentyFourHoursBefore = AppUtils.get24HoursBefore();
         while (!packageEvents.isEmpty() && packageEvents.get(0).getTimeStamp() < twentyFourHoursBefore) {
             packageEvents.remove(0);
         }
+    }
+
+    private boolean checkSessionContinuation(final List<Event> packageEvents, final Event newEvent) {
+        if (!packageEvents.isEmpty() && !allEvents.isEmpty()) {
+            final Event lastEvent = allEvents.peekLast();
+            if (lastEvent.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED
+                    && lastEvent.getTimeStamp() > screenOnLastTimestamp
+                    && newEvent.getPackageName().equals(lastEvent.getPackageName())
+                    && newEvent.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
+            ) {
+                packageEvents.remove(packageEvents.size() - 1);
+                allEvents.removeLast();
+                Log.d(TAG, "Session continued for " + newEvent.getPackageName());
+                return true;
+            }
+        }
+        return false;
     }
 
 

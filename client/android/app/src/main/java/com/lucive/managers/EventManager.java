@@ -18,17 +18,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class EventManager {
     private final Map<String, List<Event>> eventsMap = new ConcurrentHashMap<>();
     private final Map<String, List<String>> activityMap = new ConcurrentHashMap<>();
     private final AtomicBoolean isScreenOn = new AtomicBoolean(true);
     private final Deque<Event> allEvents = new ConcurrentLinkedDeque<>();
-    private long screenOnLastTimestamp = AppUtils.get24HoursBefore();
+    private final AtomicLong screenOnLastTimestamp = new AtomicLong(AppUtils.get24HoursBefore());
     private final String TAG = "EventManager";
-//    private int lastEventChunkSize = 0;
-//    private boolean currentlyOpenedAppMightChange = false;
-//    private String currentApp = AppUtils.UNKNOWN_PACKAGE;
     private final LocalStorageManager localStorageManager;
     private static EventManager instance;
 
@@ -43,40 +41,6 @@ public class EventManager {
         return instance;
     }
 
-//    public String processEventsChunk (final List<Event> events) {
-//        for (Event event : events) {
-//            processEvent(event.getPackageName(), event.getTimeStamp(), event.getEventType(), event.getActivity());
-//        }
-//        if (!events.isEmpty()) {
-//            currentlyOpenedAppMightChange = true;
-//            lastEventChunkSize = events.size();
-//            return AppUtils.UNKNOWN_PACKAGE;
-//        }
-//        currentApp = currentlyOpenedAppMightChange ? getCurrentlyOpenedApp() : currentApp;
-////        if (currentApp.equals(AppUtils.UNKNOWN_PACKAGE) && isScreenOn.get() && !eventsMap.isEmpty() && lastEventChunkSize > 0) {
-////            long latestTimestamp = 0;
-////            for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
-////                List<Event> packageEvents = entry.getValue();
-////                if (packageEvents.size() > 1) {
-////                    Event lastOpenEvent = packageEvents.get(packageEvents.size() - 2);
-////                    if (lastOpenEvent.getTimeStamp() > screenOnLastTimestamp
-////                            && lastOpenEvent.getTimeStamp() > latestTimestamp
-////                            && lastOpenEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-////                        currentApp = entry.getKey();
-////                        latestTimestamp = lastOpenEvent.getTimeStamp();
-////                    }
-////                }
-////            }
-////            if (!currentApp.equals(AppUtils.UNKNOWN_PACKAGE)) {
-////                final List<Event> packageEvents = eventsMap.get(currentApp);
-////                packageEvents.remove(packageEvents.size() - 1);
-////                Log.d(TAG, "Session continued for " + currentApp);
-////            }
-////        }
-//        lastEventChunkSize = 0;
-//        return currentApp;
-//    }
-
     public void processEvent(final String packageName, final long timestamp, int eventType, final String activity) {
         if (eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
             isScreenOn.set(false);
@@ -85,7 +49,7 @@ public class EventManager {
         }
         if (eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
             isScreenOn.set(true);
-            screenOnLastTimestamp = timestamp;
+            screenOnLastTimestamp.set(timestamp);
             localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, true));
             return;
         }
@@ -147,7 +111,7 @@ public class EventManager {
         if (!packageEvents.isEmpty() && !allEvents.isEmpty()) {
             final Event lastEvent = allEvents.peekLast();
             if (lastEvent.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED
-                    && lastEvent.getTimeStamp() > screenOnLastTimestamp
+                    && lastEvent.getTimeStamp() > screenOnLastTimestamp.get()
                     && newEvent.getPackageName().equals(lastEvent.getPackageName())
                     && newEvent.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
             ) {
@@ -162,21 +126,9 @@ public class EventManager {
 
 
     public String getCurrentlyOpenedApp() {
-//        currentlyOpenedAppMightChange = false;
-        String currentApp = AppUtils.UNKNOWN_PACKAGE;
-        long latestTimestamp = 0;
-
-        for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
-            List<Event> packageEvents = entry.getValue();
-            if (!packageEvents.isEmpty()) {
-                Event lastEvent = packageEvents.get(packageEvents.size() - 1);
-                if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && lastEvent.getTimeStamp() > latestTimestamp) {
-                    currentApp = entry.getKey();
-                    latestTimestamp = lastEvent.getTimeStamp();
-                }
-            }
-        }
-        return currentApp;
+        return allEvents.isEmpty() || allEvents.peekLast().getEventType() != UsageEvents.Event.ACTIVITY_RESUMED
+                ? AppUtils.UNKNOWN_PACKAGE
+                : allEvents.peekLast().getPackageName();
     }
 
     public List<Event> getEvents(final String packageName) {

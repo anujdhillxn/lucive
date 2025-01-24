@@ -48,7 +48,7 @@ public class UsageTrackerService extends Service {
     private static final long HEARTBEAT_INTERVAL = 2 * 60 * 1000;
     private static final long HEARTBEAT_RUNNABLE_INTERVAL = 90 * 1000;
     private static final long SCORE_SAVE_INTERVAL = 12 * 60 * 60 * 1000;
-    private static final long STARTUP_DELAY = 10 * 1000;
+    private static final long STARTUP_DELAY = 10;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
 
     private long lastTimestamp = AppUtils.getDayStartNDaysBefore(1);
@@ -243,11 +243,11 @@ public class UsageTrackerService extends Service {
                 sendModalIntent(message);
                 return;
             }
-    //            if (delayStartup(rule, events)) {
-    //                String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  getSessionTime(events)) / 1000 + " seconds...";
-    //                sendModalIntent(message);
-    //                return;
-    //            }
+            if (delayStartup(rule, events)) {
+                String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  getSessionTime(events)) + " seconds...";
+                sendModalIntent(message);
+                return;
+            }
         }
         Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);
         hideScreenTimeExceeded.putExtra("EXTRA_SHOW_MODAL", false);

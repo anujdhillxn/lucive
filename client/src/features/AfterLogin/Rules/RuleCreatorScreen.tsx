@@ -146,10 +146,10 @@ export const RuleCreatorScreen: React.FC = () => {
                     <Separator />
                     <Text style={styles.textSmall}>Rule's restrictions will be applied when this switch is on</Text>
                 </View>
-                {/* <View style={styles.touchable}>
+                <View style={styles.touchable}>
                     <View style={styles.switchContainer}>
                         <Text style={styles.text}>
-                            Delay Startup (Beta)
+                            Delay Startup
                         </Text>
                         <Switch
                             thumbColor={isStartupDelayEnabled ? Colors.Accent1 : Colors.Text3}
@@ -160,8 +160,8 @@ export const RuleCreatorScreen: React.FC = () => {
                         />
                     </View>
                     <Separator />
-                    <Text style={styles.textSmall}>{"Delay the opening of the app by 10 seconds (this feature may not work correctly for some apps)"}</Text>
-                </View> */}
+                    <Text style={styles.textSmall}>{"Delay the opening of the app by 10 seconds"}</Text>
+                </View>
                 <CustomTimePicker editable={isDailyMaxSecondsEnforced} onConfirm={(hh, mm) => setDailyMaxMinutes(Number(hh) * 60 + Number(mm))}>
                     <View style={styles.touchable}>
                         <View style={styles.switchContainer}>

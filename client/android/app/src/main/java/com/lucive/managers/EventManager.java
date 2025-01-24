@@ -138,6 +138,9 @@ public class EventManager {
         while (!packageEvents.isEmpty() && packageEvents.get(0).getTimeStamp() < twentyFourHoursBefore) {
             packageEvents.remove(0);
         }
+        while (!allEvents.isEmpty() && allEvents.peekFirst().getTimeStamp() < twentyFourHoursBefore) {
+            allEvents.removeFirst();
+        }
     }
 
     private boolean checkSessionContinuation(final List<Event> packageEvents, final Event newEvent) {

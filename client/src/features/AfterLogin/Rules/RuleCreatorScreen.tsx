@@ -47,7 +47,7 @@ export const RuleCreatorScreen: React.FC = () => {
     const [isSessionMaxSecondsEnforced, setIsSessionMaxSecondsEnforced] = useState(rule?.isSessionMaxSecondsEnforced ?? true);
     const [dailyReset, setDailyReset] = useState<Date>(rule?.dailyReset ? convertHHMMSSToDate(rule.dailyReset) : getTodayMidnight());
     const [isRuleActive, setIsRuleActive] = useState(rule?.isActive ?? true);
-    const [isStartupDelayEnabled, setIsStartupDelayEnabled] = useState(rule?.isStartupDelayEnabled ?? false);
+    const [isStartupDelayEnabled, setIsStartupDelayEnabled] = useState(rule?.isStartupDelayEnabled ?? true);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
     const { installedApps } = useNativeContext();

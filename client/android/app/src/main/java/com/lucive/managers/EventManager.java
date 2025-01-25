@@ -126,9 +126,20 @@ public class EventManager {
 
 
     public String getCurrentlyOpenedApp() {
-        return allEvents.isEmpty() || allEvents.peekLast().getEventType() != UsageEvents.Event.ACTIVITY_RESUMED
-                ? AppUtils.UNKNOWN_PACKAGE
-                : allEvents.peekLast().getPackageName();
+        String currentApp = AppUtils.UNKNOWN_PACKAGE;
+        long latestTimestamp = 0;
+
+        for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
+            List<Event> packageEvents = entry.getValue();
+            if (!packageEvents.isEmpty()) {
+                Event lastEvent = packageEvents.get(packageEvents.size() - 1);
+                if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && lastEvent.getTimeStamp() > latestTimestamp) {
+                    currentApp = entry.getKey();
+                    latestTimestamp = lastEvent.getTimeStamp();
+                }
+            }
+        }
+        return currentApp;
     }
 
     public List<Event> getEvents(final String packageName) {

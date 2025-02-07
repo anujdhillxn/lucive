@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useAppContext } from '../../../hooks/useAppContext';
 import { useApi } from '../../../hooks/useApi';
-import { doNothing, getDateISO } from '../../../utils/time';
+import { doNothing, getDateISO, getTimeFromMinuteIndex } from '../../../utils/time';
 import { useActions } from '../../../hooks/useActions';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { IntervalScore, Score } from '../../../types/state';
@@ -32,7 +32,7 @@ const ScoresScreen = () => {
     const [selectedDate, setSelectedDate] = React.useState<string>(getDateISO(new Date()));
     const [intervalScores, setIntervalScores] = React.useState<IntervalScore[]>([]);
     const totalWidth = Dimensions.get('window').width;
-    const intervalWidth = totalWidth / 720;
+    const intervalWidth = totalWidth / 1440;
     const getMarkedDates = () => {
         const markedDates: { [date: string]: any } = {};
         scores.filter(score => score.uninterruptedTracking).forEach((score) => {
@@ -82,7 +82,7 @@ const ScoresScreen = () => {
     const { currentStreak, longestStreak } = React.useMemo(() => getStreaks(scores), [scores]);
 
     const { confirm } = useConfirm(doNothing, "A day will be added to your streak if Lucive background service runs throughout the day with atleast one active rule.\n\n If you miss a day, your streak will reset to 0.", true, "Got it");
-
+    const firstDangerInterval = React.useMemo(() => intervalScores.findIndex((score) => getBackgroundColor(score) === Colors.Danger), [intervalScores]);
     return (
         <View style={styles.container}>
             <View style={styles.totalScoreContainer}>
@@ -140,6 +140,9 @@ const ScoresScreen = () => {
                         />
                     ))}
                 </View>
+                {intervalScores.length > 0 && <Text style={[styles.dangerText, { color: firstDangerInterval !== -1 ? Colors.Danger : Colors.Text1 }]}>
+                    {firstDangerInterval !== -1 ? `Streak was broken at ${getTimeFromMinuteIndex(firstDangerInterval)}` : 'Good job maintaining the streak!'}
+                </Text>}
             </View>
             {/* <View style={styles.lineGraphContainer}>
                 <View style={styles.lineGraph}>
@@ -234,6 +237,10 @@ const styles = StyleSheet.create({
     lineGraphPoint: {
         position: 'absolute',
         backgroundColor: Colors.Accent1,
+    },
+    dangerText: {
+        marginTop: 10,
+        fontSize: 16,
     },
 });
 

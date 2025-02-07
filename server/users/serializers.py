@@ -43,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        date_joined_seconds = str(int(time.mktime(instance.date_joined.timetuple())))
+        date_joined_seconds = str(int(instance.date_joined.timestamp()))
         return {
             'username': ret['username'],
             'email': ret['email'],

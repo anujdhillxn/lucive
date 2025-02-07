@@ -13,12 +13,14 @@ export type AppContextProps = {
     myDuo: Duo | null;
     rules: Rule[];
     appLoading: boolean;
+    currentScreen: string;
 };
 
 export type AppActionsProps = {
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
     setMyDuo: React.Dispatch<React.SetStateAction<Duo | null>>;
     setRules: React.Dispatch<React.SetStateAction<Rule[]>>;
+    setCurrentScreen: React.Dispatch<React.SetStateAction<string>>;
     fetchData: () => Promise<void>;
 };
 
@@ -34,6 +36,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [user, setUser] = React.useState<User | null>(null);
     const [myDuo, setMyDuo] = React.useState<Duo | null>(null);
     const [rules, setRules] = React.useState<Rule[]>([]);
+    const [currentScreen, setCurrentScreen] = React.useState<string>('Rules');
     const [localStorageLoaded, setLocalStorageLoaded] = React.useState(false);
 
     const { api, requestToken } = useApi();
@@ -145,8 +148,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!localStorageLoaded) {
         return <LoadingScreen />;
     }
-    return <AppContext.Provider value={{ user, myDuo, rules, appLoading }}>
-        <AppActions.Provider value={{ setUser, setMyDuo, setRules, fetchData }}>
+    return <AppContext.Provider value={{ user, myDuo, rules, appLoading, currentScreen }}>
+        <AppActions.Provider value={{ setUser, setMyDuo, setRules, fetchData, setCurrentScreen }}>
             {children}
         </AppActions.Provider>
     </AppContext.Provider>

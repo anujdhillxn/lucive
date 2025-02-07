@@ -1,4 +1,3 @@
 - check if requests coming from unmodified original app
 - server enhancements (performance, refactor)
 - temporary rule relaxations
-- fix user joined stuff

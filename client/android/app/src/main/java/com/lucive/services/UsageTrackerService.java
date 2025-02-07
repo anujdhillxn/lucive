@@ -44,9 +44,9 @@ public class UsageTrackerService extends Service {
     private Runnable trackingRunnable;
     private Runnable heartbeatRunnable;
     private Runnable scoreSaverRunnable;
-    private static final long TRACKING_INTERVAL = 500;
-    private static final long HEARTBEAT_INTERVAL = 2 * 60 * 1000;
-    private static final long HEARTBEAT_RUNNABLE_INTERVAL = 90 * 1000;
+    private static final long TRACKING_INTERVAL = 250;
+    private static final long HEARTBEAT_INTERVAL = 60 * 1000;
+    private static final long HEARTBEAT_RUNNABLE_INTERVAL = 50 * 1000;
     private static final long SCORE_SAVE_INTERVAL = 12 * 60 * 60 * 1000;
     private static final long STARTUP_DELAY = 10;
     private static final String CHANNEL_ID = "AppUsageTrackingChannel";
@@ -325,7 +325,8 @@ public class UsageTrackerService extends Service {
         if (!rule.isStartupDelayEnabled()) {
             return false;
         }
-        return getSessionTime(events) < STARTUP_DELAY;
+        return events.get(events.size() - 1).getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND
+                && getSessionTime(events) < STARTUP_DELAY;
     }
 
     public UsageTrackerDailyScore calculateUsageTrackingScore(final String date) {
@@ -346,8 +347,7 @@ public class UsageTrackerService extends Service {
 
     public List<UsageTrackerIntervalScore> getIntervalScores(final String date) {
         final LocalStorageManager localStorageManager = LocalStorageManager.getInstance(this);
-        final long userJoinSecondsUTC = Long.parseLong(localStorageManager.getUser().dateJoinedSeconds());
-        final long userJoinSeconds = userJoinSecondsUTC + Calendar.getInstance().getTimeZone().getOffset(userJoinSecondsUTC * 1000) / 1000; // convert to local time
+        final long userJoinSeconds = Long.parseLong(localStorageManager.getUser().dateJoinedSeconds());
         final List<UsageTrackerHeartbeat> heartbeats = localStorageManager.getHeartbeats(date);
         final List<DeviceStatus> deviceStatuses = localStorageManager.getDeviceStatuses(date);
         if (heartbeats.isEmpty()) {

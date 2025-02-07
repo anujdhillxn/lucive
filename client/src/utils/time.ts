@@ -47,3 +47,11 @@ export const formatTime = (totalSeconds: number): string => {
 };
 
 export const doNothing = () => {};
+
+export const getTimeFromMinuteIndex = (index: number): string => {
+    const hours = Math.floor(index / 60)
+        .toString()
+        .padStart(2, "0");
+    const minutes = (index % 60).toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+};

@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useActions } from '../hooks/useActions';
 import Colors from '../styles/colors';
 import ScoresScreen from './AfterLogin/Scores/ScoresScreen';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useIsFocused, useNavigation } from '@react-navigation/native';
 import VerticalSeparator from '../components/VerticalSeparator';
 import { useNativeContext } from '../hooks/useNativeContext';
 import { PermissionsScreen } from './AfterLogin/PermissionsScreen';
@@ -33,7 +33,7 @@ export type RootStackParamList = {
 
 export const AppScreenStack: React.FC = () => {
 
-    const { user, myDuo, appLoading } = useAppContext();
+    const { user, myDuo, appLoading, currentScreen } = useAppContext();
     const { fetchData } = useActions();
     const { requestToken } = useApi();
     const hasCreatedRule = useAppContext().rules.filter(rule => rule.isMyRule).length > 0;
@@ -94,7 +94,7 @@ export const AppScreenStack: React.FC = () => {
         </SafeAreaView>
     }
     return <View style={styles.container}>
-        <Stack.Navigator initialRouteName={"Rules"}
+        <Stack.Navigator initialRouteName={currentScreen}
             screenOptions={{
                 cardStyle: { backgroundColor: Colors.Background1 }, // Set the background color of the card during transition
                 ...TransitionPresets.SlideFromRightIOS, // Use a transition preset
@@ -164,20 +164,32 @@ export const AppScreenStack: React.FC = () => {
             } />
         </Stack.Navigator>
         <View style={styles.bottomButtons}>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Rules')}>
-                <Icon name="list" size={24} color={Colors.Text3} />
-            </TouchableOpacity>
+            <BottomButton screen="Rules" icon="list" />
             <VerticalSeparator />
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Scores')}>
-                <Icon name="trophy" size={24} color={Colors.Text3} />
-            </TouchableOpacity>
+            <BottomButton screen="Scores" icon="trophy" />
             <VerticalSeparator />
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('User')}>
-                <Icon name="user" size={24} solid={false} color={Colors.Text3} style={{ marginRight: 20 }} />
-            </TouchableOpacity>
+            <BottomButton screen="User" icon="user" />
         </View>
     </View>
 }
+
+const BottomButton: React.FC<{ screen: keyof RootStackParamList, icon: string }> = ({ screen, icon }) => {
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const { currentScreen } = useAppContext();
+    const { setCurrentScreen } = useActions();
+    const isFocused = currentScreen === screen;
+    return (
+        <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+                setCurrentScreen(screen);
+                navigation.navigate(screen);
+            }}
+        >
+            <Icon name={icon} size={24} color={isFocused ? Colors.Primary2 : Colors.Text3} />
+        </TouchableOpacity>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {

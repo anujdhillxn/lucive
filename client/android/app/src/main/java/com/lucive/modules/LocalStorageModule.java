@@ -15,6 +15,7 @@ import com.lucive.managers.LocalStorageManager;
 import com.lucive.models.Rule;
 import com.lucive.models.User;
 import com.lucive.models.Word;
+import com.lucive.utils.AppUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +98,12 @@ public class LocalStorageModule extends ReactContextBaseJavaModule {
         final String dailyStartsAt = map.getString("dailyReset");
         final boolean isStartupDelayEnabled = map.getBoolean("isStartupDelayEnabled");
         final boolean isMyRule = map.getBoolean("isMyRule");
-        return new Rule(app, appDisplayName, isActive, dailyMaxSeconds, hourlyMaxSeconds, sessionMaxSeconds, dailyStartsAt, isDailyMaxSecondsEnforced, isHourlyMaxSecondsEnforced, isSessionMaxSecondsEnforced, isStartupDelayEnabled, isMyRule);
+        final boolean isTemporary = map.getBoolean("isTemporary");
+        final String validTill = map.getString("validTill");
+        return new Rule(app, appDisplayName, isActive, dailyMaxSeconds, hourlyMaxSeconds,
+                sessionMaxSeconds, dailyStartsAt, isDailyMaxSecondsEnforced,
+                isHourlyMaxSecondsEnforced, isSessionMaxSecondsEnforced, isStartupDelayEnabled,
+                isMyRule, isTemporary, AppUtils.convertIsoToEpoch(validTill));
     }
     @ReactMethod
     public void setUser(ReadableMap userMap, Promise promise) {

@@ -41,7 +41,6 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
         });
         return () => clearInterval(interval);
     }, []);
-
     return <View style={styles.card}>
         <Text style={styles.title}>
             {rule.appDisplayName} (<StrikeThroughText new={rule.modificationData?.isActive ? "Active" : "Inactive"} old={rule.isActive ? "Active" : "Inactive"} changed={Boolean(rule.modificationData && rule.isActive !== rule.modificationData?.isActive)} />)
@@ -80,6 +79,11 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule }) => {
             <Text style={styles.timeLimit}>
                 {"Startup Delay: "}
                 <StrikeThroughText new={rule.modificationData ? rule.modificationData?.isStartupDelayEnabled ? "Enabled" : "Disabled" : ''} old={rule.isStartupDelayEnabled ? "Enabled" : "Disabled"} changed={Boolean(rule.modificationData && rule.isStartupDelayEnabled !== rule.modificationData.isStartupDelayEnabled)} />
+            </Text>
+        }
+        {rule.isTemporary &&
+            <Text style={styles.timeLimit}>
+                {`\nValid till: ${new Date(rule.validTill).toLocaleTimeString()}`}
             </Text>
         }
     </View>

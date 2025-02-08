@@ -227,26 +227,31 @@ public class UsageTrackerService extends Service {
     private void handleModal (final String currentApp) {
         final Rule rule = rulesManager.getRule(currentApp);
         final List<Event> events = eventManager.getEvents(currentApp);
-        if (rule != null && rule.isActive() && !events.isEmpty()) {
-            if (isHourlyLimitExceeded(rule, events)) {
-                String message = "Hourly screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).hourlyMaxSeconds()) + " exceeded!";
-                sendModalIntent(message);
-                return;
+        if (rule != null) {
+            if (rule.isTemporary() && rule.validTill() < System.currentTimeMillis()) {
+                apiRequestManager.getRules();
             }
-            if (isDailyLimitExceeded(rule, events)) {
-                String message = "Daily screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).dailyMaxSeconds()) + " exceeded!";
-                sendModalIntent(message);
-                return;
-            }
-            if (isSessionLimitExceeded(rule, events)) {
-                String message = "Session screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).sessionMaxSeconds()) + " exceeded!";
-                sendModalIntent(message);
-                return;
-            }
-            if (delayStartup(rule, events)) {
-                String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  getSessionTime(events)) + " seconds...";
-                sendModalIntent(message);
-                return;
+            if (rule.isActive() && !events.isEmpty()) {
+                if (isHourlyLimitExceeded(rule, events)) {
+                    String message = "Hourly screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).hourlyMaxSeconds()) + " exceeded!";
+                    sendModalIntent(message);
+                    return;
+                }
+                if (isDailyLimitExceeded(rule, events)) {
+                    String message = "Daily screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).dailyMaxSeconds()) + " exceeded!";
+                    sendModalIntent(message);
+                    return;
+                }
+                if (isSessionLimitExceeded(rule, events)) {
+                    String message = "Session screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).sessionMaxSeconds()) + " exceeded!";
+                    sendModalIntent(message);
+                    return;
+                }
+                if (delayStartup(rule, events)) {
+                    String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  getSessionTime(events)) + " seconds...";
+                    sendModalIntent(message);
+                    return;
+                }
             }
         }
         Intent hideScreenTimeExceeded = new Intent(this, FloatingWindowService.class);

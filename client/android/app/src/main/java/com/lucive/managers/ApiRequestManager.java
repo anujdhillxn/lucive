@@ -6,7 +6,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,7 +16,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.lucive.BuildConfig;
+import com.lucive.models.Rule;
 import com.lucive.models.UsageTrackerDailyScore;
+import com.lucive.utils.AppUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -44,8 +48,12 @@ public class ApiRequestManager implements LocalStorageObserver {
         requestToken = localStorageManager.getRequestToken();
     }
 
-    private void post(final String apiUrl, final Object payload) {
-        executorService.submit(() -> makeRequest(apiUrl, "POST", payload));
+    private String post(final String apiUrl, final Object payload) {
+        return makeRequest(apiUrl, "POST", payload);
+    }
+
+    private String get(final String apiUrl) {
+        return makeRequest(apiUrl, "GET", null);
     }
 
     // Helper method to make an HTTP request
@@ -107,6 +115,43 @@ public class ApiRequestManager implements LocalStorageObserver {
                 e.printStackTrace();
             }
         }
-        post(url, payload);
+        CompletableFuture.runAsync(() -> post(url, payload), executorService);
+    }
+
+    public void getRules() {
+        final String url = BuildConfig.API_URL + "rules/user-rules";
+        CompletableFuture<String> res = CompletableFuture.supplyAsync(() -> get(url), executorService);
+        res.thenAccept(response -> {
+            try {
+                final JSONArray rulesArray = new JSONArray(response);
+                List<Rule> rulesList = new ArrayList<>();
+                for (int i = 0; i < rulesArray.length(); i++) {
+                    final JSONObject ruleJson = rulesArray.getJSONObject(i);
+                    final String app = ruleJson.getString("app");
+                    final String appDisplayName = ruleJson.getString("appDisplayName");
+                    final boolean isActive = ruleJson.getBoolean("isActive");
+                    final int dailyMaxSeconds = ruleJson.getInt("dailyMaxSeconds");
+                    final int hourlyMaxSeconds = ruleJson.getInt("hourlyMaxSeconds");
+                    final int sessionMaxSeconds = ruleJson.getInt("sessionMaxSeconds");
+                    final boolean isDailyMaxSecondsEnforced = ruleJson.getBoolean("isDailyMaxSecondsEnforced");
+                    final boolean isHourlyMaxSecondsEnforced = ruleJson.getBoolean("isHourlyMaxSecondsEnforced");
+                    final boolean isSessionMaxSecondsEnforced = ruleJson.getBoolean("isSessionMaxSecondsEnforced");
+                    final String dailyStartsAt = ruleJson.getString("dailyReset");
+                    final boolean isStartupDelayEnabled = ruleJson.getBoolean("isStartupDelayEnabled");
+                    final boolean isMyRule = ruleJson.getBoolean("isMyRule");
+                    final boolean isTemporary = ruleJson.getBoolean("isTemporary");
+                    final String validTill = ruleJson.getString("validTill");
+
+                    Rule rule = new Rule(app, appDisplayName, isActive, dailyMaxSeconds, hourlyMaxSeconds,
+                            sessionMaxSeconds, dailyStartsAt, isDailyMaxSecondsEnforced,
+                            isHourlyMaxSecondsEnforced, isSessionMaxSecondsEnforced, isStartupDelayEnabled,
+                            isMyRule, isTemporary, AppUtils.convertIsoToEpoch(validTill));
+                    rulesList.add(rule);
+                }
+                localStorageManager.setRules(rulesList);
+            } catch (Exception e) {
+                Log.e("ApiRequestManager", "Exception in getRules", e);
+            }
+        });
     }
 }

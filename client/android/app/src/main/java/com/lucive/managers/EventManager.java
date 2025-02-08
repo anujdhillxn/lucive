@@ -42,7 +42,6 @@ public class EventManager {
     }
 
     public void processEvent(final String packageName, final long timestamp, int eventType, final String activity) {
-        Log.d(TAG, "Event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
         if (eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
             isScreenOn.set(false);
             localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, false));

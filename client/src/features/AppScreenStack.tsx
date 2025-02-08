@@ -28,6 +28,7 @@ export type RootStackParamList = {
     RuleCreator: Rule | undefined;
     Duo: undefined;
     Scores: undefined;
+    NoDuo: undefined;
 };
 
 
@@ -74,8 +75,8 @@ export const AppScreenStack: React.FC = () => {
 
     if (!myDuo) {
         return <SafeAreaView style={styles.container}>
-            <Stack.Navigator initialRouteName={"User"} >
-                <Stack.Screen name="User" component={UserScreen} options={() => ({
+            <Stack.Navigator key="noDuo" initialRouteName={"User"} >
+                <Stack.Screen name="NoDuo" component={UserScreen} options={() => ({
                     title: 'Lucive',
                     headerRight: () => (
                         <View style={{ flexDirection: 'row' }}>
@@ -94,7 +95,7 @@ export const AppScreenStack: React.FC = () => {
         </SafeAreaView>
     }
     return <View style={styles.container}>
-        <Stack.Navigator initialRouteName={currentScreen}
+        <Stack.Navigator key="hasDuo" initialRouteName={currentScreen}
             screenOptions={{
                 cardStyle: { backgroundColor: Colors.Background1 }, // Set the background color of the card during transition
                 ...TransitionPresets.SlideFromRightIOS, // Use a transition preset

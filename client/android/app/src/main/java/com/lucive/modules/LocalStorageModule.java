@@ -80,6 +80,8 @@ public class LocalStorageModule extends ReactContextBaseJavaModule {
             ruleMap.putString("dailyReset", rule.dailyStartsAt());
             ruleMap.putBoolean("isStartupDelayEnabled", rule.isStartupDelayEnabled());
             ruleMap.putBoolean("isMyRule", rule.isMyRule());
+            ruleMap.putBoolean("isTemporary", rule.isTemporary());
+            ruleMap.putString("validTill", AppUtils.convertEpochToIso(rule.validTill()));
             rulesArray.pushMap(ruleMap);
         }
         promise.resolve(rulesArray);

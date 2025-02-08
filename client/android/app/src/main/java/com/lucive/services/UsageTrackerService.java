@@ -1,7 +1,5 @@
 package com.lucive.services;
 
-import static com.lucive.utils.AppUtils.SCALING_FACTOR;
-
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,7 +16,6 @@ import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gms.ads.MobileAds;
-import com.lucive.managers.AdManager;
 import com.lucive.managers.ApiRequestManager;
 import com.lucive.managers.EventManager;
 import com.lucive.managers.LocalStorageManager;

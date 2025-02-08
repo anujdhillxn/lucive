@@ -18,9 +18,7 @@ import com.lucive.models.Word;
 import com.lucive.utils.AppUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class LocalStorageModule extends ReactContextBaseJavaModule {
 

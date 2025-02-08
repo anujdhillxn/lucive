@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HeartbeatDAO {
-    private SQLiteDatabase database;
-    private DatabaseHelper dbHelper;
+    private final SQLiteDatabase database;
+    private final DatabaseHelper dbHelper;
 
     public HeartbeatDAO(Context context) {
         dbHelper = new DatabaseHelper(context);

@@ -41,7 +41,7 @@ public class UsageTrackerService extends Service {
     private Runnable trackingRunnable;
     private Runnable heartbeatRunnable;
     private Runnable scoreSaverRunnable;
-    private static final long TRACKING_INTERVAL = 250;
+    private static final long TRACKING_INTERVAL = 500;
     private static final long HEARTBEAT_INTERVAL = 60 * 1000;
     private static final long HEARTBEAT_RUNNABLE_INTERVAL = 50 * 1000;
     private static final long SCORE_SAVE_INTERVAL = 12 * 60 * 60 * 1000;

@@ -43,6 +43,10 @@ export interface IRegisterResponse {
     token: string;
 }
 
+export interface IGetDuoResponse {
+    duo: Duo;
+    found: boolean;
+}
 export interface ILoginArgs {
     identifier: string;
     password: string;

@@ -17,9 +17,9 @@ class GetDuoView(generics.ListAPIView):
         user = self.request.user
         duo = Duo.objects.filter(Q(user1=user) | Q(user2=user)).first()
         if not duo:
-            return Response({'error': 'User is not part of a duo'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'found' : False}, status=status.HTTP_200_OK)
         serializer = self.get_serializer(duo)
-        return Response(serializer.data)
+        return Response({'found' : True, 'duo': serializer.data}, status=status.HTTP_200_OK)
     
 class CreateDuoView(generics.CreateAPIView):
     serializer_class = CreateDuoSerializer

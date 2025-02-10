@@ -72,12 +72,13 @@ class DuoViewTests(APITestCase):
         Duo.objects.create(user1=self.user1, user2=self.user2)
         response = self.client.get(self.duo_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['user1'], 'user1')
-        self.assertEqual(response.data['user2'], 'user2')
+        self.assertEqual(response.data['duo']['user1'], 'user1')
+        self.assertEqual(response.data['duo']['user2'], 'user2')
     
     def test_get_duo_not_found(self):
         response = self.client.get(self.duo_list_url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['found'], False)
 
     def test_delete_duo_valid(self):
         token_1_before = self.user1.invitation_token

@@ -2,14 +2,11 @@ package com.lucive;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import expo.modules.ReactActivityDelegateWrapper;
-
-import com.google.android.gms.ads.MobileAds;
 
 public class MainActivity extends ReactActivity {
     @Override

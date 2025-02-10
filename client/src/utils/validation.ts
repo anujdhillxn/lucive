@@ -1,6 +1,12 @@
-import { Rule } from "../types/state";
+import { Rule, RuleModificationRequest } from "../types/state";
 
-export const hasAChange = (newRule: Rule, rule: Rule): boolean => {
+export const hasAChange = (
+    newRule: RuleModificationRequest,
+    rule?: Rule
+): boolean => {
+    if (!rule) {
+        return true;
+    }
     return (
         newRule.dailyMaxSeconds !== rule.dailyMaxSeconds ||
         newRule.hourlyMaxSeconds !== rule.hourlyMaxSeconds ||
@@ -16,7 +22,13 @@ export const hasAChange = (newRule: Rule, rule: Rule): boolean => {
     );
 };
 
-export const isApprovalRequired = (newRule: Rule, rule: Rule): boolean => {
+export const isApprovalRequired = (
+    newRule: RuleModificationRequest,
+    rule?: Rule
+): boolean => {
+    if (!rule) {
+        return false;
+    }
     const dailyMaxSecondsRemoved =
         rule.isDailyMaxSecondsEnforced && !newRule.isDailyMaxSecondsEnforced;
     const hourlyMaxSecondsRemoved =

@@ -3,6 +3,7 @@ package com.lucive.modules;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.provider.Settings;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -39,7 +40,8 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
         if (hasUsageStatsPermission()) {
             promise.resolve(true); // Permission already granted
         } else {
-            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS,
+                    Uri.parse("package:" + getReactApplicationContext().getPackageName()));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getReactApplicationContext().startActivity(intent);
             promise.resolve(false); // Permission request initiated
@@ -52,7 +54,8 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
         if (hasOverlayPermission()) {
             promise.resolve(true); // Permission already granted
         } else {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getReactApplicationContext().getPackageName()));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getReactApplicationContext().startActivity(intent);
             promise.resolve(false); // Permission request initiated

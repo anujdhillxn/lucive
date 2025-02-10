@@ -2,8 +2,6 @@ package com.lucive.models;
 
 import com.lucive.utils.AppUtils;
 
-import java.util.Calendar;
-
 public class Event {
     private final String packageName;
     private int eventType;

@@ -23,6 +23,7 @@ const styles = {
     container: {
         flex: 1,
         padding: 20,
+        paddingTop: 40,
         backgroundColor: Colors.Background1,
     },
 };

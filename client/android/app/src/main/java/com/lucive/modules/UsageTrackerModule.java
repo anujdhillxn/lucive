@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
-import android.util.Pair;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
@@ -14,6 +13,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.lucive.managers.EventManager;
 import com.lucive.managers.RulesManager;
 import com.lucive.models.Event;
+import com.lucive.models.Rule;
 import com.lucive.models.UsageTrackerIntervalScore;
 import com.lucive.services.UsageTrackerService;
 import com.facebook.react.bridge.Promise;
@@ -95,7 +95,12 @@ public class UsageTrackerModule extends ReactContextBaseJavaModule {
         final EventManager eventManager = EventManager.getInstance(getReactApplicationContext());
         final RulesManager rulesManager = RulesManager.getInstance(getReactApplicationContext());
         final List<Event> events = eventManager.getEvents(packageName);
-        int screenTime = events.isEmpty() ? 0 : usageTrackerService.getDailyScreentime(rulesManager.getRule(packageName), events);
+        final Rule rule = rulesManager.getRule(packageName);
+        if (rule == null) {
+            promise.resolve(0);
+            return;
+        }
+        int screenTime = events.isEmpty() ? 0 : usageTrackerService.getDailyScreentime(rule, events);
         promise.resolve(screenTime);
     }
 

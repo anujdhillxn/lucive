@@ -11,6 +11,7 @@ import { Rule } from '../../../types/state';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useNotification } from '../../../contexts/NotificationContext';
 import Colors from '../../../styles/colors';
+import { CustomTextButton } from '../../../components/CustomButton';
 
 type RuleCardContainerProps = {
     rule: Rule;
@@ -91,8 +92,9 @@ const PartnerRuleActions: React.FC<PartnerRuleActionsProps> = (props: PartnerRul
     const { ruleApi } = api;
     const { setRules } = useActions();
     const { showNotification } = useNotification();
-    const onApproveChange = () => {
-        ruleApi.approveRuleModificationRequest(props.rule.app).then((updatedRule) => {
+
+    const onApprove = (validTill: string, isTemporary: boolean) => {
+        ruleApi.approveRuleModificationRequest(props.rule.app, validTill, isTemporary).then((updatedRule) => {
             setRules((rules) => rules.map((r) => r.app === updatedRule.app && !r.isMyRule ? updatedRule : r));
             showNotification("Change approved successfully", "success");
         }).catch((e) => {
@@ -100,10 +102,25 @@ const PartnerRuleActions: React.FC<PartnerRuleActionsProps> = (props: PartnerRul
             console.error(e);
         });
     }
-
-    const { confirm } = useConfirm(onApproveChange, "Are you sure you want to approve this change?");
-
-    return Boolean(props.rule.modificationData) ? <Button color={Colors.Accent1} title="Approve" onPress={confirm} /> : null;
+    const now = new Date();
+    const oneHour = new Date(now.getTime() + 1 * 3600 * 1000).toISOString();
+    const threeHours = new Date(now.getTime() + 3 * 3600 * 1000).toISOString();
+    const twentyFourHours = new Date(now.getTime() + 24 * 3600 * 1000).toISOString();
+    // For permanent approval, validTill remains empty.
+    const permanently = "";
+    return Boolean(props.rule.modificationData) ? (
+        <Menu>
+            <MenuTrigger>
+                <Icon name="more-vert" color={Colors.Text2} size={24} />
+            </MenuTrigger>
+            <MenuOptions>
+                <MenuOption onSelect={() => onApprove(oneHour, true)} text="Approve for 1 hour" />
+                <MenuOption onSelect={() => onApprove(threeHours, true)} text="Approve for 3 hours" />
+                <MenuOption onSelect={() => onApprove(twentyFourHours, true)} text="Approve for 24 hours" />
+                <MenuOption onSelect={() => onApprove(permanently, false)} text="Approve permanently" />
+            </MenuOptions>
+        </Menu>
+    ) : null;
 }
 
 const styles = StyleSheet.create({

@@ -11,7 +11,7 @@ export type Duo = {
     createdAt: string;
 };
 
-export type RuleModificationData = {
+export interface RuleConstraint {
     app: string;
     interventionType: string;
     dailyReset: string;
@@ -23,26 +23,23 @@ export type RuleModificationData = {
     isHourlyMaxSecondsEnforced: boolean;
     isSessionMaxSecondsEnforced: boolean;
     isStartupDelayEnabled: boolean;
-};
+}
 
-export type Rule = {
-    app: string;
+export interface RuleModificationData extends RuleConstraint {}
+
+export interface Rule extends RuleConstraint {
     appDisplayName: string;
-    isActive: boolean;
+    createdAt: string;
     isMyRule: boolean;
-    interventionType: string;
-    dailyReset: string;
-    dailyMaxSeconds: number;
-    hourlyMaxSeconds: number;
-    sessionMaxSeconds: number;
-    isDailyMaxSecondsEnforced: boolean;
-    isHourlyMaxSecondsEnforced: boolean;
-    isSessionMaxSecondsEnforced: boolean;
-    createdAt?: string;
-    lastModifiedAt?: string;
     modificationData?: RuleModificationData;
-    isStartupDelayEnabled: boolean;
-};
+    isTemporary: boolean;
+    validTill: string;
+    version: number;
+}
+
+export interface RuleModificationRequest extends RuleModificationData {
+    appDisplayName: string;
+}
 
 export type Score = {
     date: string;

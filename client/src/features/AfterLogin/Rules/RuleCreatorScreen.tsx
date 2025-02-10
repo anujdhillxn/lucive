@@ -8,7 +8,7 @@ import { useActions } from '../../../hooks/useActions';
 import { RootStackParamList } from '../../AppScreenStack';
 import { ScrollView, Switch, TouchableOpacity } from 'react-native-gesture-handler';
 import CustomTimePicker from '../../../components/CustomTimePicker';
-import { Rule } from '../../../types/state';
+import { Rule, RuleModificationData, RuleModificationRequest } from '../../../types/state';
 import { useNativeContext } from '../../../hooks/useNativeContext';
 import { convertHHMMSSToDate, formatTime, getTodayMidnight } from '../../../utils/time';
 import { useConfirm } from '../../../hooks/useConfirm';
@@ -67,12 +67,11 @@ export const RuleCreatorScreen: React.FC = () => {
         hideDatePicker();
     };
 
-    const getNewRule = (): Rule => {
+    const getNewRule = (): RuleModificationRequest => {
         return {
             app: selectedApp,
             appDisplayName: selectedApp in installedApps ? installedApps[selectedApp].displayName : selectedApp,
             isActive: isRuleActive,
-            isMyRule: true,
             dailyMaxSeconds: dailyMaxMinutes * 60,
             hourlyMaxSeconds: hourlyMaxMinutes * 60,
             sessionMaxSeconds: sessionMaxMinutes * 60,
@@ -81,34 +80,22 @@ export const RuleCreatorScreen: React.FC = () => {
             isSessionMaxSecondsEnforced,
             interventionType: 'FULL',
             dailyReset: dailyReset.toTimeString().split(' ')[0],
-            isStartupDelayEnabled
+            isStartupDelayEnabled,
         }
     }
 
     const handleSave = () => {
         const newRule = getNewRule();
-        if (rule) {
-            api.ruleApi.updateRule(newRule).then((updatedRule) => {
-                const newRules = rules.map((r) => r.app === updatedRule.app && r.isMyRule ? updatedRule : r);
-                setRules(newRules);
-                showNotification(!isApprovalRequired(getNewRule(), rule) ? 'Rule updated successfully' : 'Awaiting approval', 'success');
-                navigation.navigate('Rules');
-            }).catch((e) => {
-                console.error(e);
-                showNotification('Failed to update rule', 'failure');
-            })
-        }
-        else {
-            api.ruleApi.createRule(newRule).then((createdRule) => {
-                const newRules = [...rules, createdRule];
-                setRules(newRules);
-                showNotification('Rule created successfully', 'success');
-                navigation.navigate('Rules');
-            }).catch((e) => {
-                console.error(e);
-                showNotification('Failed to create rule', 'failure');
-            })
-        }
+        api.ruleApi.updateRule(newRule).then((updatedRule) => {
+            const newRules = [updatedRule, ...rules.filter((r) => !(r.app === updatedRule.app && r.isMyRule))];
+            newRules.sort((a, b) => a.app.localeCompare(b.app));
+            setRules(newRules);
+            showNotification(!isApprovalRequired(getNewRule(), rule) ? 'Rule updated successfully' : 'Awaiting approval', 'success');
+            navigation.navigate('Rules');
+        }).catch((e) => {
+            console.error(e);
+            showNotification('Failed to update rule', 'failure');
+        })
     }
 
     const { confirm } = useConfirm(handleSave, `Are you sure you want to save this rule? Once saved, you cannot relax it's restrictions or disable it without ${partner}'s approval`);
@@ -233,7 +220,7 @@ export const RuleCreatorScreen: React.FC = () => {
                 />
             </ScrollView>
             <View style={styles.saveButtonContainer}>
-                <CustomTextButton backgroundColor={Colors.Primary1} title={rule && isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} isDisabled={selectedApp === '' || (rule && !hasAChange(getNewRule(), rule))} onPress={confirm} />
+                <CustomTextButton backgroundColor={Colors.Primary1} title={isApprovalRequired(getNewRule(), rule) ? 'Request Changes' : 'Save Changes'} isDisabled={selectedApp === '' || (!hasAChange(getNewRule(), rule))} onPress={confirm} />
             </View>
         </View>
     );

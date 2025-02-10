@@ -12,7 +12,7 @@ import Colors from '../../../styles/colors'
 import { CustomButton } from '../../../components/CustomButton';
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
-    const { setMyDuo } = useActions();
+    const { setMyDuo, fetchAndSetDuo } = useActions();
     const appUrl = config.apiUrl + 'duos/deeplink/' + user?.invitationToken;
     const handleShare = async () => {
         try {
@@ -23,6 +23,11 @@ export const NoDuoFoundView: React.FC = () => {
             console.error('Error sharing', error);
         }
     };
+
+    React.useEffect(() => {
+        const interval = setInterval(fetchAndSetDuo, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { showNotification } = useNotification();
@@ -63,7 +68,7 @@ export const NoDuoFoundView: React.FC = () => {
     return (
         <View>
             <View>
-                <Text style={styles.noDuoText1}>You have not formed a Duo</Text>
+                <Text style={styles.noDuoText1}>Form a Duo to start</Text>
                 <CustomButton style={styles.button} onPress={handleShare}>
                     <Text style={styles.buttonText}>Invite a Friend</Text>
                 </CustomButton>

@@ -11,7 +11,6 @@ import com.lucive.utils.AppUtils;
 
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,6 @@ public class EventManager {
     }
 
     public void processEvent(final String packageName, final long timestamp, int eventType, final String activity) {
-        Log.d(TAG, "Event: " + packageName + " " + eventType + " " + new Date(timestamp) + " " + activity);
         if (eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
             isScreenOn.set(false);
             localStorageManager.saveDeviceStatus(new DeviceStatus(timestamp / 1000, false));
@@ -146,18 +144,6 @@ public class EventManager {
     public List<Event> getEvents(final String packageName) {
         if (eventsMap.containsKey(packageName)) {
             return eventsMap.get(packageName);
-        }
-        return new ArrayList<>();
-    }
-
-    public List<String> openApps() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                return activityMap.keySet().stream().filter(packageName -> {
-                    List<Event> packageActivities = eventsMap.get(packageName);
-                    return !packageActivities.isEmpty() && packageActivities.get(packageActivities.size() - 1).getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND;
-                }).toList();
-            }
         }
         return new ArrayList<>();
     }

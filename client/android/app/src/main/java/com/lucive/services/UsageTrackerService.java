@@ -50,8 +50,7 @@ public class UsageTrackerService extends Service {
 
     private long lastTimestamp = AppUtils.getDayStartNDaysBefore(1);
     private long lastHeartbeatTime = 0;
-    private String currentApp = AppUtils.UNKNOWN_PACKAGE;
-
+    private final List<String> runningApps = new ArrayList<>();
     private EventManager eventManager;
     private RulesManager rulesManager;
     private ApiRequestManager apiRequestManager;
@@ -214,40 +213,41 @@ public class UsageTrackerService extends Service {
             pastEventsProcessed.set(true);
         }
         if (processedEvents) {
-            currentApp = eventManager.getCurrentlyOpenedApp();
+            runningApps.clear();
+            runningApps.addAll(eventManager.getCurrentlyOpenedApps());
         }
-        if (!currentApp.equals(AppUtils.UNKNOWN_PACKAGE)) {
-            handleModal(currentApp);
-        }
+        handleModal(runningApps);
     }
 
-    private void handleModal (final String currentApp) {
-        final Rule rule = rulesManager.getRule(currentApp);
-        final List<Event> events = eventManager.getEvents(currentApp);
-        if (rule != null) {
-            if (rule.isTemporary() && rule.validTill() < System.currentTimeMillis()) {
-                apiRequestManager.getRules();
-            }
-            if (rule.isActive() && !events.isEmpty()) {
-                if (isHourlyLimitExceeded(rule, events)) {
-                    String message = "Hourly screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).hourlyMaxSeconds()) + " exceeded!";
-                    sendModalIntent(message);
-                    return;
+    private void handleModal (final List<String> runningApps) {
+        for (String currentApp: runningApps) {
+            final Rule rule = rulesManager.getRule(currentApp);
+            final List<Event> events = eventManager.getEvents(currentApp);
+            if (rule != null) {
+                if (rule.isTemporary() && rule.validTill() < System.currentTimeMillis()) {
+                    apiRequestManager.getRules();
                 }
-                if (isDailyLimitExceeded(rule, events)) {
-                    String message = "Daily screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).dailyMaxSeconds()) + " exceeded!";
-                    sendModalIntent(message);
-                    return;
-                }
-                if (isSessionLimitExceeded(rule, events)) {
-                    String message = "Session screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).sessionMaxSeconds()) + " exceeded!";
-                    sendModalIntent(message);
-                    return;
-                }
-                if (delayStartup(rule, events)) {
-                    String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  getSessionTime(events)) + " seconds...";
-                    sendModalIntent(message);
-                    return;
+                if (rule.isActive() && !events.isEmpty()) {
+                    if (isHourlyLimitExceeded(rule, events)) {
+                        String message = "Hourly screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).hourlyMaxSeconds()) + " exceeded!";
+                        sendModalIntent(message);
+                        return;
+                    }
+                    if (isDailyLimitExceeded(rule, events)) {
+                        String message = "Daily screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).dailyMaxSeconds()) + " exceeded!";
+                        sendModalIntent(message);
+                        return;
+                    }
+                    if (isSessionLimitExceeded(rule, events)) {
+                        String message = "Session screen time limit of " + AppUtils.formatTime(rulesManager.getRule(currentApp).sessionMaxSeconds()) + " exceeded!";
+                        sendModalIntent(message);
+                        return;
+                    }
+                    if (delayStartup(rule, events)) {
+                        String message = rule.appDisplayName() + " starts in " + (STARTUP_DELAY -  getSessionTime(events)) + " seconds...";
+                        sendModalIntent(message);
+                        return;
+                    }
                 }
             }
         }

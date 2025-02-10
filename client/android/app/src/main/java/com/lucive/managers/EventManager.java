@@ -124,21 +124,18 @@ public class EventManager {
     }
 
 
-    public String getCurrentlyOpenedApp() {
-        String currentApp = AppUtils.UNKNOWN_PACKAGE;
-        long latestTimestamp = 0;
-
+    public List<String> getCurrentlyOpenedApps() {
+        final List<String> currentlyOpenedApps = new ArrayList<>();
         for (Map.Entry<String, List<Event>> entry : eventsMap.entrySet()) {
             List<Event> packageEvents = entry.getValue();
             if (!packageEvents.isEmpty()) {
                 Event lastEvent = packageEvents.get(packageEvents.size() - 1);
-                if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && lastEvent.getTimeStamp() > latestTimestamp) {
-                    currentApp = entry.getKey();
-                    latestTimestamp = lastEvent.getTimeStamp();
+                if (lastEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                    currentlyOpenedApps.add(entry.getKey());
                 }
             }
         }
-        return currentApp;
+        return currentlyOpenedApps;
     }
 
     public List<Event> getEvents(final String packageName) {

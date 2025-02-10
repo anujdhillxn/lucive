@@ -33,16 +33,11 @@ class Rule(RuleConstraint):
     app_display_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     valid_till = models.DateTimeField(null=True, blank=True)
-    version = models.IntegerField(default=1, editable=False)
+    version = models.IntegerField(default=1)
     is_temporary = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (FIELD_APP, FIELD_USER, FIELD_VERSION)
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.version += 1
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username}'s rule for {self.app}"

@@ -10,14 +10,17 @@ import { useNotification } from '../../../contexts/NotificationContext';
 import { config } from '../../../../config';
 import Colors from '../../../styles/colors'
 import { CustomButton } from '../../../components/CustomButton';
+
+const appUrl = "https://play.google.com/store/apps/details?id=com.lucive";
+
 export const NoDuoFoundView: React.FC = () => {
     const { user } = useAppContext();
     const { setMyDuo, fetchAndSetDuo } = useActions();
-    const appUrl = config.apiUrl + 'duos/deeplink/' + user?.invitationToken;
+    const inviteUrl = config.apiUrl + 'duos/deeplink/' + user?.invitationToken;
     const handleShare = async () => {
         try {
             await Share.share({
-                message: `Join me on Lucive: ${appUrl}`,
+                message: `Hey! I've started my digital detox journey with Lucive.\nStep 1: Download Lucive here: ${appUrl}\nStep 2: Form a Duo with me using this link: ${inviteUrl}\nLet's detox together and reclaim our time!`,
             });
         } catch (error) {
             console.error('Error sharing', error);

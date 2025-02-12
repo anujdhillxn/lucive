@@ -43,7 +43,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const { api, requestToken } = useApi();
 
     const [appLoading, setAppLoading] = React.useState(true);
-    const { showNotification } = useNotification();
+
     const fetchData = async () => {
         setAppLoading(true);
         if (requestToken) {
@@ -65,7 +65,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const fetchAndSetDuo = async () => {
         try {
             const duoResp = await api.duoApi.getDuo();
-            setMyDuo(duoResp);
+            setMyDuo(duoResp.found ? duoResp.duo : null);
         }
         catch (e) {
             console.log(e);

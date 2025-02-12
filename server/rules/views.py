@@ -38,7 +38,7 @@ class UserRulesView(APIView):
         try:
             duo = Duo.objects.get(Q(user1=user) | Q(user2=user))
         except Duo.DoesNotExist:
-            return Response({'error': 'User is not part of a confirmed duo'}, status=403)
+            return Response([], status=200)
         
         duo_partner = duo.user1 if duo.user2 == user else duo.user2
         users = [user, duo_partner]
@@ -216,7 +216,7 @@ class ApproveRuleModificationRequestView(APIView):
         rule = Rule.objects.create(**new_rule_data)
         push_notification_data = {
             'title': 'Rule modification request approved',
-            'body': f'{user.username} has approved your rule modification request',
+            'body': f'{user.username} has approved your rule modification request. Please refresh',
         }
         send_push_notification(other_user.fcm_token, **push_notification_data)
         return Response(RuleSerializer(rule, context={'request': request}).data , status=status.HTTP_200_OK)

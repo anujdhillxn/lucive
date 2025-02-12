@@ -1,10 +1,10 @@
-import { Remote } from "../types/api";
+import { IGetDuoResponse, Remote } from "../types/api";
 import { Duo } from "../types/state";
 
 export const createDuoApi = (remote: Remote) => {
     const { get, post, put, del } = remote;
 
-    const getDuo = (): Promise<Duo> => {
+    const getDuo = (): Promise<IGetDuoResponse> => {
         return get("duos/get-duo");
     };
 

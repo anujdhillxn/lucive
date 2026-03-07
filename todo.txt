@@ -1,2 +1,0 @@
-- check if requests coming from unmodified original app
-- server enhancements

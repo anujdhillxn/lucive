@@ -13,6 +13,8 @@ def send_push_notification(token, title, body, data=None):
     Returns:
         str: FCM message ID if successful.
     """
+    if not token:
+        return None
     message = messaging.Message(
         notification=messaging.Notification(
             title=title,

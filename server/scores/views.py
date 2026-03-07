@@ -40,8 +40,10 @@ class UpdateScoreView(APIView):
             date = parse_date(date_str)
             if not date:
                 return Response({'error': f'Invalid date format for date: {date_str}'}, status=status.HTTP_400_BAD_REQUEST)
-            score = Score.objects.filter(user=user, date=date).first()
-            if not score:
-                score = Score.objects.create(user=user, date=date, value=value, uninterrupted_tracking=uninterrupepted_tracking)
+            Score.objects.update_or_create(
+                user=user,
+                date=date,
+                defaults={'value': value, 'uninterrupted_tracking': uninterrupepted_tracking},
+            )
 
         return Response(status=status.HTTP_201_CREATED)

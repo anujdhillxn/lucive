@@ -8,5 +8,8 @@ class Score(models.Model):
     value = models.FloatField(default=0)
     date = models.DateField()
     uninterrupted_tracking = models.BooleanField(default=False)
+    class Meta:
+        unique_together = ('user', 'date')
+
     def __str__(self):
         return f'{self.user.username}: {self.date}, {self.value}'
